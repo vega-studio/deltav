@@ -143,6 +143,15 @@ export class GLState {
   private _boundVBO: WebGLBuffer | null = null;
 
   /**
+   * The current id of the current bound element array buffer. If null, nothing
+   * is bound
+   */
+  get boundElementArrayBuffer() {
+    return this._boundElementArrayBuffer;
+  }
+  private _boundElementArrayBuffer: WebGLBuffer | null = null;
+
+  /**
    * The current texture object bound. If null, nothing is bound. This also tracks
    * the texture unit to which it was bound. The unit and the texture object must match for
    * a binding call to be skipped.
@@ -268,6 +277,17 @@ export class GLState {
     if (this._boundVBO !== id) {
       this._boundVBO = id;
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, id);
+    }
+  }
+
+  /**
+   * Sets the provided buffer identifier as the current bound
+   * ELEMENT_ARRAY_BUFFER.
+   */
+  bindElementArrayBuffer(id: WebGLBuffer | null) {
+    if (this._boundElementArrayBuffer !== id) {
+      this._boundElementArrayBuffer = id;
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, id);
     }
   }
 
@@ -948,51 +968,49 @@ export class GLState {
 
     switch (uniform.type) {
       case MaterialUniformType.FLOAT:
-        v = uniform.value as MaterialUniformValue<MaterialUniformType.FLOAT>;
+        v = uniform.data as MaterialUniformValue<MaterialUniformType.FLOAT>;
         this.gl.uniform1f(location, v);
         break;
 
       case MaterialUniformType.VEC2:
-        v = uniform.value as MaterialUniformValue<MaterialUniformType.VEC2>;
+        v = uniform.data as MaterialUniformValue<MaterialUniformType.VEC2>;
         this.gl.uniform2f(location, v[0], v[1]);
         break;
 
       case MaterialUniformType.VEC3:
-        v = uniform.value as MaterialUniformValue<MaterialUniformType.VEC3>;
+        v = uniform.data as MaterialUniformValue<MaterialUniformType.VEC3>;
         this.gl.uniform3f(location, v[0], v[1], v[2]);
         break;
 
       case MaterialUniformType.VEC4:
-        v = uniform.value as MaterialUniformValue<MaterialUniformType.VEC4>;
+        v = uniform.data as MaterialUniformValue<MaterialUniformType.VEC4>;
         this.gl.uniform4f(location, v[0], v[1], v[2], v[3]);
         break;
 
       case MaterialUniformType.VEC4_ARRAY:
         v =
-          uniform.value as MaterialUniformValue<MaterialUniformType.VEC4_ARRAY>;
+          uniform.data as MaterialUniformValue<MaterialUniformType.VEC4_ARRAY>;
         this.gl.uniform4fv(location, flatten4(v));
         break;
 
       case MaterialUniformType.MATRIX3x3:
-        v =
-          uniform.value as MaterialUniformValue<MaterialUniformType.MATRIX3x3>;
+        v = uniform.data as MaterialUniformValue<MaterialUniformType.MATRIX3x3>;
         this.gl.uniformMatrix3fv(location, false, v);
         break;
 
       case MaterialUniformType.MATRIX4x4:
-        v =
-          uniform.value as MaterialUniformValue<MaterialUniformType.MATRIX4x4>;
+        v = uniform.data as MaterialUniformValue<MaterialUniformType.MATRIX4x4>;
         this.gl.uniformMatrix4fv(location, false, v);
         break;
 
       case MaterialUniformType.FLOAT_ARRAY:
         v =
-          uniform.value as MaterialUniformValue<MaterialUniformType.FLOAT_ARRAY>;
+          uniform.data as MaterialUniformValue<MaterialUniformType.FLOAT_ARRAY>;
         this.gl.uniform1fv(location, v);
         break;
 
       case MaterialUniformType.TEXTURE:
-        v = uniform.value as MaterialUniformValue<MaterialUniformType.TEXTURE>;
+        v = uniform.data as MaterialUniformValue<MaterialUniformType.TEXTURE>;
         this.willUseTextureUnit(v, location);
         break;
 

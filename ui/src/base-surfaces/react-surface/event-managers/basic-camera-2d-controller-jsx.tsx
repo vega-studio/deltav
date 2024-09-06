@@ -27,6 +27,4 @@ export const BasicCamera2DControllerJSX = (
   return <CustomTag tagName="BasicCamera2DController" {...props} />;
 };
 
-BasicCamera2DControllerJSX.defaultProps = {
-  surfaceJSXType: SurfaceJSXType.EVENT_MANAGER,
-};
+BasicCamera2DControllerJSX.surfaceJSXType = SurfaceJSXType.EVENT_MANAGER;

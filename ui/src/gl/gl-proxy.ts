@@ -23,6 +23,7 @@ import { Model } from "./model";
 import { RenderTarget } from "./render-target";
 import { Texture } from "./texture";
 import { WebGLStat } from "./webgl-stat";
+import type { IndexBuffer } from "./index-buffer";
 
 const debug = Debug("performance");
 
@@ -190,7 +191,8 @@ export class GLProxy {
   }
 
   /**
-   * Takes an Attribute object and ensures it's buffer is created and initialized.
+   * Takes an Attribute object and ensures it's buffer is created and
+   * initialized.
    */
   compileAttribute(attribute: Attribute) {
     if (attribute.gl) return;
@@ -220,12 +222,58 @@ export class GLProxy {
 
     attribute.gl = {
       bufferId: buffer,
-      type: gl.ARRAY_BUFFER,
       proxy: this,
     };
 
     // Indicate the attribute is updated to it's latest needs and concerns
     attribute.resolve();
+
+    return true;
+  }
+
+  /**
+   * Takes an IndexBuffer object and ensures it's buffer is created and
+   * initialized.
+   */
+  compileIndexBuffer(indexBuffer: IndexBuffer) {
+    if (indexBuffer.gl) return;
+
+    const gl = this.gl;
+    const buffer = gl.createBuffer();
+
+    if (!buffer) {
+      console.warn(
+        this.debugContext,
+        "Could not create WebGLBuffer. Printing any existing gl errors:"
+      );
+      this.printError();
+      return;
+    }
+
+    // State change
+    this.state.bindElementArrayBuffer(buffer);
+
+    // Upload the data to the GPU
+    gl.bufferData(
+      gl.ELEMENT_ARRAY_BUFFER,
+      indexBuffer.data,
+      indexBuffer.isDynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW
+    );
+
+    indexBuffer.gl = {
+      bufferId: buffer,
+      indexType:
+        indexBuffer.data instanceof Uint8Array
+          ? gl.UNSIGNED_BYTE
+          : indexBuffer.data instanceof Uint16Array
+          ? gl.UNSIGNED_SHORT
+          : gl.UNSIGNED_INT,
+      proxy: this,
+    };
+
+    // Ensure the buffer is resolved as it's for sure updated with the GPU at
+    // this point.
+    indexBuffer.resolve();
 
     return true;
   }
@@ -260,11 +308,19 @@ export class GLProxy {
         this.state.disableVertexAttributeArray();
         this.state.bindVAO(vao);
 
+        // Bind and incclude all attributes
         geometry.attributes.forEach((attribute, name) => {
           if (this.updateAttribute(attribute)) {
             this.useAttribute(name, attribute, geometry);
           }
         });
+
+        // Bind and incclude the index buffer
+        if (geometry.indexBuffer) {
+          if (this.updateIndexBuffer(geometry.indexBuffer)) {
+            this.useIndexBuffer(geometry.indexBuffer);
+          }
+        }
 
         geometry.gl.vao = vao;
         this.state.bindVAO(null);
@@ -1080,25 +1136,54 @@ export class GLProxy {
     }
 
     if (instancing && instancing instanceof WebGL2RenderingContext) {
-      instancing.drawArraysInstanced(
-        drawMode(this.gl, model.drawMode),
-        drawRange[0],
-        drawRange[1],
-        model.drawInstances
-      );
+      if (model.geometry.indexBuffer) {
+        instancing.drawElementsInstanced(
+          drawMode(this.gl, model.drawMode),
+          drawRange[1],
+          model.geometry.indexBuffer.gl?.indexType ?? this.gl.UNSIGNED_INT,
+          0,
+          model.drawInstances
+        );
+      } else {
+        instancing.drawArraysInstanced(
+          drawMode(this.gl, model.drawMode),
+          drawRange[0],
+          drawRange[1],
+          model.drawInstances
+        );
+      }
     } else if (instancing) {
-      instancing.drawArraysInstancedANGLE(
-        drawMode(this.gl, model.drawMode),
-        drawRange[0],
-        drawRange[1],
-        model.drawInstances
-      );
+      if (model.geometry.indexBuffer) {
+        instancing.drawElementsInstancedANGLE(
+          drawMode(this.gl, model.drawMode),
+          drawRange[1],
+          model.geometry.indexBuffer.gl?.indexType ?? this.gl.UNSIGNED_INT,
+          0,
+          model.drawInstances
+        );
+      } else {
+        instancing.drawArraysInstancedANGLE(
+          drawMode(this.gl, model.drawMode),
+          drawRange[0],
+          drawRange[1],
+          model.drawInstances
+        );
+      }
     } else {
-      this.gl.drawArrays(
-        drawMode(this.gl, model.drawMode),
-        drawRange[0],
-        drawRange[1]
-      );
+      if (model.geometry.indexBuffer) {
+        this.gl.drawElements(
+          drawMode(this.gl, model.drawMode),
+          drawRange[1],
+          model.geometry.indexBuffer.gl?.indexType ?? this.gl.UNSIGNED_INT,
+          0
+        );
+      } else {
+        this.gl.drawArrays(
+          drawMode(this.gl, model.drawMode),
+          drawRange[0],
+          drawRange[1]
+        );
+      }
     }
 
     // Without committing to the GPU, we set the draw buffer to require a state
@@ -1110,9 +1195,20 @@ export class GLProxy {
    * Destroys an attribute's resources from the GL Context
    */
   disposeAttribute(attribute: Attribute) {
-    if (!attribute.gl) return;
-    this.gl.deleteBuffer(attribute.gl.bufferId);
-    delete attribute.gl;
+    if (attribute.gl) {
+      this.gl.deleteBuffer(attribute.gl.bufferId);
+      delete attribute.gl;
+    }
+  }
+
+  /**
+   * Destroys an index buffer's resources from the GL Context
+   */
+  disposeIndexBuffer(indexBuffer: IndexBuffer) {
+    if (indexBuffer.gl) {
+      this.gl.deleteBuffer(indexBuffer.gl?.bufferId);
+      delete indexBuffer.gl;
+    }
   }
 
   /**
@@ -1140,6 +1236,8 @@ export class GLProxy {
           this.extensions.vao.deleteVertexArrayOES(geometry.gl.vao);
         }
       }
+
+      delete geometry.gl;
     }
   }
 
@@ -1818,6 +1916,8 @@ export class GLProxy {
       const start = attribute.updateRange.offset;
       gl.bufferSubData(
         gl.ARRAY_BUFFER,
+        // We start at the element index. We specify the offset in BYTES hence
+        // the * 4 since attributes are always specified as Float32Arrays
         start * 4,
         attribute.data.subarray(start, start + attribute.updateRange.count)
       );
@@ -1827,6 +1927,76 @@ export class GLProxy {
     attribute.resolve();
 
     return true;
+  }
+
+  /**
+   * This updates an index buffer's buffer data
+   */
+  updateIndexBuffer(indexBuffer: IndexBuffer) {
+    if (!indexBuffer.gl) return this.compileIndexBuffer(indexBuffer);
+
+    // Make sure an update is even needed
+    if (!indexBuffer.fullUpdate && !indexBuffer.needsUpdate) {
+      return true;
+    }
+
+    const gl = this.gl;
+
+    // Check to see if this should be a complete buffer update
+    if (
+      indexBuffer.fullUpdate ||
+      indexBuffer.updateRange.count < 0 ||
+      indexBuffer.updateRange.offset < 0
+    ) {
+      // State change
+      this.state.bindVBO(indexBuffer.gl.bufferId);
+      // Upload data
+      gl.bufferData(
+        gl.ELEMENT_ARRAY_BUFFER,
+        indexBuffer.data,
+        indexBuffer.isDynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW
+      );
+    }
+
+    // Otherwise, we work to upload only a partial update to the buffer
+    else if (indexBuffer.updateRange.count > 0) {
+      // State change
+      this.state.bindVBO(indexBuffer.gl.bufferId);
+      // Upload data
+      const start = indexBuffer.updateRange.offset;
+      gl.bufferSubData(
+        gl.ELEMENT_ARRAY_BUFFER,
+        start *
+          (
+            indexBuffer.data.constructor as
+              | typeof Uint8Array
+              | typeof Uint16Array
+              | typeof Uint32Array
+          ).BYTES_PER_ELEMENT,
+        indexBuffer.data.subarray(start, start + indexBuffer.updateRange.count)
+      );
+    }
+
+    // Flag the indexBuffer as updated to all of it's necessities
+    indexBuffer.resolve();
+
+    return true;
+  }
+
+  /**
+   * This performs all necessary functions to use the index buffer utilizing
+   * the current program in use. This is simpler than using an atribute as index
+   * buffers don't have to align with attribute names or specifics of a program.
+   */
+  useIndexBuffer(indexBuffer: IndexBuffer) {
+    // If the gl context is established for the index buffer, we can bind it
+    // successfully.
+    if (indexBuffer.gl) {
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer.gl.bufferId);
+      return true;
+    }
+
+    return false;
   }
 
   /**

@@ -652,7 +652,7 @@ export class AtlasManager {
     const material = new Material({
       culling: GLSettings.Material.CullSide.NONE,
       uniforms: {
-        texture: { type: MaterialUniformType.TEXTURE, value: atlas.texture },
+        texture: { type: MaterialUniformType.TEXTURE, data: atlas.texture },
       },
       fragmentShader: new Map([
         [

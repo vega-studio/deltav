@@ -8,6 +8,8 @@
 import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
 import { BaseIOSorting } from "./base-io-sorting";
 import {
+  type IIndexBuffer,
+  type IIndexBufferInternal,
   IInstanceAttribute,
   IShaderInitialization,
   IUniform,
@@ -17,6 +19,7 @@ import {
 } from "../../types";
 import { ILayerProps, Layer } from "../../surface/layer";
 import { Instance } from "../../instance-provider/instance";
+import { isDefined } from "../../util";
 import { packAttributes } from "./pack-attributes";
 import { ProcessShaderImportResults } from "./shader-processor";
 
@@ -51,6 +54,16 @@ function toVertexAttributeInternal(
   attribute: IVertexAttribute
 ): IVertexAttributeInternal {
   return Object.assign({}, attribute, { materialAttribute: null });
+}
+
+/**
+ * Converts a layer's index buffer to the internal index buffer structure used
+ * by the framework.
+ */
+function toIndexBufferInternal(
+  indexBuffer: IIndexBuffer
+): IIndexBufferInternal {
+  return Object.assign({}, indexBuffer, { materialIndexBuffer: null });
 }
 
 /**
@@ -256,6 +269,10 @@ export function injectShaderIO<
   );
   // All of the uniforms with nulls filtered out
   const uniforms = (shaderIO.uniforms || []).filter(isUniform);
+  // The index buffer if it exists
+  let indexBuffer = isDefined(shaderIO.indexBuffer)
+    ? shaderIO.indexBuffer
+    : void 0;
 
   // Now we process all of the custom attribute expansion specified by the
   // surface to process the layer's IO to make special features with the
@@ -291,6 +308,10 @@ export function injectShaderIO<
         .filter(isVertexAttribute)
         .forEach((attr) => vertexAttributes.push(attr));
       extraIO.uniforms.filter(isUniform).forEach((attr) => uniforms.push(attr));
+
+      if (isDefined(extraIO.indexBuffer)) {
+        indexBuffer = extraIO.indexBuffer;
+      }
     }
   }
 
@@ -312,6 +333,10 @@ export function injectShaderIO<
   // Convert our uniforms to the internal structure they need to be
   const allUniforms = uniforms.map(toUniformInternal);
 
+  const theIndexBuffer = isDefined(indexBuffer)
+    ? toIndexBufferInternal(indexBuffer)
+    : void 0;
+
   // Apply the sorting
   allInstanceAttributes.sort(sortIO.sortInstanceAttributes);
   allUniforms.sort(sortIO.sortUniforms);
@@ -322,11 +347,17 @@ export function injectShaderIO<
   packAttributes(allInstanceAttributes);
   // Before we make the vertex attributes, we must determine the buffering
   // strategy our layer will utilize
-  layer.getLayerBufferType(gl, vertexAttributes, allInstanceAttributes);
+  layer.getLayerBufferType(
+    gl,
+    shaderIO,
+    vertexAttributes,
+    allInstanceAttributes
+  );
 
   return {
     instanceAttributes: allInstanceAttributes,
     uniforms: allUniforms,
     vertexAttributes: allVertexAttributes,
+    indexBuffer: theIndexBuffer,
   };
 }

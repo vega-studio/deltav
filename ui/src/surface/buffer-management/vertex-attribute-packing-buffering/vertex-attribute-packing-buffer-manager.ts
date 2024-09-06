@@ -25,35 +25,34 @@ const debug = Debug("performance");
  * This represents the location of data for an instance's property to the piece of attribute buffer
  * it will update when it changes.
  */
-export interface IInstanceAttributePackingBufferLocation
+export interface IVertexAttributePackingBufferLocation
   extends IBufferLocation {}
 
 /** Represents the Location Groupings for Instance attribute Buffer locations */
-export type IInstanceAttributePackingBufferLocationGroup =
-  IBufferLocationGroup<IInstanceAttributePackingBufferLocation>;
+export type IVertexAttributePackingBufferLocationGroup =
+  IBufferLocationGroup<IVertexAttributePackingBufferLocation>;
 
 /**
  * This manages instances in how they associate with buffer data for an instanced attribute strategy that is
  * packed tightly.
  */
-export class InstanceAttributePackingBufferManager<
+export class VertexAttributePackingBufferManager<
   TInstance extends Instance,
   TProps extends ILayerProps<TInstance>,
 > extends BufferManagerBase<
   TInstance,
   TProps,
-  IInstanceAttributePackingBufferLocation
+  IVertexAttributePackingBufferLocation
 > {
   /** This stores an attribute's name to the buffer locations generated for it */
   private allBufferLocations: { [key: string]: IBufferLocation[] } = {};
   /** This contains the buffer locations the system will have available */
-  private availableLocations: IInstanceAttributePackingBufferLocationGroup[] =
-    [];
+  private availableLocations: IVertexAttributePackingBufferLocationGroup[] = [];
   /** This is the number of instances the buffer draws currently */
   currentInstancedCount = 0;
   /** This is the mapped buffer location to the provided Instance */
   private instanceToBufferLocation: {
-    [key: number]: IInstanceAttributePackingBufferLocationGroup;
+    [key: number]: IVertexAttributePackingBufferLocationGroup;
   } = {};
   /** This is the number of instances the buffer currently supports */
   private maxInstancedCount = 1000;
@@ -251,8 +250,8 @@ export class InstanceAttributePackingBufferManager<
   }
 
   /**
-   * This is the bare minimum property ids that, when triggered for update, will update ALL of the attribute buffers
-   * for the managed layer.
+   * This is the bare minimum property ids that, when triggered for update, will
+   * update ALL of the attribute buffers for the managed layer.
    */
   getUpdateAllPropertyIdList() {
     return this.updateAllPropertyIdList;
@@ -266,8 +265,9 @@ export class InstanceAttributePackingBufferManager<
   }
 
   /**
-   * Analyzes the list of attributes to the property ids that affects them. This populates the list
-   * of minimal property ids needed to trigger updates on all of the attributes.
+   * Analyzes the list of attributes to the property ids that affects them. This
+   * populates the list of minimal property ids needed to trigger updates on all
+   * of the attributes.
    */
   private makeUpdateAllPropertyIdList() {
     // Make a deduping list of ids
@@ -323,10 +323,8 @@ export class InstanceAttributePackingBufferManager<
     // Each attribute will generate lists of new buffer locations after being created or expanded
     const attributeToNewBufferLocations = new Map<
       string,
-      IInstanceAttributePackingBufferLocation[]
+      IVertexAttributePackingBufferLocation[]
     >();
-    // Keep track of how many instances we had before this operation
-    const previousInstanceAmount = this.maxInstancedCount;
 
     // As an optimization to guarantee the buffer is resized only a single time for a single changelist
     // we  will calculate the necessary growth of the buffer by finding all of the insertions the changelist
@@ -357,12 +355,6 @@ export class InstanceAttributePackingBufferManager<
 
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
-      // For our first growth, we will see if the layer specifies some
-      // optimization hints
-      growth = Math.max(
-        growth,
-        this.layer.props.bufferManagement?.optimize?.expectedInstanceCount ?? 0
-      );
       // The buffer grows from 0 to our initial instance count
       this.maxInstancedCount += growth;
       // We generate a new geometry object for the buffer as the geometry
@@ -378,17 +370,6 @@ export class InstanceAttributePackingBufferManager<
           this.geometry.addAttribute(
             attribute.name,
             attribute.materialAttribute
-          );
-        }
-      }
-
-      // Copy over the the index buffer to the new geometry as well. Nothing
-      // special needs to happen to this index buffer to work. It has the same
-      // needs as the simple vertex buffer
-      if (shaderIOInfo.indexBuffer) {
-        if (shaderIOInfo.indexBuffer.materialIndexBuffer) {
-          this.geometry.setIndexBuffer(
-            shaderIOInfo.indexBuffer.materialIndexBuffer
           );
         }
       }
@@ -464,12 +445,16 @@ export class InstanceAttributePackingBufferManager<
           );
         }
 
-        // Make our attribute buffer to accommodate all of the instances to be rendered.
+        // Make our attribute buffer to accommodate all of the instances to be
+        // rendered.
         const buffer = new Float32Array(blockSize * this.maxInstancedCount);
         // Make an instanced buffer to take advantage of hardware instancing
         const bufferAttribute = new Attribute(buffer, blockSize, true, true);
-        // Add the attribute to our geometry labeled as a block like the uniform block packing strategy
+
+        // Add the attribute to our geometry labeled as a block like the uniform
+        // block packing strategy
         this.geometry.addAttribute(`block${block}`, bufferAttribute);
+
         // Get all of the attributes that will be applied to this block
         const blockSubAttributes = blockSubAttributesLookup.get(block);
 
@@ -507,7 +492,9 @@ export class InstanceAttributePackingBufferManager<
               const newLocation: IBufferLocation = {
                 attribute: internalAttribute,
                 block,
-                buffer: bufferAttribute,
+                buffer: {
+                  data: buffer,
+                },
                 instanceIndex: i,
                 start: i * blockSize + startAttributeIndex,
                 end: i * blockSize + startAttributeIndex + attributeSize,
@@ -563,7 +550,9 @@ export class InstanceAttributePackingBufferManager<
       // attribute to the next growth level and generate the new buffer
       // locations based on the expansion Since were are resizing the buffer,
       // let's destroy the old buffer and make one anew
-      this.geometry.rebuild();
+      this.geometry.destroy();
+      this.geometry = new Geometry();
+      const previousInstanceAmount = this.maxInstancedCount;
 
       // The geometry needs the vertex information (which should be shared
       // amongst all instances of the layer)
@@ -576,65 +565,44 @@ export class InstanceAttributePackingBufferManager<
         }
       }
 
-      // Copy over the the index buffer to the new geometry as well. Nothing
-      // special needs to happen to this index buffer to work. It has the same
-      // needs as the simple vertex buffer
-      if (shaderIOInfo.indexBuffer) {
-        if (shaderIOInfo.indexBuffer.materialIndexBuffer) {
-          this.geometry.setIndexBuffer(
-            shaderIOInfo.indexBuffer.materialIndexBuffer
-          );
-        }
-      }
-
       this.maxInstancedCount += growth;
 
       // Ensure attributes are still defined
       this.attributes = this.attributes || [];
       this.blockAttributes = this.blockAttributes || [];
 
-      // Resize the buffers in place
       for (
         let block = 0, iMax = this.blockAttributes.length;
         block < iMax;
         ++block
       ) {
         const attribute = this.blockAttributes[block];
-
-        // Resize the buffer to fit the new instances.
-        if (attribute.bufferAttribute.count < this.maxInstancedCount) {
-          // OPTIMIZATION:
-          // We double the backing buffer instead of tightly pack fit it. This
-          // allows us to reduce memory allocations and improve overall
-          // performance at the cost of some extra memory useage.
-          if (this.layer.props.bufferManagement?.optimize?.bufferDoubling) {
-            attribute.bufferAttribute.resize(
-              this.maxInstancedCount * 2,
-              previousInstanceAmount
-            );
-          }
-
-          // Otherwise we keep the buffer tightly packed to the instance growth
-          // + the base growth rate
-          else {
-            attribute.bufferAttribute.resize(
-              this.maxInstancedCount,
-              previousInstanceAmount
-            );
-          }
-        }
-      }
-
-      // Perform the buffer location generation here
-      for (
-        let block = 0, iMax = this.blockAttributes.length;
-        block < iMax;
-        ++block
-      ) {
-        const attribute = this.blockAttributes[block];
-        const bufferAttribute = attribute.bufferAttribute;
+        let bufferAttribute = attribute.bufferAttribute;
+        const size: number = attribute.size || 0;
 
         if (bufferAttribute.data instanceof Float32Array) {
+          // Make a new buffer that is the proper size
+          let buffer: Float32Array = bufferAttribute.data;
+
+          // OPTIMIZATION: Sneaky trick. We do buffer doubling behind the scenes
+          // to reduce these mass allocations and destructions. The background
+          // buffer gets double space, but everything else in JS land operates
+          // as though it's a tightly fitted buffer.
+          if (buffer.length < this.maxInstancedCount * size) {
+            buffer = new Float32Array(this.maxInstancedCount * size * 2);
+            // Retain all of the information in the previous buffer
+            buffer.set(bufferAttribute.data, 0);
+          }
+
+          // Retain all of the information in the previous buffer
+          buffer.set(bufferAttribute.data, 0);
+          // Make our new attribute based on the grown buffer
+          const newAttribute = new Attribute(buffer, size, true, true);
+          // Make sure our attribute is updated with the newly made attribute
+          attribute.bufferAttribute = bufferAttribute = newAttribute;
+          // Add the new attribute to our new geometry object
+          this.geometry.addAttribute(attribute.name, newAttribute);
+
           // Since we have a new buffer object we are working with, we must
           // update all of the existing buffer locations to utilize this new
           // buffer. The locations keep everything else the same, but the buffer
@@ -680,6 +648,7 @@ export class InstanceAttributePackingBufferManager<
               for (let j = 0, jMax = allLocations.length; j < jMax; ++j) {
                 location = allLocations[j];
                 location.attribute = internalAttribute;
+                location.buffer.data = buffer;
               }
 
               // Set up some optimizations for this loop
@@ -698,7 +667,9 @@ export class InstanceAttributePackingBufferManager<
                 newLocation = {
                   attribute: internalAttribute,
                   block,
-                  buffer: bufferAttribute,
+                  buffer: {
+                    data: buffer,
+                  },
                   instanceIndex: i,
                   start: i * blockSize + startAttributeIndex,
                   end: i * blockSize + startAttributeIndex + attributeSize,
@@ -749,7 +720,7 @@ export class InstanceAttributePackingBufferManager<
   private gatherLocationsIntoGroups(
     attributeToNewBufferLocations: Map<
       string,
-      IInstanceAttributePackingBufferLocation[]
+      IVertexAttributePackingBufferLocation[]
     >,
     totalNewInstances: number
   ) {
@@ -760,22 +731,28 @@ export class InstanceAttributePackingBufferManager<
     // Optimize inner loops by pre-fetching lookups by names
     const attributesBufferLocations: {
       attribute: IInstanceAttribute<TInstance>;
-      bufferLocationsForAttribute: IInstanceAttributePackingBufferLocation[];
+      bufferLocationsForAttribute: IVertexAttributePackingBufferLocation[];
       childBufferLocations: {
-        location: IInstanceAttributePackingBufferLocation[];
-        // This is one of those odd but extremely necessary optimizations. Normally while assigning these buffers to
-        // groups, one would simply use the available items and shift() those items out into the group; however,
-        // shift() or pop() is VERY ineffecient in mass quantities in that it causes massive amounts of memory
-        // allocation and movement. So instead of shifting the buffer, we simply keep an index to move to the next
-        // buffer to use. It makes the mental works a lot harder to envision, but the gains are immense doing this.
+        location: IVertexAttributePackingBufferLocation[];
+        // This is one of those odd but extremely necessary optimizations.
+        // Normally while assigning these buffers to groups, one would simply
+        // use the available items and shift() those items out into the group;
+        // however, shift() or pop() is VERY ineffecient in mass quantities in
+        // that it causes massive amounts of memory allocation and movement. So
+        // instead of shifting the buffer, we simply keep an index to move to
+        // the next buffer to use. It makes the mental works a lot harder to
+        // envision, but the gains are immense doing this.
         bufferIndex: number;
       }[];
       ids: number[];
-      // This is one of those odd but extremely necessary optimizations. Normally while assigning these buffers to
-      // groups, one would simply use the available items and shift() those items out into the group; however,
-      // shift() or pop() is VERY ineffecient in mass quantities in that it causes massive amounts of memory
-      // allocation and movement. So instead of shifting the buffer, we simply keep an index to move to the next
-      // buffer to use. It makes the mental works a lot harder to envision, but the gains are immense doing this.
+      // This is one of those odd but extremely necessary optimizations.
+      // Normally while assigning these buffers to groups, one would simply use
+      // the available items and shift() those items out into the group;
+      // however, shift() or pop() is VERY ineffecient in mass quantities in
+      // that it causes massive amounts of memory allocation and movement. So
+      // instead of shifting the buffer, we simply keep an index to move to the
+      // next buffer to use. It makes the mental works a lot harder to envision,
+      // but the gains are immense doing this.
       bufferIndex: number;
     }[] = [];
 
@@ -795,7 +772,7 @@ export class InstanceAttributePackingBufferManager<
 
     // Loop through all of the new instances available and gather all of the buffer locations
     for (let i = 0; i < totalNewInstances; ++i) {
-      const group: IInstanceAttributePackingBufferLocationGroup = {
+      const group: IVertexAttributePackingBufferLocationGroup = {
         instanceIndex: -1,
         propertyToBufferLocation: {},
       };
@@ -814,7 +791,7 @@ export class InstanceAttributePackingBufferManager<
             "Instance Attribute Buffer Error",
             (count: number, id: string) => {
               console.warn(
-                `${id}: There is an error in forming buffer location groups in InstanceAttributePackingBufferManager. Error count: ${count}`
+                `${id}: There is an error in forming buffer location groups in VertexAttributePackingBufferManager. Error count: ${count}`
               );
             }
           );
@@ -829,7 +806,7 @@ export class InstanceAttributePackingBufferManager<
             "Instance Attribute Buffer Error",
             (count: number, id: string) => {
               console.warn(
-                `${id}: There is an error in forming buffer location groups in InstanceAttributePackingBufferManager. Error count: ${count}`
+                `${id}: There is an error in forming buffer location groups in VertexAttributePackingBufferManager. Error count: ${count}`
               );
             }
           );
@@ -851,8 +828,9 @@ export class InstanceAttributePackingBufferManager<
           continue;
         }
 
-        // If the attribute has children attributes. Then when the attribute is updated, the child attributes should
-        // be updated as well. Thus the buffer location needs the child attribute buffer locations.
+        // If the attribute has children attributes. Then when the attribute is
+        // updated, the child attributes should be updated as well. Thus the
+        // buffer location needs the child attribute buffer locations.
         if (attribute.childAttributes) {
           const childLocations = [];
 
@@ -891,20 +869,23 @@ export class InstanceAttributePackingBufferManager<
           bufferLocation.childLocations = childLocations;
         }
 
-        // In the group, associate the property ids that affect a buffer location WITH the buffer location they affect
+        // In the group, associate the property ids that affect a buffer
+        // location WITH the buffer location they affect
         for (let k = 0, endk = ids.length; k < endk; ++k) {
           const id = ids[k];
           group.propertyToBufferLocation[id] = bufferLocation;
         }
       }
 
-      // Store this group as a group that is ready to be associated with an instance
+      // Store this group as a group that is ready to be associated with an
+      // instance
       this.availableLocations.push(group);
     }
 
     debug("COMPLETE: Packed attribute buffer manager buffer location grouping");
 
-    // This helps ensure errors get reported in a timely fashion in case this triggers some massive looping
+    // This helps ensure errors get reported in a timely fashion in case this
+    // triggers some massive looping
     flushEmitOnce();
   }
 

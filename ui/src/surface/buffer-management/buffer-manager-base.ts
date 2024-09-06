@@ -1,10 +1,10 @@
-import { generateLayerMaterial } from "../layer-processing";
-import { IInstanceAttributeInternal, InstanceDiff } from "../../types";
-import { ILayerProps, Layer } from "../layer";
-import { Instance } from "../../instance-provider/instance";
-import { LayerScene } from "../layer-scene";
-import { Material } from "../../gl";
-import { Vec2, Vec4 } from "../../math";
+import { generateLayerMaterial } from "../layer-processing/index.js";
+import { IInstanceAttributeInternal, InstanceDiff } from "../../types.js";
+import { ILayerProps, Layer } from "../layer.js";
+import { Instance } from "../../instance-provider/instance.js";
+import { LayerScene } from "../layer-scene.js";
+import { Material } from "../../gl/index.js";
+import { Vec4 } from "../../math/index.js";
 
 export function isBufferLocation(val: any): val is IBufferLocation {
   return val && val.buffer && val.buffer.value;
@@ -17,65 +17,91 @@ export function isBufferLocationGroup(
 }
 
 /**
- * This defines a base information object that explains where in a buffer a value
- * is represented.
+ * This defines a base information object that explains where in a buffer a
+ * value is represented.
  */
 export interface IBufferLocation {
   /** This is the parent attribute of this location */
   attribute: IInstanceAttributeInternal<Instance>;
-  /** For some buffer strategies, there is a concept of block that is used to tightly pack attributes together. */
+  /**
+   * For some buffer strategies, there is a concept of block that is used to
+   * tightly pack attributes together.
+   */
   block?: number;
   /**
-   * This is the generic buffer object interface for accessing the actual buffer.
+   * This is the generic buffer object interface for accessing the actual
+   * buffer.
+   *
+   * NOTE: This is an object WITH a data buffer. This is SPECIFICALLY done to
+   * make swapping out the referenced data buffer for ALL locations SUPER easy
+   * without having to perform a deep loop across all generated locations.
    */
   buffer: {
-    value: Float32Array | Uint8Array | Vec4[];
+    data: Float32Array | Uint8Array | Vec4[];
   };
   /**
-   * If the attribute has child attributes (attributes auto generated as a consequence of the attributes settings)
-   * then the children's buffer locations can be found here.
+   * If the attribute has child attributes (attributes auto generated as a
+   * consequence of the attributes settings) then the children's buffer
+   * locations can be found here.
    */
   childLocations?: IBufferLocation[];
   /**
-   * This is the instance index indicative of the instance positioning within the buffer.
-   * Keep in mind: This does NOT correlate to a lookup for an Instance object but rather for
-   * the instancing concept designed for GL Buffers.
+   * This is the instance index indicative of the instance positioning within
+   * the buffer. Keep in mind: This does NOT correlate to a lookup for an
+   * Instance object but rather for the instancing concept designed for GL
+   * Buffers.
    */
   instanceIndex: number;
   /**
-   * This is the range within the buffer values should be injected for this location.
+   * This is the start of the range within the buffer values should be injected
+   * for this location.
    */
-  range: Vec2;
+  start: number;
+  /**
+   * This is the end of the range within the buffer values should be injected
+   * for this location.
+   */
+  end: number;
 }
 
 /**
- * Each instance that comes in can be associated with a group of buffer locations. A buffer location for each
- * instance attribute used in updates. So a grouping is several buffer locations that are keyed by
- * the instance's property's UIDs.
+ * Each instance that comes in can be associated with a group of buffer
+ * locations. A buffer location for each instance attribute used in updates. So
+ * a grouping is several buffer locations that are keyed by the instance's
+ * property's UIDs.
  */
 export interface IBufferLocationGroup<
   TBufferLocation extends IBufferLocation = IBufferLocation,
 > {
-  /** This is the instance index WITHIN THE BUFFERS. This does NOT have relevance to Instance type objects */
+  /**
+   * This is the instance index WITHIN THE BUFFERS. This does NOT have relevance
+   * to Instance type objects
+   */
   instanceIndex: number;
   /** This is a map of property UIDs to an associated buffer location */
   propertyToBufferLocation: { [key: number]: TBufferLocation };
 }
 
 /**
- * Layers manage instances and those instances require a form of binding to their associated buffers.
- * The buffers have to be intelligently created and managed in this tieing to maximize performance.
- * One can not have a buffer for every instance in most cases, so the buffer manager has to get instances
- * to cooperate sharing a buffer in whatever strategy possible that best suits the hardware and it's limitations.
+ * Layers manage instances and those instances require a form of binding to
+ * their associated buffers. The buffers have to be intelligently created and
+ * managed in this tieing to maximize performance. One can not have a buffer for
+ * every instance in most cases, so the buffer manager has to get instances to
+ * cooperate sharing a buffer in whatever strategy possible that best suits the
+ * hardware and it's limitations.
  *
- * This provides a uniform interface between instances and their corresponding buffer.
+ * This provides a uniform interface between instances and their corresponding
+ * buffer.
  */
 export abstract class BufferManagerBase<
   TInstance extends Instance,
   TProps extends ILayerProps<TInstance>,
   TBufferLocation extends IBufferLocation,
 > {
-  /** This is the list of changes in effect while this manager is processing requests */
+  /**
+   * This is the list of changes in effect while this manager is processing
+   * requests
+   */
   changeListContext?: InstanceDiff<TInstance>[];
   /** The layer this manager glues Instances to Buffers */
   layer: Layer<TInstance, TProps>;
@@ -83,7 +109,8 @@ export abstract class BufferManagerBase<
   scene?: LayerScene;
 
   /**
-   * Base constructor. A manager always needs to be associated with it's layer and it's scene.
+   * Base constructor. A manager always needs to be associated with it's layer
+   * and it's scene.
    */
   constructor(layer: Layer<TInstance, any>, scene: LayerScene) {
     this.layer = layer;
@@ -91,7 +118,8 @@ export abstract class BufferManagerBase<
   }
 
   /**
-   * This adds an instance to the manager and thus ties the instance to an IBuffer location
+   * This adds an instance to the manager and thus ties the instance to an
+   * IBuffer location
    */
   add: (
     instance: TInstance
@@ -99,14 +127,16 @@ export abstract class BufferManagerBase<
     () => void 0;
 
   /**
-   * This allows a manager to clean up any contextual information it may have stored while processing changes.
+   * This allows a manager to clean up any contextual information it may have
+   * stored while processing changes.
    */
   changesProcessed() {
     delete this.changeListContext;
   }
 
   /**
-   * Destroy all elements that consume GPU resources or consumes otherwise unreleaseable resources.
+   * Destroy all elements that consume GPU resources or consumes otherwise
+   * unreleaseable resources.
    */
   abstract destroy(): void;
 
@@ -118,31 +148,37 @@ export abstract class BufferManagerBase<
   ): TBufferLocation | IBufferLocationGroup<TBufferLocation> | undefined;
 
   /**
-   * This retrieves the property ID for the active attribute. This is necessary to prevent
-   * the need for lookups to find the active attribute.
+   * This retrieves the property ID for the active attribute. This is necessary
+   * to prevent the need for lookups to find the active attribute.
    */
   abstract getActiveAttributePropertyId(): number;
 
   /**
-   * This returns how many instances this buffer manager has grown to accommodate.
+   * This returns how many instances this buffer manager has grown to
+   * accommodate.
    */
   abstract getInstanceCount(): number;
 
   /**
-   * This should provide a minimum property id list that represents a set of properties that if triggered
-   * for update, would cause all of the attributes to be updated for the layer.
+   * This should provide a minimum property id list that represents a set of
+   * properties that if triggered for update, would cause all of the attributes
+   * to be updated for the layer.
    */
   abstract getUpdateAllPropertyIdList(): number[];
 
   /**
-   * This will be called with the changes that WILL be processed. This allows this manager to make extra judgement calls on
-   * how it will process the changes and let's it optimize itself before changes are actually processed. An example optimization:
+   * This will be called with the changes that WILL be processed. This allows
+   * this manager to make extra judgement calls on how it will process the
+   * changes and let's it optimize itself before changes are actually processed.
+   * An example optimization:
    *
-   * The manager is receiving add requests. The manager receives an add request that triggers a resize of the buffer. Ideally,
-   * the buffer should perform a single resize operation to accommodate ALL add requests getting ready to stream in plus the
-   * current size of of the buffer. With this method, the changes will be available to the manager and let the manager make this
-   * important decision instead of reflexively grow the buffer as requests stream in, which can cause a large number of costly
-   * resize operations.
+   * The manager is receiving add requests. The manager receives an add request
+   * that triggers a resize of the buffer. Ideally, the buffer should perform a
+   * single resize operation to accommodate ALL add requests getting ready to
+   * stream in plus the current size of of the buffer. With this method, the
+   * changes will be available to the manager and let the manager make this
+   * important decision instead of reflexively grow the buffer as requests
+   * stream in, which can cause a large number of costly resize operations.
    */
   incomingChangeList(changes: InstanceDiff<TInstance>[]) {
     this.changeListContext = changes;
@@ -156,18 +192,20 @@ export abstract class BufferManagerBase<
   makeLayerMaterial(): Material {
     const shaderInfo = this.layer.shaderIOInfo;
 
-    return generateLayerMaterial(
+    const material = generateLayerMaterial(
       this.layer,
       shaderInfo.vs,
       shaderInfo.fs,
       shaderInfo.uniforms,
       shaderInfo.materialUniforms
     );
+
+    return material;
   }
 
   /**
-   * This method checks to see if this buffer manager has linked an instance to a buffer
-   * location managed by this object.
+   * This method checks to see if this buffer manager has linked an instance to
+   * a buffer location managed by this object.
    */
   abstract managesInstance(instance: TInstance): boolean;
 

@@ -36,7 +36,7 @@ const DEFAULT_UNIFORM_VALUE: { [key: number]: number[] } = {
 function toMaterialUniform(uniform: IUniform) {
   return {
     type: UNIFORM_SIZE_TO_MATERIAL_TYPE[uniform.size],
-    value: DEFAULT_UNIFORM_VALUE[uniform.size],
+    data: DEFAULT_UNIFORM_VALUE[uniform.size],
   };
 }
 
@@ -81,7 +81,7 @@ export function generateLayerMaterial<
     const generatedUniform = instancingUniforms[i];
     materialParams.uniforms[generatedUniform.name] = {
       type: generatedUniform.type,
-      value: generatedUniform.value,
+      data: generatedUniform.value,
     };
   }
 

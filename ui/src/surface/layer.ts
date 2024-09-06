@@ -7,6 +7,7 @@ import { createAttribute } from "../util/create-attribute";
 import { DEFAULT_RESOURCE_ROUTER, ResourceRouter } from "../resources";
 import {
   FragmentOutputType,
+  type IIndexBufferInternal,
   IInstanceAttribute,
   IInstanceProvider,
   IInstancingUniform,
@@ -18,6 +19,7 @@ import {
   instanceAttributeSizeFloatCount,
   IPickInfo,
   IShaderInitialization,
+  type IShaderInputInstancing,
   ISinglePickingMetrics,
   isString,
   IUniformInternal,
@@ -57,6 +59,8 @@ import { uid } from "../util/uid";
 import { WebGLStat } from "../gl/webgl-stat";
 
 import Debug from "debug";
+import { VertexAttributeBufferManager } from "./buffer-management/vertex-attribute-buffering/vertex-attribute-buffer-manager";
+import { VertexAttributePackingBufferManager } from "./buffer-management/vertex-attribute-packing-buffering/vertex-attribute-packing-buffer-manager";
 
 const debug = Debug("performance");
 
@@ -190,17 +194,37 @@ export interface ILayerProps<TInstance extends Instance>
      */
     strategy?: StreamChangeStrategy;
   };
+
   /**
-   * Layers as a default renders all content as hardware instanced entities.
-   * This means we use instancing strategies down to the hardware. This can
-   * cause performance issues for simpler meshes. Often, things like shape
-   * primitives can be rendered quicker if they use simple buffers. This may
-   * cause some slightly longer update times, but the frame by frame performance
-   * can be improved dramatically.
+   * This allows for some passthrough controls of the instancing strategy a
+   * layer will take. The layer can define it's own default instancing strategy
+   * while this allows for some specialization control.
    *
-   * This strategy can also be good for a layer rendering a single complex mesh.
+   * This is used AS A SUGGESTION. A layer is NOT REQUIRED to implement
+   * compatibility with this property.
    */
-  noInstancing?: boolean;
+  bufferManagement?: IShaderInputInstancing & {
+    /**
+     * This can be provided to control some inner optimization strategies
+     */
+    optimize?: {
+      /**
+       * When this is enabled, the backing buffers for attributes will be
+       * doubled as instances are added instead of tightly packing the buffer to
+       * the instance count + base growth rate. This can reduce hefty
+       * allocations and buffering copying significantly if you have a very
+       * dynamic scene with a highly variable unknown number of instances.
+       */
+      bufferDoubling?: boolean;
+      /**
+       * This can be provided as a hint for the expected number of instances the
+       * layer may be needing to support. This won't limit the layer to the
+       * specified amount, but will definitely reduce the number of allocations
+       * that have to happen.
+       */
+      expectedInstanceCount?: number;
+    };
+  };
 
   // ---- EVENTS ----
   /**
@@ -299,10 +323,14 @@ export interface ILayerPropsInternal<T extends Instance>
 export interface ILayerShaderIOInfo<T extends Instance> {
   /** This is the attribute that specifies the _active flag for an instance */
   activeAttribute: IInstanceAttribute<T>;
+  /** This is the excess buffer growth rate for buffers for the layer. */
+  baseBufferGrowthRate: number;
   /**
    * These are the fragment shaders associated with each View that is available.
    */
   fs: OutputFragmentShader;
+  /** Indicates if this layer is using instanced backed buffers */
+  instancing: boolean;
   /** This is all of the instance attributes generated for the layer */
   instanceAttributes: IInstanceAttribute<T>[];
   /** Provides the number of vertices a single instance spans */
@@ -323,6 +351,8 @@ export interface ILayerShaderIOInfo<T extends Instance> {
   materialUniforms: IInstancingUniform[];
   /** This is all of the vertex attributes generated for the layer */
   vertexAttributes: IVertexAttributeInternal[];
+  /** This is the vertex buffer generated for the layer */
+  indexBuffer?: IIndexBufferInternal;
   /**
    * This is the vertex shader this layer has produced for processing it's
    * geometry.
@@ -826,6 +856,11 @@ export class Layer<
           size: InstanceAttributeSize.ONE,
           update: (o) => [o.active ? 1 : 0],
         }),
+        baseBufferGrowthRate:
+          shaderIO.baseBufferGrowthRate === void 0
+            ? 1000
+            : shaderIO.baseBufferGrowthRate,
+        instancing: shaderIO.instancing === void 0 ? true : shaderIO.instancing,
         instanceAttributes: shaderMetrics.instanceAttributes,
         instanceVertexCount: shaderIO.vertexCount,
         vs: shaderMetrics.vs,
@@ -835,6 +870,7 @@ export class Layer<
         drawMode: shaderIO.drawMode || GLSettings.Model.DrawMode.TRIANGLE_STRIP,
         uniforms: shaderMetrics.uniforms,
         vertexAttributes: shaderMetrics.vertexAttributes,
+        indexBuffer: shaderMetrics.indexBuffer,
       },
       this.shaderIOInfo
     );
@@ -851,7 +887,8 @@ export class Layer<
       this,
       this.shaderIOInfo.maxInstancesPerBuffer,
       this.shaderIOInfo.vertexAttributes,
-      shaderIO.vertexCount
+      shaderIO.vertexCount,
+      this.shaderIOInfo.indexBuffer
     );
   }
 
@@ -885,7 +922,7 @@ export class Layer<
     // Set the resource manager this surface utilizes to the layer
     this.resource = this.surface.resourceManager;
     // Get the shader metrics the layer desires
-    const shaderIO = this.initShader();
+    const shaderIO: IShaderInitialization<TInstance> | null = this.initShader();
     // Ensure the layer has interaction handling applied to it
     this.interactions = new LayerInteractionHandler(this);
 
@@ -931,7 +968,7 @@ export class Layer<
     result = this.processVertexAttributes(shaderIO);
     if (isBoolean(result)) return result;
     // Generate the correct buffering strategy for the layer
-    result = this.makeLayerBufferManager(this.surface.gl, this.scene);
+    result = this.makeLayerBufferManager(this.surface.gl, this.scene, shaderIO);
     if (isBoolean(result)) return result;
     // Establish diff handlers based on the settings of the layer
     result = this.updateDiffHandlers();
@@ -1313,6 +1350,8 @@ export class Layer<
    */
   initShader(): IShaderInitialization<TInstance> | null {
     return {
+      instancing: true,
+      baseBufferGrowthRate: 1000,
       fs: "${import: no-op}",
       instanceAttributes: [],
       uniforms: [],
@@ -1341,6 +1380,7 @@ export class Layer<
    */
   getLayerBufferType<T extends Instance>(
     _gl: WebGLRenderingContext,
+    shaderIO: IShaderInitialization<TInstance>,
     vertexAttributes: IVertexAttribute[],
     instanceAttributes: IInstanceAttribute<T>[]
   ) {
@@ -1383,7 +1423,10 @@ export class Layer<
         // If we can fit now, then we are good to go with using attribute
         // packing
         if (attributesUsed < WebGLStat.MAX_VERTEX_ATTRIBUTES) {
-          type = LayerBufferType.INSTANCE_ATTRIBUTE_PACKING;
+          type =
+            shaderIO.instancing === false
+              ? LayerBufferType.VERTEX_ATTRIBUTE_PACKING
+              : LayerBufferType.INSTANCE_ATTRIBUTE_PACKING;
 
           debug(
             `Performance Issue (Moderate):
@@ -1400,9 +1443,12 @@ export class Layer<
           );
         }
       } else {
-        // If we make it here, we are good to go using hardware instancing!
-        // Hooray performance!
-        type = LayerBufferType.INSTANCE_ATTRIBUTE;
+        // If we make it here, we are good to go using hardware instancing (when
+        // enabled)! Hooray performance!
+        type =
+          shaderIO.instancing === false
+            ? LayerBufferType.VERTEX_ATTRIBUTE
+            : LayerBufferType.INSTANCE_ATTRIBUTE;
       }
     }
 
@@ -1434,22 +1480,25 @@ export class Layer<
    * This generates the buffer manager to be used to manage instances getting
    * applied to attribute locations.
    */
-  makeLayerBufferManager(gl: WebGLRenderingContext, scene: LayerScene) {
+  makeLayerBufferManager(
+    gl: WebGLRenderingContext,
+    scene: LayerScene,
+    shaderIO: IShaderInitialization<TInstance>
+  ) {
     // Esnure the buffering type has been calculated for the layer
     const type = this.getLayerBufferType(
       gl,
+      shaderIO,
       this.shaderIOInfo.vertexAttributes,
       this.shaderIOInfo.instanceAttributes
     );
 
     switch (type) {
-      // This is the Instance Attribute buffering strategy, which means the system
       case LayerBufferType.INSTANCE_ATTRIBUTE: {
         this.setBufferManager(new InstanceAttributeBufferManager(this, scene));
         break;
       }
 
-      // This is the Instance Attribute buffering strategy, which means the system
       case LayerBufferType.INSTANCE_ATTRIBUTE_PACKING: {
         this.setBufferManager(
           new InstanceAttributePackingBufferManager(this, scene)
@@ -1457,7 +1506,20 @@ export class Layer<
         break;
       }
 
-      // Anything not utiliziing a specialized buffering strategy will use the uniform compatibility mode
+      case LayerBufferType.VERTEX_ATTRIBUTE: {
+        this.setBufferManager(new VertexAttributeBufferManager(this, scene));
+        break;
+      }
+
+      case LayerBufferType.VERTEX_ATTRIBUTE_PACKING: {
+        this.setBufferManager(
+          new VertexAttributePackingBufferManager(this, scene)
+        );
+        break;
+      }
+
+      // Anything not utiliziing a specialized buffering strategy will use the
+      // uniform compatibility mode
       default: {
         this.setBufferManager(new UniformBufferManager(this, scene));
         break;
@@ -1618,7 +1680,7 @@ export class Layer<
    * Only allows the buffer type to be set once
    */
   setBufferType(val: LayerBufferType) {
-    if (this._bufferType === undefined) {
+    if (this._bufferType === void 0) {
       this._bufferType = val;
     } else {
       console.warn(
@@ -1660,7 +1722,7 @@ export class Layer<
       uniform = this.shaderIOInfo.uniforms[i];
       value = uniform.update(uniform);
       uniform.materialUniforms.forEach(
-        (materialUniform) => (materialUniform.value = value)
+        (materialUniform) => (materialUniform.data = value)
       );
     }
   }

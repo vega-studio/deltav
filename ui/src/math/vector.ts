@@ -48,6 +48,15 @@ export type Vec3Compat = Vec3 | Vec4;
 /** Compatible types with Vec4 for operations (just not iterating) */
 export type Vec4Compat = Vec4;
 
+/** Readonly Compatible types with Vec1 for operations (just not iterating) */
+export type ReadonlyVec1Compat = Readonly<Vec1Compat>;
+/** Readonly Compatible types with Vec2 for operations (just not iterating) */
+export type ReadonlyVec2Compat = Readonly<Vec2Compat>;
+/** Readonly Compatible types with Vec3 for operations (just not iterating) */
+export type ReadonlyVec3Compat = Readonly<Vec3Compat>;
+/** Readonly Compatible types with Vec4 for operations (just not iterating) */
+export type ReadonlyVec4Compat = Readonly<Vec4Compat>;
+
 /** This type defines any possible explicit vector */
 export type IVec = IVec1 | IVec2 | IVec3 | IVec4;
 /** This type defines any possible vector */
@@ -115,30 +124,33 @@ export function apply1(v: Vec1Compat | undefined, v0: number): Vec1 {
 }
 
 export function add1(
-  left: Vec1Compat,
-  right: Vec1Compat,
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat,
   out?: Vec1Compat
 ): Vec1 {
   return apply1(out, left[0] + right[0]);
 }
 
-export function ceil1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
+export function ceil1(vec: ReadonlyVec1Compat, out?: Vec1Compat): Vec1 {
   return apply1(out, ceil(vec[0]));
 }
 
-export function compare1(left: Vec1Compat, right: Vec1Compat): boolean {
+export function compare1(
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat
+): boolean {
   return left[0] === right[0];
 }
 
 export function fuzzyCompare1(
-  left: Vec1Compat,
-  right: Vec1Compat,
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat,
   epsilon: number
 ): boolean {
   return abs(left[0] - right[0]) <= epsilon;
 }
 
-export function copy1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
+export function copy1(vec: ReadonlyVec1Compat, out?: Vec1Compat): Vec1 {
   return apply1(out, vec[0]);
 }
 
@@ -153,16 +165,16 @@ export function forward1(): Vec1 {
  * We will take the one dimension inference of this result and provide [0]
  */
 export function cross1(
-  _left: Vec1Compat,
-  _right: Vec1Compat,
+  _left: ReadonlyVec1Compat,
+  _right: ReadonlyVec1Compat,
   out?: Vec1Compat
 ): Vec1 {
   return apply1(out, 0);
 }
 
 export function divide1(
-  top: Vec1Compat,
-  bottom: Vec1Compat,
+  top: ReadonlyVec1Compat,
+  bottom: ReadonlyVec1Compat,
   out?: Vec1Compat
 ): Vec1 {
   return apply1(out, top[0] / bottom[0]);
@@ -172,7 +184,7 @@ export function empty1(out?: Vec1) {
   return apply1(out, 0);
 }
 
-export function flatten1(list: Vec1Compat[], out?: number[]): number[] {
+export function flatten1(list: ReadonlyVec1Compat[], out?: number[]): number[] {
   out = out || [];
 
   for (let i = 0, iMax = list.length; i < iMax; ++i) {
@@ -182,55 +194,62 @@ export function flatten1(list: Vec1Compat[], out?: number[]): number[] {
   return out;
 }
 
-export function floor1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
+export function floor1(vec: ReadonlyVec1Compat, out?: Vec1Compat): Vec1 {
   return apply1(out, floor(vec[0]));
 }
 
-export function inverse1(vec: Vec1Compat, out?: Vec1Compat): Vec1 {
+export function inverse1(vec: ReadonlyVec1Compat, out?: Vec1Compat): Vec1 {
   return apply1(out, 1 / vec[0]);
 }
 
-export function scale1(vec: Vec1Compat, scale: number, out?: Vec1Compat): Vec1 {
+export function scale1(
+  vec: ReadonlyVec1Compat,
+  scale: number,
+  out?: Vec1Compat
+): Vec1 {
   return apply1(out, vec[0] * scale);
 }
 
 export function subtract1(
-  left: Vec1Compat,
-  right: Vec1Compat,
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat,
   out?: Vec1Compat
 ): Vec1 {
   return apply1(out, left[0] - right[0]);
 }
 
 export function max1(
-  left: Vec1Compat,
-  right: Vec1Compat,
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat,
   out?: Vec1Compat
 ): Vec1 {
   return apply1(out, max(left[0], right[0]));
 }
 
 export function min1(
-  left: Vec1Compat,
-  right: Vec1Compat,
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat,
   out?: Vec1Compat
 ): Vec1 {
   return apply1(out, min(left[0], right[0]));
 }
 
 export function multiply1(
-  left: Vec1Compat,
-  right: Vec1Compat,
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat,
   out?: Vec1Compat
 ): Vec1 {
   return apply1(out, left[0] * right[0]);
 }
 
-export function normalize1(_left: Vec1Compat, out?: Vec1Compat): Vec1 {
+export function normalize1(_left: ReadonlyVec1Compat, out?: Vec1Compat): Vec1 {
   return apply1(out, 1);
 }
 
-export function dot1(left: Vec1Compat, right: Vec1Compat): number {
+export function dot1(
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat
+): number {
   return left[0] * right[0];
 }
 
@@ -239,20 +258,23 @@ export function dot1(left: Vec1Compat, right: Vec1Compat): number {
  * together instead of added together. It's a bit backwards so we called it tod
  * which is reverse of dot.
  */
-export function tod1(left: Vec1Compat, right: Vec1Compat): number {
+export function tod1(
+  left: ReadonlyVec1Compat,
+  right: ReadonlyVec1Compat
+): number {
   return left[0] * right[0];
 }
 
 export function linear1(
-  start: Vec1Compat,
-  end: Vec1Compat,
+  start: ReadonlyVec1Compat,
+  end: ReadonlyVec1Compat,
   t: number,
   out?: Vec1Compat
 ): Vec1 {
   return add1(scale1(subtract1(end, start), t), start, out);
 }
 
-export function length1(start: Vec1Compat): number {
+export function length1(start: ReadonlyVec1Compat): number {
   return start[0];
 }
 
@@ -261,8 +283,8 @@ export function length1Components(x: number): number {
 }
 
 export function vec1(
-  values: number[] | number,
-  ...args: (number | number[])[]
+  values: Readonly<number[] | number>,
+  ...args: Readonly<(number | number[])[]>
 ): Vec1 {
   let out: number[];
   args = args || [];
@@ -270,7 +292,7 @@ export function vec1(
   if (Array.isArray(values)) {
     out = values.slice(0, 1) as Vec1;
   } else {
-    out = [values];
+    out = [values as Readonly<number>];
   }
 
   if (out.length < 1) {
@@ -304,18 +326,18 @@ export function apply2(
 }
 
 export function add2(
-  left: Vec2Compat,
-  right: Vec2Compat,
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat,
   out?: Vec2Compat
 ): Vec2 {
   return apply2(out, left[0] + right[0], left[1] + right[1]);
 }
 
-export function ceil2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
+export function ceil2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2 {
   return apply2(out, ceil(vec[0]), ceil(vec[1]));
 }
 
-export function copy2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
+export function copy2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2 {
   return apply2(out, vec[0], vec[1]);
 }
 
@@ -331,20 +353,23 @@ export function forward2(out?: Vec2Compat) {
  * world, you must use cross3() to retrieve the Z result.
  */
 export function cross2(
-  _left: Vec2Compat,
-  _right: Vec2Compat,
+  _left: ReadonlyVec2Compat,
+  _right: ReadonlyVec2Compat,
   out?: Vec2Compat
 ): Vec2 {
   return apply2(out, 0, 0);
 }
 
-export function compare2(left: Vec2Compat, right: Vec2Compat): boolean {
+export function compare2(
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat
+): boolean {
   return left[0] === right[0] && left[1] === right[1];
 }
 
 export function fuzzyCompare2(
-  left: Vec2Compat,
-  right: Vec2Compat,
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat,
   epsilon: number
 ): boolean {
   return (
@@ -353,8 +378,8 @@ export function fuzzyCompare2(
 }
 
 export function divide2(
-  top: Vec2Compat,
-  bottom: Vec2Compat,
+  top: ReadonlyVec2Compat,
+  bottom: ReadonlyVec2Compat,
   out?: Vec2Compat
 ): Vec2 {
   return apply2(out, top[0] / bottom[0], top[1] / bottom[1]);
@@ -364,7 +389,7 @@ export function empty2(out?: Vec2) {
   return apply2(out, 0, 0);
 }
 
-export function flatten2(list: Vec2Compat[], out?: number[]): number[] {
+export function flatten2(list: ReadonlyVec2Compat[], out?: number[]): number[] {
   out = out || new Array(list.length * 2);
 
   for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 2) {
@@ -376,32 +401,32 @@ export function flatten2(list: Vec2Compat[], out?: number[]): number[] {
   return out;
 }
 
-export function floor2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
+export function floor2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2 {
   return apply2(out, floor(vec[0]), floor(vec[1]));
 }
 
-export function inverse2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
+export function inverse2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2 {
   return apply2(out, 1 / vec[0], 1 / vec[1]);
 }
 
 export function max2(
-  left: Vec2Compat,
-  right: Vec2Compat,
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat,
   out?: Vec2Compat
 ): Vec2 {
   return apply2(out, max(left[0], right[0]), max(left[1], right[1]));
 }
 
 export function min2(
-  left: Vec2Compat,
-  right: Vec2Compat,
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat,
   out?: Vec2Compat
 ): Vec2 {
   return apply2(out, min(left[0], right[0]), min(left[1], right[1]));
 }
 
 export function scale2(
-  left: Vec2Compat,
+  left: ReadonlyVec2Compat,
   scale: number,
   out?: Vec2Compat
 ): Vec2 {
@@ -409,8 +434,8 @@ export function scale2(
 }
 
 export function subtract2(
-  left: Vec2Compat,
-  right: Vec2Compat,
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat,
   out?: Vec2Compat
 ): Vec2 {
   const v: Vec2 = (out as Vec2) || (new Array(2) as any as Vec2);
@@ -420,19 +445,22 @@ export function subtract2(
 }
 
 export function multiply2(
-  left: Vec2Compat,
-  right: Vec2Compat,
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat,
   out?: Vec2Compat
 ): Vec2 {
   return apply2(out, left[0] * right[0], left[1] * right[1]);
 }
 
-export function normalize2(left: Vec2Compat, out?: Vec2Compat): Vec2 {
+export function normalize2(left: ReadonlyVec2Compat, out?: Vec2Compat): Vec2 {
   const length = length2(left);
   return apply2(out, left[0] / length, left[1] / length);
 }
 
-export function dot2(left: Vec2Compat, right: Vec2Compat): number {
+export function dot2(
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat
+): number {
   return left[0] * right[0] + left[1] * right[1];
 }
 
@@ -441,7 +469,10 @@ export function dot2(left: Vec2Compat, right: Vec2Compat): number {
  * together instead of added together. It's a bit backwards so we called it tod
  * which is reverse of dot.
  */
-export function tod2(left: Vec2Compat, right: Vec2Compat): number {
+export function tod2(
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat
+): number {
   return left[0] * right[0] - left[1] * right[1];
 }
 
@@ -452,27 +483,30 @@ export function tod2(left: Vec2Compat, right: Vec2Compat): number {
  *
  * x1 * y2 - y1 * x2
  */
-export function tod_flip2(left: Vec2Compat, right: Vec2Compat): number {
+export function tod_flip2(
+  left: ReadonlyVec2Compat,
+  right: ReadonlyVec2Compat
+): number {
   return left[0] * right[1] - left[1] * right[0];
 }
 
 /**
  * Swaps component direction [x, y] -> [y, x]
  */
-export function reverse2(vec: Vec2Compat, out?: Vec2Compat): Vec2 {
+export function reverse2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2 {
   return apply2(out, vec[1], vec[0]);
 }
 
 export function linear2(
-  start: Vec2Compat,
-  end: Vec2Compat,
+  start: ReadonlyVec2Compat,
+  end: ReadonlyVec2Compat,
   t: number,
   out?: Vec2Compat
 ): Vec2 {
   return add2(scale2(subtract2(end, start), t), start, out);
 }
 
-export function length2(start: Vec2Compat): number {
+export function length2(start: ReadonlyVec2Compat): number {
   return length2Components(start[0], start[1]);
 }
 
@@ -526,8 +560,8 @@ export function apply3(
 }
 
 export function add3(
-  left: Vec3Compat,
-  right: Vec3Compat,
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat,
   out?: Vec3Compat
 ): Vec3 {
   return apply3(
@@ -538,21 +572,24 @@ export function add3(
   );
 }
 
-export function ceil3(vec: Vec3Compat, out?: Vec3Compat): Vec3 {
+export function ceil3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3 {
   return apply3(out, ceil(vec[0]), ceil(vec[1]), ceil(vec[2]));
 }
 
-export function copy3(vec: Vec3Compat, out?: Vec3Compat): Vec3 {
+export function copy3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3 {
   return apply3(out, vec[0], vec[1], vec[2]);
 }
 
-export function compare3(left: Vec3Compat, right: Vec3Compat): boolean {
+export function compare3(
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat
+): boolean {
   return left[0] === right[0] && left[1] === right[1] && left[2] === right[2];
 }
 
 export function fuzzyCompare3(
-  left: Vec3Compat,
-  right: Vec3Compat,
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat,
   epsilon: number
 ): boolean {
   return (
@@ -567,8 +604,8 @@ export function forward3(out?: Vec3Compat): Vec3 {
 }
 
 export function cross3(
-  left: Vec3Compat,
-  right: Vec3Compat,
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat,
   out?: Vec3Compat
 ): Vec3 {
   out = out || (new Array(3) as any as Vec3);
@@ -580,8 +617,8 @@ export function cross3(
 }
 
 export function divide3(
-  top: Vec3Compat,
-  bottom: Vec3Compat,
+  top: ReadonlyVec3Compat,
+  bottom: ReadonlyVec3Compat,
   out?: Vec3Compat
 ): Vec3 {
   return apply3(
@@ -596,7 +633,7 @@ export function empty3(out?: Vec3) {
   return apply3(out, 0, 0, 0);
 }
 
-export function flatten3(list: Vec3Compat[], out?: number[]): number[] {
+export function flatten3(list: ReadonlyVec3Compat[], out?: number[]): number[] {
   out = out || new Array(list.length * 3);
 
   for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 3) {
@@ -609,16 +646,16 @@ export function flatten3(list: Vec3Compat[], out?: number[]): number[] {
   return out;
 }
 
-export function floor3(vec: Vec3Compat, out?: Vec3Compat): Vec3 {
+export function floor3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3 {
   return apply3(out, floor(vec[0]), floor(vec[1]), floor(vec[2]));
 }
 
-export function inverse3(vec: Vec3Compat, out?: Vec3Compat): Vec3 {
+export function inverse3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3 {
   return apply3(out, 1 / vec[0], 1 / vec[1], 1 / vec[2]);
 }
 
 export function scale3(
-  left: Vec3Compat,
+  left: ReadonlyVec3Compat,
   scale: number,
   out?: Vec3Compat
 ): Vec3 {
@@ -626,8 +663,8 @@ export function scale3(
 }
 
 export function subtract3(
-  left: Vec3Compat,
-  right: Vec3Compat,
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat,
   out?: Vec3Compat
 ): Vec3 {
   return apply3(
@@ -639,8 +676,8 @@ export function subtract3(
 }
 
 export function multiply3(
-  left: Vec3Compat,
-  right: Vec3Compat,
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat,
   out?: Vec3Compat
 ): Vec3 {
   return apply3(
@@ -652,15 +689,15 @@ export function multiply3(
 }
 
 export function linear3(
-  start: Vec3Compat,
-  end: Vec3Compat,
+  start: ReadonlyVec3Compat,
+  end: ReadonlyVec3Compat,
   t: number,
   out?: Vec3Compat
 ): Vec3 {
   return add3(scale3(subtract3(end, start), t), start, out);
 }
 
-export function length3(start: Vec3Compat): number {
+export function length3(start: ReadonlyVec3Compat): number {
   return length3Components(start[0], start[1], start[2]);
 }
 
@@ -669,8 +706,8 @@ export function length3Components(x: number, y: number, z: number): number {
 }
 
 export function max3(
-  left: Vec3Compat,
-  right: Vec3Compat,
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat,
   out?: Vec3Compat
 ): Vec3 {
   return apply3(
@@ -682,8 +719,8 @@ export function max3(
 }
 
 export function min3(
-  left: Vec3Compat,
-  right: Vec3Compat,
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat,
   out?: Vec3Compat
 ): Vec3 {
   return apply3(
@@ -694,7 +731,7 @@ export function min3(
   );
 }
 
-export function normalize3(left: Vec3Compat, out?: Vec3Compat): Vec3 {
+export function normalize3(left: ReadonlyVec3Compat, out?: Vec3Compat): Vec3 {
   out = out || (new Array(3) as any as Vec3);
   const length = length3(left);
   out[0] = left[0] / length;
@@ -704,7 +741,10 @@ export function normalize3(left: Vec3Compat, out?: Vec3Compat): Vec3 {
   return out as Vec3;
 }
 
-export function dot3(left: Vec3Compat, right: Vec3Compat): number {
+export function dot3(
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat
+): number {
   return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
 }
 
@@ -713,20 +753,23 @@ export function dot3(left: Vec3Compat, right: Vec3Compat): number {
  * together instead of added together. It's a bit backwards so we called it tod
  * which is reverse of dot.
  */
-export function tod3(left: Vec3Compat, right: Vec3Compat): number {
+export function tod3(
+  left: ReadonlyVec3Compat,
+  right: ReadonlyVec3Compat
+): number {
   return left[0] * right[0] - left[1] * right[1] - left[2] * right[2];
 }
 
 /**
  * Swaps component direction [x, y, z] -> [z, y, x]
  */
-export function reverse3(vec: Vec3Compat, out?: Vec3Compat): Vec3 {
+export function reverse3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3 {
   return apply3(out, vec[2], vec[1], vec[0]);
 }
 
 export function vec3(
-  values: number[] | number,
-  ...args: (number | number[])[]
+  values: Readonly<number[] | number>,
+  ...args: Readonly<(number | number[])[]>
 ): Vec3 {
   let out: number[];
   args = args || [];
@@ -734,7 +777,7 @@ export function vec3(
   if (Array.isArray(values)) {
     out = values.slice(0, 3) as Vec3;
   } else {
-    out = [values];
+    out = [values as Readonly<number>];
   }
 
   if (out.length < 3) {
@@ -757,7 +800,11 @@ export function vec3(
  * Produces a directional vector that is straight up from the provided reference vectors (90 degress elevated from
  * the forward vector)
  */
-export function up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
+export function up3(
+  forward: ReadonlyVec3Compat,
+  up: ReadonlyVec3Compat,
+  out?: Vec3Compat
+) {
   out = out || [0, 0, 0];
   return normalize3(cross3(cross3(forward, up), forward), out);
 }
@@ -766,7 +813,11 @@ export function up3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
  * Produces a directional vector that is directly to the right of the reference vectors (90 degress rotated from the
  * forrward vector)
  */
-export function right3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
+export function right3(
+  forward: ReadonlyVec3Compat,
+  up: ReadonlyVec3Compat,
+  out?: Vec3Compat
+) {
   out = out || [0, 0, 0];
   return normalize3(cross3(forward, up), out);
 }
@@ -775,7 +826,11 @@ export function right3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
  * Produces a directional vector that is directly to the left of the reference vectors (90 degress rotated from the
  * forrward vector)
  */
-export function left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
+export function left3(
+  forward: ReadonlyVec3Compat,
+  up: ReadonlyVec3Compat,
+  out?: Vec3Compat
+) {
   out = out || [0, 0, 0];
   return normalize3(cross3(up, forward), out);
 }
@@ -784,7 +839,11 @@ export function left3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
  * Produces a directional vector that is straight down from the provided reference vectors (90 degress declined from
  * the forward vector)
  */
-export function down3(forward: Vec3Compat, up: Vec3Compat, out?: Vec3Compat) {
+export function down3(
+  forward: ReadonlyVec3Compat,
+  up: ReadonlyVec3Compat,
+  out?: Vec3Compat
+) {
   out = out || [0, 0, 0];
   return normalize3(cross3(forward, cross3(forward, up)), out);
 }
@@ -806,7 +865,11 @@ export function apply4(
   return v as Vec4;
 }
 
-export function add4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4 {
+export function add4(
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat,
+  out?: Vec4Compat
+): Vec4 {
   return apply4(
     out,
     left[0] + right[0],
@@ -816,7 +879,11 @@ export function add4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4 {
   );
 }
 
-export function add4by3(left: Vec4, right: Vec3Compat, out?: Vec4Compat): Vec4 {
+export function add4by3(
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec3Compat,
+  out?: Vec4Compat
+): Vec4 {
   return apply4(
     out,
     left[0] + right[0],
@@ -826,15 +893,18 @@ export function add4by3(left: Vec4, right: Vec3Compat, out?: Vec4Compat): Vec4 {
   );
 }
 
-export function ceil4(vec: Vec4Compat, out?: Vec4Compat): Vec4 {
+export function ceil4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4 {
   return apply4(out, ceil(vec[0]), ceil(vec[1]), ceil(vec[2]), ceil(vec[3]));
 }
 
-export function copy4(vec: Vec4, out?: Vec4Compat): Vec4 {
+export function copy4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4 {
   return apply4(out, vec[0], vec[1], vec[2], vec[3]);
 }
 
-export function compare4(left: Vec4Compat, right: Vec4Compat): boolean {
+export function compare4(
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat
+): boolean {
   return (
     left[0] === right[0] &&
     left[1] === right[1] &&
@@ -844,8 +914,8 @@ export function compare4(left: Vec4Compat, right: Vec4Compat): boolean {
 }
 
 export function fuzzyCompare4(
-  left: Vec4Compat,
-  right: Vec4Compat,
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat,
   epsilon: number
 ): boolean {
   return (
@@ -865,13 +935,17 @@ export function forward4(out?: Vec4Compat): Vec4 {
  * 3D, please use cross3. What this method should do is up for debate for now
  * and will return a unit 4D vector.
  */
-export function cross4(_left: Vec4, _right: Vec4, out?: Vec4Compat): Vec4 {
+export function cross4(
+  _left: ReadonlyVec4Compat,
+  _right: ReadonlyVec4Compat,
+  out?: Vec4Compat
+): Vec4 {
   return apply4(out, 0, 0, 0, 1);
 }
 
 export function divide4(
-  top: Vec4Compat,
-  bottom: Vec4Compat,
+  top: ReadonlyVec4Compat,
+  bottom: ReadonlyVec4Compat,
   out?: Vec4Compat
 ): Vec4 {
   return apply4(
@@ -887,7 +961,7 @@ export function empty4(out?: Vec4) {
   return apply4(out, 0, 0, 0, 0);
 }
 
-export function flatten4(list: Vec4Compat[], out?: number[]): number[] {
+export function flatten4(list: ReadonlyVec4Compat[], out?: number[]): number[] {
   out = out || new Array(4);
 
   for (let i = 0, index = 0, iMax = list.length; i < iMax; ++i, index += 4) {
@@ -901,7 +975,7 @@ export function flatten4(list: Vec4Compat[], out?: number[]): number[] {
   return out;
 }
 
-export function floor4(vec: Vec4Compat, out?: Vec4Compat): Vec4 {
+export function floor4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4 {
   return apply4(
     out,
     floor(vec[0]),
@@ -911,11 +985,15 @@ export function floor4(vec: Vec4Compat, out?: Vec4Compat): Vec4 {
   );
 }
 
-export function inverse4(vec: Vec4, out?: Vec4Compat): Vec4 {
+export function inverse4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4 {
   return apply4(out, 1 / vec[0], 1 / vec[1], 1 / vec[2], 1 / vec[3]);
 }
 
-export function scale4(left: Vec4, scale: number, out?: Vec4Compat): Vec4 {
+export function scale4(
+  left: ReadonlyVec4Compat,
+  scale: number,
+  out?: Vec4Compat
+): Vec4 {
   return apply4(
     out,
     left[0] * scale,
@@ -925,7 +1003,11 @@ export function scale4(left: Vec4, scale: number, out?: Vec4Compat): Vec4 {
   );
 }
 
-export function subtract4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4 {
+export function subtract4(
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat,
+  out?: Vec4Compat
+): Vec4 {
   return apply4(
     out,
     left[0] - right[0],
@@ -935,7 +1017,11 @@ export function subtract4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4 {
   );
 }
 
-export function multiply4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4 {
+export function multiply4(
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat,
+  out?: Vec4Compat
+): Vec4 {
   return apply4(
     out,
     left[0] * right[0],
@@ -945,7 +1031,10 @@ export function multiply4(left: Vec4, right: Vec4, out?: Vec4Compat): Vec4 {
   );
 }
 
-export function dot4(left: Vec4, right: Vec4): number {
+export function dot4(
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat
+): number {
   return (
     left[0] * right[0] +
     left[1] * right[1] +
@@ -959,7 +1048,10 @@ export function dot4(left: Vec4, right: Vec4): number {
  * together instead of added together. It's a bit backwards so we called it tod
  * which is reverse of dot.
  */
-export function tod4(left: Vec4, right: Vec4): number {
+export function tod4(
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat
+): number {
   return (
     left[0] * right[0] -
     left[1] * right[1] -
@@ -971,7 +1063,7 @@ export function tod4(left: Vec4, right: Vec4): number {
 /**
  * Swaps component direction [x, y, z] -> [z, y, x]
  */
-export function reverse4(vec: Vec4Compat, out?: Vec4Compat): Vec4 {
+export function reverse4(vec: ReadonlyVec4Compat, out?: Vec4Compat): Vec4 {
   return apply4(out, vec[3], vec[2], vec[1], vec[0]);
 }
 
@@ -984,7 +1076,7 @@ export function linear4(
   return add4(scale4(subtract4(end, start), t), start, out);
 }
 
-export function length4(start: Vec4): number {
+export function length4(start: ReadonlyVec4Compat): number {
   return length4Components(start[0], start[1], start[2], start[3]);
 }
 
@@ -998,8 +1090,8 @@ export function length4Components(
 }
 
 export function max4(
-  left: Vec4Compat,
-  right: Vec4Compat,
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat,
   out?: Vec4Compat
 ): Vec4 {
   return apply4(
@@ -1012,8 +1104,8 @@ export function max4(
 }
 
 export function min4(
-  left: Vec4Compat,
-  right: Vec4Compat,
+  left: ReadonlyVec4Compat,
+  right: ReadonlyVec4Compat,
   out?: Vec4Compat
 ): Vec4 {
   return apply4(
@@ -1025,7 +1117,7 @@ export function min4(
   );
 }
 
-export function normalize4(left: Vec4Compat, out?: Vec4Compat): Vec4 {
+export function normalize4(left: ReadonlyVec4Compat, out?: Vec4Compat): Vec4 {
   const length = length4(left);
   return apply4(
     out,
@@ -1281,18 +1373,18 @@ export function VecMath<T extends IVec>(vec: T): VecMethods<T> {
   return methods;
 }
 
-export function toString1(v: Vec1Compat): string {
+export function toString1(v: ReadonlyVec1Compat): string {
   return `[${v[0]}]`;
 }
 
-export function toString2(v: Vec2Compat): string {
+export function toString2(v: ReadonlyVec2Compat): string {
   return `[${v[0]}, ${v[1]}]`;
 }
 
-export function toString3(v: Vec3Compat): string {
+export function toString3(v: ReadonlyVec3Compat): string {
   return `[${v[0]}, ${v[1]}, ${v[2]}]`;
 }
 
-export function toString4(v: Vec4Compat): string {
+export function toString4(v: ReadonlyVec4Compat): string {
   return `[${v[0]}, ${v[1]}, ${v[2]}, ${v[3]}]`;
 }

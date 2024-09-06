@@ -1,11 +1,14 @@
 import { Attribute, Geometry } from "../../gl";
-import { Instance } from "../../instance-provider/instance";
 import {
+  type IIndexBufferInternal,
+  IndexBufferSize,
+  isNumber,
   IVertexAttribute,
   IVertexAttributeInternal,
-  LayerBufferType,
   ShaderIOValue,
 } from "../../types";
+import { IndexBuffer } from "../../gl/index-buffer";
+import { Instance } from "../../instance-provider/instance";
 import { Layer } from "../layer";
 
 function isNumberCluster(
@@ -15,35 +18,32 @@ function isNumberCluster(
   | [number, number]
   | [number, number, number]
   | [number, number, number, number] {
-  return !Array.isArray(val[0]);
+  return isNumber(val[0]);
 }
 
+/**
+ * Produces the initial geometry for the vertex attributes and index buffers.
+ *
+ * These buffers can be manipulated and adjusted in the buffer managers, but
+ * this provides a baseline for them to work with.
+ */
 export function generateLayerGeometry<T extends Instance>(
-  layer: Layer<T, any>,
-  maxInstancesPerBuffer: number,
+  _layer: Layer<T, any>,
+  _maxInstancesPerBuffer: number,
   vertexAttributes: IVertexAttributeInternal[],
-  vertexCount: number
+  vertexCount: number,
+  indexBuffer?: IIndexBufferInternal
 ): Geometry {
   // Make the new buffers to be updated
   const vertexBuffers = [];
 
-  // Certain buffer strategies only need one instance buffered in
-  if (
-    layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE ||
-    layer.bufferType === LayerBufferType.INSTANCE_ATTRIBUTE_PACKING
-  ) {
-    maxInstancesPerBuffer = 1;
-  }
-
   for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
     const attribute = vertexAttributes[i];
-    vertexBuffers.push(
-      new Float32Array(attribute.size * vertexCount * maxInstancesPerBuffer)
-    );
+    vertexBuffers.push(new Float32Array(attribute.size * vertexCount));
   }
 
-  // Let's now fill in the baseline geometry with the instances we will be generating
-  // First we ask the layer for a single instance's buffer setup
+  // Let's now fill in the baseline geometry with the instances we will be
+  // generating First we ask the layer for a single instance's buffer setup
   const endk = vertexAttributes.length;
   let buffer: Float32Array;
   let attribute: IVertexAttribute;
@@ -76,35 +76,6 @@ export function generateLayerGeometry<T extends Instance>(
     );
   }
 
-  // After getting the geometry for a single instance, we can now copy paste For
-  // subsequent instances using very fast FLoat32 methods NOTE: This is ONLY for
-  // certain buffering strategies. This is essentially a noop when the
-  // maxInstances is set to one.
-  for (let i = 0, end = vertexAttributes.length; i < end; ++i) {
-    const attribute = vertexAttributes[i];
-    const instanceSize = attribute.size * vertexCount;
-
-    // Copy the first buffer set into the rest of the buffer
-    for (let k = 1, endk = maxInstancesPerBuffer; k < endk; ++k) {
-      vertexBuffers[i].copyWithin(instanceSize * k, 0, instanceSize);
-    }
-  }
-
-  // Lastly, we make the instance attribute reflect correctly so each instance
-  // Can have varied information. This is only appropriate for the uniform
-  // buffer strategy
-  if (layer.bufferType === LayerBufferType.UNIFORM) {
-    const instancingBuffer = vertexBuffers[0];
-
-    for (let i = 0, end = maxInstancesPerBuffer; i < end; ++i) {
-      const instanceStartIndex = i * vertexCount;
-
-      for (let k = 0; k < vertexCount; ++k) {
-        instancingBuffer[k + instanceStartIndex] = i;
-      }
-    }
-  }
-
   // Now we can generate the attributes and apply them to a geometry object
   const geometry = new Geometry();
 
@@ -115,6 +86,57 @@ export function generateLayerGeometry<T extends Instance>(
     const materialAttribute = new Attribute(vertexBuffers[i], attribute.size);
     attribute.materialAttribute = materialAttribute;
     geometry.addAttribute(attribute.name, materialAttribute);
+  }
+
+  // Now we generate the initial index buffer for the geometry if it exists in
+  // the shader intialization data.
+  if (indexBuffer) {
+    const totalIndices = indexBuffer.indexCount;
+    const nextIndex = indexBuffer.update;
+    const size = indexBuffer.size;
+    let buffer: Uint8Array | Uint16Array | Uint32Array;
+
+    // If were at more then 4 billion vertices references, we throw an error as
+    // that's the max webgl2 supports.
+    if (vertexCount > 4294967296) {
+      throw new Error(
+        "The maximum number of indices supported by webgl2 is 4294967296. You may have a vertex count or index count that is too large."
+      );
+    }
+
+    switch (size) {
+      case IndexBufferSize.UINT8:
+        if (vertexCount > 65536) {
+          buffer = new Uint32Array(totalIndices);
+        } else if (vertexCount > 256) {
+          buffer = new Uint16Array(totalIndices);
+        } else {
+          buffer = new Uint8Array(totalIndices);
+        }
+        break;
+
+      case IndexBufferSize.UINT16:
+        if (vertexCount > 65536) {
+          buffer = new Uint32Array(totalIndices);
+        } else {
+          buffer = new Uint16Array(totalIndices);
+        }
+        break;
+
+      case IndexBufferSize.UINT32:
+        buffer = new Uint32Array(totalIndices);
+        break;
+    }
+
+    // Loop through the total indices and populate our buffer
+    for (let i = 0, end = totalIndices; i < end; ++i) {
+      buffer[i] = nextIndex(i);
+    }
+
+    // Create the index buffer
+    const materialIndexBuffer = new IndexBuffer(buffer, false, false);
+    indexBuffer.materialIndexBuffer = materialIndexBuffer;
+    geometry.setIndexBuffer(materialIndexBuffer);
   }
 
   return geometry;

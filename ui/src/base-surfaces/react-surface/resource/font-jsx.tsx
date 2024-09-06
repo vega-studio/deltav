@@ -40,6 +40,4 @@ export const FontJSX = (props: IFontJSX) => {
   return <CustomTag tagName="Font" {...props} />;
 };
 
-FontJSX.defaultProps = {
-  surfaceJSXType: SurfaceJSXType.RESOURCE,
-};
+FontJSX.surfaceJSXType = SurfaceJSXType.RESOURCE;

@@ -193,6 +193,4 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
   return <CustomTag tagName="View" {...props} />;
 };
 
-ViewJSX.defaultProps = {
-  surfaceJSXType: SurfaceJSXType.VIEW,
-};
+ViewJSX.surfaceJSXType = SurfaceJSXType.VIEW;

@@ -3,6 +3,7 @@ import { BaseIOSorting } from "./base-io-sorting";
 import { BaseShaderTransform } from "./base-shader-transform";
 import {
   FragmentOutputType,
+  type IIndexBufferInternal,
   IInstanceAttribute,
   IInstancingUniform,
   IShaderInitialization,
@@ -51,6 +52,8 @@ export interface IShaderProcessingResults<T extends Instance> {
   vertexAttributes: IVertexAttributeInternal[];
   /** All uniform attributes that arise from module processing */
   uniforms: IUniformInternal[];
+  /** The index buffer that arises after module processing */
+  indexBuffer?: IIndexBufferInternal;
 }
 
 /** Expected results from processing shader imports */
@@ -720,18 +723,20 @@ export class ShaderProcessor {
       // shader IO to make our layer operate properly. Process all of the
       // attributes and apply IO expansion to all of the discovered shader IO
       // the layer will need to execute.
-      const { vertexAttributes, instanceAttributes, uniforms } = injectShaderIO(
-        layer.surface.gl,
-        layer,
-        shaderIO,
-        ioExpansion,
-        sortIO,
-        shadersWithImports
-      );
+      const { vertexAttributes, instanceAttributes, indexBuffer, uniforms } =
+        injectShaderIO(
+          layer.surface.gl,
+          layer,
+          shaderIO,
+          ioExpansion,
+          sortIO,
+          shadersWithImports
+        );
       // After all of the shader IO is established, let's calculate the
       // appropriate buffering strategy For the layer.
       layer.getLayerBufferType(
         layer.surface.gl,
+        shaderIO,
         vertexAttributes,
         instanceAttributes
       );
@@ -942,6 +947,7 @@ export class ShaderProcessor {
         vertexAttributes,
         instanceAttributes,
         uniforms,
+        indexBuffer,
       };
 
       return results;

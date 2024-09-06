@@ -1,51 +1,33 @@
 {
   "compilerOptions": {
-    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
-    "allowUnreachableCode": false,
-    "declaration": true,
+    "target": "ES2022",
     "experimentalDecorators": true,
-    "jsx": "react",
-    "lib": [
-      "es2017",
-      "esnext",
-      "dom"
-    ],
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": true,
     "module": "ESNext",
+    "allowUnreachableCode": false,
     "moduleResolution": "node",
+    "declaration": true,
+    "jsx": "react",
+    "lib": ["es2017", "esnext", "dom"],
     "noImplicitAny": true,
     "noImplicitReturns": false,
     "noUnusedLocals": true,
     "paths": {
-      "ui/*": [
-        "./ui/*"
-      ],
-      "app": [
-        "./app"
-      ],
-      "util": [
-        "./util"
-      ],
-      "utils": [
-        "./utils"
-      ],
-      "test": [
-        "./test"
-      ],
-      "config/*": [
-        "./app/config/*"
-      ]
+      "ui/*": ["./ui/*"],
+      "app": ["./app"],
+      "util": ["./util"],
+      "utils": ["./utils"],
+      "test": ["./test"],
+      "config/*": ["./app/config/*"]
     },
     "sourceMap": true,
     "noUnusedParameters": true,
     "removeComments": false,
     "strict": true,
     "strictNullChecks": true,
-    "target": "ES2017",
-    "typeRoots": [
-      "./node_modules/@types",
-      "./dts"
-    ],
+    "typeRoots": ["./node_modules/@types", "./dts"],
     "skipLibCheck": true
   },
   "include": [
@@ -61,8 +43,5 @@
     "./node_modules/@types",
     "./node_modules/@storybook"
   ],
-  "exclude": [
-    "./node_modules",
-    "./bin/lib/template/*"
-  ]
+  "exclude": ["./node_modules", "./bin/lib/template/*"]
 }

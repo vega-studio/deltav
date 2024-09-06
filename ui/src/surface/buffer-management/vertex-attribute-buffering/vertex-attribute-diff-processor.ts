@@ -1,48 +1,48 @@
 import { BaseDiffProcessor } from "../base-diff-processor.js";
-import {
-  IInstanceAttributeBufferLocation,
-  IInstanceAttributeBufferLocationGroup,
-  isInstanceAttributeBufferLocationGroup,
-} from "./instance-attribute-buffer-manager.js";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
 import { ILayerProps } from "../../layer.js";
 import { Instance } from "../../../instance-provider/instance.js";
+import {
+  isVertexAttributeBufferLocationGroup,
+  IVertexAttributeBufferLocation,
+  IVertexAttributeBufferLocationGroup,
+} from "./vertex-attribute-buffer-manager.js";
 import { Mat4x4, Vec } from "../../../math/index.js";
 
 const EMPTY: number[] = [];
 const { min, max } = Math;
 
 enum DiffMode {
-  /**
-   * This mode will analyze incoming buffer location changes and only update the
-   * range of changed buffer
-   */
+  /** This mode will analyze incoming buffer location changes and only update the range of changed buffer */
   PARTIAL,
-  /**
-   * This mode will not spend time figuring out what has changed for a buffer,
-   * rather the whole buffer will get an update
-   */
+  /** This mode will not spend time figuring out what has changed for a buffer, rather the whole buffer will get an update */
   FULL,
 }
 
 /**
- * Manages diffs for layers that are utilizing the instance attribute instancing
- * buffer strategy.
+ * Manages diffs for layers that are utilizing the vertex buffer strategy.
  */
-export class InstanceAttributeDiffProcessor<
+export class VertexAttributeDiffProcessor<
   TInstance extends Instance,
   TProps extends ILayerProps<TInstance>,
 > extends BaseDiffProcessor<TInstance, TProps> {
-  /** This is the processor's current diff mode for consuming instance updates. */
+  /**
+   * This is the processor's current diff mode for consuming instance updates.
+   */
   private diffMode: DiffMode = DiffMode.PARTIAL;
 
-  /** This tracks a buffer attribute's uid to the range of data that it should update */
+  /**
+   * This tracks a buffer attribute's uid to the range of data that it should
+   * update
+   */
   bufferAttributeUpdateRange: {
     [key: number]: [IInstanceAttributeInternal<TInstance>, number, number];
   } = {};
 
-  /** This tracks a buffer attribute's uid that will perform a complete update */
+  /**
+   * This tracks a buffer attribute's uid that will perform a complete update
+   */
   bufferAttributeWillUpdate: {
     [key: number]: IInstanceAttributeInternal<TInstance>;
   } = {};
@@ -55,7 +55,7 @@ export class InstanceAttributeDiffProcessor<
     layer: IInstanceDiffManagerTarget<TInstance, TProps>,
     instance: TInstance,
     propIds: number[],
-    bufferLocations: IInstanceAttributeBufferLocationGroup
+    bufferLocations: IVertexAttributeBufferLocationGroup
   ) => void = this.updateInstancePartial;
 
   /**
@@ -65,7 +65,7 @@ export class InstanceAttributeDiffProcessor<
     manager: this,
     instance: TInstance,
     _propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup
+    bufferLocations?: IVertexAttributeBufferLocationGroup
   ) {
     // If the buffer cluster already exists, then we swap over to a change
     // update
@@ -76,7 +76,7 @@ export class InstanceAttributeDiffProcessor<
       // our instance
       const newBufferLocations = manager.layer.bufferManager.add(instance);
 
-      if (isInstanceAttributeBufferLocationGroup(newBufferLocations)) {
+      if (isVertexAttributeBufferLocationGroup(newBufferLocations)) {
         instance.active = true;
 
         if (manager.layer.onDiffAdd) {
@@ -100,7 +100,7 @@ export class InstanceAttributeDiffProcessor<
     manager: this,
     instance: TInstance,
     propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup
+    bufferLocations?: IVertexAttributeBufferLocationGroup
   ) {
     // If there is an existing cluster for this instance, then we can update the
     // bufferLocations
@@ -120,7 +120,7 @@ export class InstanceAttributeDiffProcessor<
     manager: this,
     instance: TInstance,
     _propIds: number[],
-    bufferLocations?: IInstanceAttributeBufferLocationGroup
+    bufferLocations?: IVertexAttributeBufferLocationGroup
   ) {
     if (bufferLocations) {
       // We deactivate the instance so it does not render anymore
@@ -143,22 +143,23 @@ export class InstanceAttributeDiffProcessor<
    * This performs the actual updating of buffers the instance needs to update
    */
   updateInstancePartial(
-    _layer: IInstanceDiffManagerTarget<TInstance, TProps>,
+    layer: IInstanceDiffManagerTarget<TInstance, TProps>,
     instance: TInstance,
     propIds: number[],
-    bufferLocations: IInstanceAttributeBufferLocationGroup
+    bufferLocations: IVertexAttributeBufferLocationGroup
   ) {
+    const vertexCount = layer.shaderIOInfo.instanceVertexCount;
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeUpdateRange = this.bufferAttributeUpdateRange;
 
-    let location: IInstanceAttributeBufferLocation;
+    let location: IVertexAttributeBufferLocation;
     let updateValue: Vec | Mat4x4;
     let updateRange;
-    let childLocations: IInstanceAttributeBufferLocation[];
+    let childLocations: IVertexAttributeBufferLocation[];
     let attribute: IInstanceAttributeInternal<TInstance>;
     let attributeChangeUID;
-
-    let i, j, k, z, endi, endk, endz;
+    let attributeSize = 0;
+    let i, j, z, k, endk, endi, endj;
 
     if (instance.active) {
       // If no prop ids provided, then we perform a complete instance property
@@ -176,17 +177,19 @@ export class InstanceAttributeDiffProcessor<
         attribute = location.attribute;
         attributeChangeUID = attribute.packUID || attribute.uid;
         updateValue = attribute.update(instance);
+        attributeSize = attribute.size || location.end - location.start;
 
-        // The following is a replacement for the following line:
         // location.buffer.value.set(updateValue, location.start);
-        // It has been found that for small buffer copies, a simple loop
-        // performs significantly better than a .set call.
+        // We have to loop through each vertex and fill the vertex with the
+        // attribute's value.
         for (
-          k = location.start, endk = location.end, j = 0;
-          k < endk;
-          ++k, ++j
+          j = location.start * vertexCount, endj = location.end * vertexCount;
+          j < endj;
+
         ) {
-          location.buffer.data[k] = updateValue[j];
+          for (z = 0; z < attributeSize; ++z, ++j) {
+            location.buffer.data[j] = updateValue[z];
+          }
         }
 
         updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
@@ -195,8 +198,8 @@ export class InstanceAttributeDiffProcessor<
           Number.MIN_SAFE_INTEGER,
         ];
         updateRange[0] = attribute;
-        updateRange[1] = min(location.start, updateRange[1]);
-        updateRange[2] = max(location.end, updateRange[2]);
+        updateRange[1] = min(location.start * vertexCount, updateRange[1]);
+        updateRange[2] = max(location.end * vertexCount, updateRange[2]);
         bufferAttributeUpdateRange[attributeChangeUID] = updateRange;
 
         // Now update any child attributes that would need updating based on the
@@ -212,17 +215,20 @@ export class InstanceAttributeDiffProcessor<
             attributeChangeUID =
               location.attribute.packUID || location.attribute.uid;
             updateValue = location.attribute.update(instance);
+            attributeSize = attribute.size || location.end - location.start;
 
-            // The following is a replacement for the following line:
             // location.buffer.value.set(updateValue, location.start);
-            // It has been found that for small buffer copies, a simple loop
-            // performs significantly better than a .set call.
+            // We have to loop through each vertex and fill the vertex with the
+            // attribute's value.
             for (
-              z = location.start, endz = location.end, j = 0;
-              z < endz;
-              ++z, ++j
+              j = location.start * vertexCount,
+                endj = location.end * vertexCount;
+              j < endj;
+
             ) {
-              location.buffer.data[z] = updateValue[j];
+              for (z = 0; z < attributeSize; ++z, ++j) {
+                location.buffer.data[j] = updateValue[z];
+              }
             }
 
             updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
@@ -231,8 +237,8 @@ export class InstanceAttributeDiffProcessor<
               Number.MIN_SAFE_INTEGER,
             ];
             updateRange[0] = location.attribute;
-            updateRange[1] = min(location.start, updateRange[1]);
-            updateRange[2] = max(location.end, updateRange[2]);
+            updateRange[1] = min(location.start * vertexCount, updateRange[1]);
+            updateRange[2] = max(location.end * vertexCount, updateRange[2]);
             bufferAttributeUpdateRange[attributeChangeUID] = updateRange;
           }
         }
@@ -245,14 +251,19 @@ export class InstanceAttributeDiffProcessor<
       attribute = location.attribute;
       attributeChangeUID = attribute.packUID || attribute.uid;
       updateValue = attribute.update(instance);
+      attributeSize = attribute.size || location.end - location.start;
 
-      // The following is a replacement for the following line:
       // location.buffer.value.set(updateValue, location.start);
-      // It has been found that for small buffer copies, a simple loop
-      // performs significantly better than a .set call.
-      // location.buffer.value.set(updateValue, location.start);
-      for (z = location.start, endz = location.end, j = 0; z < endz; ++z, ++j) {
-        location.buffer.data[z] = updateValue[j];
+      // We have to loop through each vertex and fill the vertex with the
+      // attribute's value.
+      for (
+        j = location.start * vertexCount, endj = location.end * vertexCount;
+        j < endj;
+
+      ) {
+        for (z = 0; z < attributeSize; ++z, ++j) {
+          location.buffer.data[j] = updateValue[z];
+        }
       }
 
       updateRange = bufferAttributeUpdateRange[attributeChangeUID] || [
@@ -261,8 +272,8 @@ export class InstanceAttributeDiffProcessor<
         Number.MIN_SAFE_INTEGER,
       ];
       updateRange[0] = attribute;
-      updateRange[1] = min(location.start, updateRange[1]);
-      updateRange[2] = max(location.end, updateRange[2]);
+      updateRange[1] = min(location.start * vertexCount, updateRange[1]);
+      updateRange[2] = max(location.end * vertexCount, updateRange[2]);
       bufferAttributeUpdateRange[attributeChangeUID] = updateRange;
     }
 
@@ -278,17 +289,18 @@ export class InstanceAttributeDiffProcessor<
     _layer: IInstanceDiffManagerTarget<TInstance, TProps>,
     instance: TInstance,
     propIds: number[],
-    bufferLocations: IInstanceAttributeBufferLocationGroup
+    bufferLocations: IVertexAttributeBufferLocationGroup
   ) {
     const propertyToLocation = bufferLocations.propertyToBufferLocation;
     const bufferAttributeWillUpdate = this.bufferAttributeWillUpdate;
+    const vertexCount = this.layer.shaderIOInfo.instanceVertexCount;
 
-    let location: IInstanceAttributeBufferLocation;
+    let location: IVertexAttributeBufferLocation;
     let updateValue: Vec | Mat4x4;
-    let childLocations: IInstanceAttributeBufferLocation[];
+    let childLocations: IVertexAttributeBufferLocation[];
     let attribute: IInstanceAttributeInternal<TInstance>;
-
-    let i, j, k, z, endk, endz, endi;
+    let attributeSize = 0;
+    let i, j, k, z, endk, endi, endj;
 
     if (instance.active) {
       // If no prop ids provided, then we perform a complete instance property
@@ -305,17 +317,18 @@ export class InstanceAttributeDiffProcessor<
         if (!location) continue;
         attribute = location.attribute;
         updateValue = attribute.update(instance);
+        attributeSize = attribute.size || location.end - location.start;
 
-        // The following is a replacement for the following line:
-        // location.buffer.value.set(updateValue, location.start);
-        // It has been found that for small buffer copies, a simple loop
-        // performs significantly better than a .set call.
+        // We have to loop through each vertex and fill the vertex with the
+        // attribute's value.
         for (
-          k = location.start, endk = location.end, j = 0;
+          k = location.start * vertexCount, endk = location.end * vertexCount;
           k < endk;
-          ++k, ++j
+
         ) {
-          location.buffer.data[k] = updateValue[j];
+          for (z = 0; z < attributeSize; ++z, ++k) {
+            location.buffer.data[k] = updateValue[z];
+          }
         }
 
         bufferAttributeWillUpdate[attribute.packUID || attribute.uid] =
@@ -333,18 +346,20 @@ export class InstanceAttributeDiffProcessor<
             if (!location) continue;
             attribute = location.attribute;
             updateValue = attribute.update(instance);
+            attributeSize = attribute.size || location.end - location.start;
 
-            // The following is a replacement for the following line:
             // location.buffer.value.set(updateValue, location.start);
-            // It has been found that for small buffer copies, a simple loop
-            // performs significantly better than a .set call.
-            // location.buffer.value.set(updateValue, location.start);
+            // We have to loop through each vertex and fill the vertex with the
+            // attribute's value.
             for (
-              z = location.start, endz = location.end, j = 0;
-              z < endz;
-              ++z, ++j
+              j = location.start * vertexCount,
+                endj = location.end * vertexCount;
+              j < endj;
+
             ) {
-              location.buffer.data[z] = updateValue[j];
+              for (z = 0; z < attributeSize; ++z, ++j) {
+                location.buffer.data[j] = updateValue[z];
+              }
             }
 
             bufferAttributeWillUpdate[attribute.packUID || attribute.uid] =
@@ -358,15 +373,20 @@ export class InstanceAttributeDiffProcessor<
       location =
         propertyToLocation[this.bufferManager.getActiveAttributePropertyId()];
       attribute = location.attribute;
+      attributeSize = attribute.size || location.end - location.start;
       updateValue = attribute.update(instance);
 
-      // The following is a replacement for the following line:
       // location.buffer.value.set(updateValue, location.start);
-      // It has been found that for small buffer copies, a simple loop
-      // performs significantly better than a .set call.
-      // location.buffer.value.set(updateValue, location.start);
-      for (z = location.start, endz = location.end, j = 0; z < endz; ++z, ++j) {
-        location.buffer.data[z] = updateValue[j];
+      // We have to loop through each vertex and fill the vertex with the
+      // attribute's value.
+      for (
+        j = location.start * vertexCount, endj = location.end * vertexCount;
+        j < endj;
+
+      ) {
+        for (z = 0; z < attributeSize; ++z, ++j) {
+          location.buffer.data[j] = updateValue[z];
+        }
       }
 
       bufferAttributeWillUpdate[attribute.packUID || attribute.uid] = attribute;

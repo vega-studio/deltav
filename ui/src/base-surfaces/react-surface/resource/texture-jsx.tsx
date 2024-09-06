@@ -42,6 +42,4 @@ export const TextureJSX = (props: ITextureJSX) => {
   return <CustomTag tagName="Texture" {...props} />;
 };
 
-TextureJSX.defaultProps = {
-  surfaceJSXType: SurfaceJSXType.RESOURCE,
-};
+TextureJSX.surfaceJSXType = SurfaceJSXType.RESOURCE;

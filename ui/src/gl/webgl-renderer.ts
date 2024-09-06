@@ -11,6 +11,7 @@ import { Vec4 } from "../math";
 import { WebGLStat } from "./webgl-stat";
 
 import Debug from "debug";
+import type { IndexBuffer } from "./index-buffer";
 
 const debug = Debug("performance");
 
@@ -273,6 +274,22 @@ export class WebGLRenderer {
   }
 
   /**
+   * Prepared the specified index buffer
+   */
+  prepareIndexBuffer(geometry: Geometry, indexBuffer: IndexBuffer) {
+    if (this.glProxy.updateIndexBuffer(indexBuffer)) {
+      if (!geometry.gl || !geometry.gl.vao) {
+        return this.glProxy.useIndexBuffer(indexBuffer);
+      }
+    } else {
+      console.warn("Could not update index buffer", indexBuffer);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
    * Renders the Scene specified.
    */
   render(
@@ -378,6 +395,13 @@ export class WebGLRenderer {
 
         // First update/compile all aspects of the geometry
         geometry.attributes.forEach(attributeLoop);
+
+        // Process the index buffer if it exists
+        if (geometry.indexBuffer) {
+          geometryIsValid =
+            this.prepareIndexBuffer(geometry, geometry.indexBuffer) &&
+            geometryIsValid;
+        }
 
         // If the geometry has a VAO then we just bind it and our geometry is
         // ready to go

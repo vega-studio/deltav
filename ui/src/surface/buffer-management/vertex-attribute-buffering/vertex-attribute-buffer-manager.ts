@@ -1,6 +1,5 @@
 "use strict";
 
-import Debug from "debug";
 import { Attribute, Geometry, Material, Model } from "../../../gl";
 import {
   BufferManagerBase,
@@ -20,6 +19,8 @@ import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import { LayerScene } from "../../layer-scene";
 import { uid } from "../../../util/uid";
 
+import Debug from "debug";
+
 const debug = Debug("performance");
 const { max } = Math;
 
@@ -27,7 +28,7 @@ const { max } = Math;
  * This represents the location of data for an instance's property to the piece
  * of attribute buffer it will update when it changes.
  */
-export interface IInstanceAttributeBufferLocation extends IBufferLocation {
+export interface IVertexAttributeBufferLocation extends IBufferLocation {
   /**
    * We narrow the buffer type for instance attributes down to just array
    * buffers
@@ -37,50 +38,67 @@ export interface IInstanceAttributeBufferLocation extends IBufferLocation {
   };
 
   /** We narrow the child locations to be the same as this buffer location */
-  childLocations?: IInstanceAttributeBufferLocation[];
+  childLocations?: IVertexAttributeBufferLocation[];
 }
 
 /** Represents the Location Groupings for Instance attribute Buffer locations */
-export type IInstanceAttributeBufferLocationGroup =
-  IBufferLocationGroup<IInstanceAttributeBufferLocation>;
+export type IVertexAttributeBufferLocationGroup =
+  IBufferLocationGroup<IVertexAttributeBufferLocation>;
 
 /**
  * Typeguard for the instance attribute buffer location.
  */
-export function isInstanceAttributeBufferLocation(
+export function isVertexAttributeBufferLocation(
   val: IBufferLocation
-): val is IInstanceAttributeBufferLocation {
+): val is IVertexAttributeBufferLocation {
   return Boolean(val && val.buffer && val.buffer.data);
 }
 
 /**
  * Typeguard for the instance attribute buffer location group.
  */
-export function isInstanceAttributeBufferLocationGroup(
+export function isVertexAttributeBufferLocationGroup(
   val: any
-): val is IInstanceAttributeBufferLocationGroup {
+): val is IVertexAttributeBufferLocationGroup {
   return isBufferLocationGroup(val);
 }
 
 /**
  * This manages instances in how they associate with buffer data for an
- * instanced attribute strategy.
+ * non-instanced vertex attribute strategy.
+ *
+ * SOME NOTES:
+ * This buffer management strategy follows the EXACT same pattern as
+ * the instance attribute buffering strategy. It creates the EXACT SAME buffer
+ * location values.
+ *
+ * WHERE IT DIFFERS:
+ * - This will resize the vertex attributes AS WELL to match the instance count
+ *   since we will NOT be able to take advantage of drawing instanced arrays.
+ * - ALL BUFFERS will repeat values for every instance for every VERTEX instead
+ *   of storing a single copy of the value for each instance.
+ *
+ * BUFFER LOCATIONS GENERATED WILL NOT MATCH REAL BUFFER LOCATIONS WITH THIS
+ * STRATEGY:
+ * Again! This follows the instance attribute buffer location strategy
+ * for BUFFER LOCATIONS EXXXXACTLY. This similarity will be resolved in the diff
+ * processor as it will take into account the number of vertices the values need
+ * to be copied for to match the buffer expectations when drawing as a
+ * non-instanced attribute.
  */
-export class InstanceAttributeBufferManager<
+export class VertexAttributeBufferManager<
   TInstance extends Instance,
   TProps extends ILayerProps<TInstance>,
-> extends BufferManagerBase<
-  TInstance,
-  TProps,
-  IInstanceAttributeBufferLocation
-> {
+> extends BufferManagerBase<TInstance, TProps, IVertexAttributeBufferLocation> {
+  /** This stores an attribute's name to the buffer locations generated for it */
+  private allBufferLocations: { [key: string]: IBufferLocation[] } = {};
   /** This contains the buffer locations the system will have available */
-  private availableLocations: IInstanceAttributeBufferLocationGroup[] = [];
+  private availableLocations: IVertexAttributeBufferLocationGroup[] = [];
   /** This is the number of instances the buffer draws currently */
   currentInstancedCount = 0;
   /** This is the mapped buffer location to the provided Instance */
   private instanceToBufferLocation: {
-    [key: number]: IInstanceAttributeBufferLocationGroup;
+    [key: number]: IVertexAttributeBufferLocationGroup;
   } = {};
   /** This is the number of instances the buffer currently supports */
   private maxInstancedCount = 0;
@@ -222,7 +240,6 @@ export class InstanceAttributeBufferManager<
     ) {
       // Resice the buffer to accommodate more instances
       const locationInfo = this.resizeBuffer();
-
       // Break down the newly generated buffers into property groupings for the
       // instances
       this.gatherLocationsIntoGroups(
@@ -248,13 +265,15 @@ export class InstanceAttributeBufferManager<
       if (this.model) {
         this.model.vertexDrawRange = [
           0,
-          this.layer.shaderIOInfo.indexBuffer?.indexCount ||
-            this.layer.shaderIOInfo.instanceVertexCount,
+          this.layer.shaderIOInfo.instanceVertexCount *
+            this.currentInstancedCount,
         ];
         this.model.drawInstances = this.currentInstancedCount;
 
         if (this.layer.shaderIOInfo.instanceVertexCount === 0) {
-          this.model.vertexDrawRange[1] = this.model.drawInstances;
+          this.model.vertexDrawRange[1] =
+            this.layer.shaderIOInfo.instanceVertexCount *
+            this.currentInstancedCount;
         }
       }
     } else {
@@ -263,9 +282,6 @@ export class InstanceAttributeBufferManager<
       );
     }
 
-    // This helps ensure errors get reported in a timely fashion in case this
-    // triggers some massive looping
-    flushEmitOnce();
     return bufferLocations;
   }
 
@@ -359,11 +375,12 @@ export class InstanceAttributeBufferManager<
   }
 
   /**
-   * This resizes our buffers to accommodate more instances and also generates
-   * attribute locations to associate with our instances.
+   * This generates a new buffer of attribute locations to associate instances
+   * with.
    */
   private resizeBuffer() {
     debug("Gathering resize growth amount...");
+    const vertexCount = this.layer.shaderIOInfo.instanceVertexCount;
     // Get the shader io information from the layer to reduce deep references
     const shaderIOInfo = this.layer.shaderIOInfo;
     // This stores how much the buffer will be able to regrow
@@ -372,17 +389,13 @@ export class InstanceAttributeBufferManager<
     // created or expanded
     const attributeToNewBufferLocations = new Map<
       string,
-      IInstanceAttributeBufferLocation[]
+      IVertexAttributeBufferLocation[]
     >();
-    // Keep track of how many instances we had before this operation
-    const previousInstanceAmount = this.maxInstancedCount;
 
     // As an optimization to guarantee the buffer is resized only a single time
-    // for a single changelist we will calculate the necessary growth of the
+    // for a single changelist we  will calculate the necessary growth of the
     // buffer by finding all of the insertions the changelist will cause.
     if (this.changeListContext) {
-      // We will always grow beyond a 1000 units. That way there is room to
-      // prevent immediate resize operations from happening too frequently.
       growth = this.layer.shaderIOInfo.baseBufferGrowthRate;
 
       // We loop through all of the changes to find which operations will result
@@ -407,12 +420,6 @@ export class InstanceAttributeBufferManager<
 
     // If our geometry is not created yet, then it need be made
     if (!this.geometry) {
-      // For our first growth, we will see if the layer specifies some
-      // optimization hints
-      growth = Math.max(
-        growth,
-        this.layer.props.bufferManagement?.optimize?.expectedInstanceCount ?? 0
-      );
       // The buffer grows from 0 to our initial instance count
       this.maxInstancedCount += growth;
       // We generate a new geometry object for the buffer as the geometry
@@ -421,9 +428,29 @@ export class InstanceAttributeBufferManager<
       this.geometry = new Geometry();
 
       // The geometry needs the vertex information (which should be shared
-      // amongst all instances of the layer)
+      // amongst all instances of the layer). When using non-instanced
+      // rendering, this buffer has to grow with the instanced buffers as the
+      // user adds instances to the layer.
       for (const attribute of shaderIOInfo.vertexAttributes) {
         if (attribute.materialAttribute) {
+          // Resize the attribute to account for all of the instancing vertices
+          // it will need.
+          attribute.materialAttribute.resize(
+            vertexCount * this.maxInstancedCount
+          );
+
+          // Repeat the vertex buffer data for every instance we need in the
+          // buffer
+          attribute.materialAttribute.repeatInstances(
+            this.maxInstancedCount - 1,
+            vertexCount
+          );
+
+          // Establish other buffer metrics
+          attribute.materialAttribute.setDynamic(true);
+
+          // Move the shader info attributes generated to our geometry object
+          // for management
           this.geometry.addAttribute(
             attribute.name,
             attribute.materialAttribute
@@ -431,37 +458,97 @@ export class InstanceAttributeBufferManager<
         }
       }
 
-      // Copy over the the index buffer to the new geometry as well. Nothing
-      // special needs to happen to this index buffer to work. It has the same
-      // needs as the simple vertex buffer
-      if (shaderIOInfo.indexBuffer) {
-        if (shaderIOInfo.indexBuffer.materialIndexBuffer) {
-          this.geometry.setIndexBuffer(
-            shaderIOInfo.indexBuffer.materialIndexBuffer
-          );
-        }
+      // We now check to see if this layer is utilizing an index buffer. The
+      // index buffer will need to be sized up and have it's indices repeated
+      // but also change the copied indices to match the new instance within the
+      // buffer.
+      if (shaderIOInfo.indexBuffer?.materialIndexBuffer) {
+        // Move the shader info index buffer generated to our geometry object
+        // for management
+        this.geometry.setIndexBuffer(
+          shaderIOInfo.indexBuffer.materialIndexBuffer
+        );
+
+        // Resize the index buffer to account for all of the instancing vertices
+        // it will need.
+        shaderIOInfo.indexBuffer.materialIndexBuffer.resize(
+          shaderIOInfo.indexBuffer.indexCount * this.maxInstancedCount,
+          // We will have vertices to reference for our original instance and
+          // every new instance added to the buffer
+          vertexCount * this.maxInstancedCount
+        );
+
+        // Repeat the index buffer indices for every instance (this also will
+        // offset the indices to match the instance they are referencing)
+        shaderIOInfo.indexBuffer.materialIndexBuffer.repeatInstances(
+          // Repeat instances more than the original instance in the buffer
+          this.maxInstancedCount - 1,
+          // We indicate how many reference vertices there are for each instance
+          vertexCount,
+          // We indicate how many index vertices there are in the buffer
+          shaderIOInfo.indexBuffer.indexCount,
+          // Copy starting from the second instance in the buffer
+          1
+        );
       }
 
       this.attributes = [];
 
-      // Generate the attributes for the new geometry
+      // We now take the instance attributes and add them as Instanced
+      // Attributes to our geometry
       for (const attribute of shaderIOInfo.instanceAttributes) {
         // We start with enough data in the buffer to accommodate 1024 instances
         const size: number = attribute.size || 0;
+        // Make our buffer for the attribute. This manager is responsible for
+        // creating and managing instance attributes completely.
         const bufferAttribute = new Attribute(
           new Float32Array(0),
           size,
           true,
-          true
+          false
         );
-        bufferAttribute.resize(this.maxInstancedCount);
+
+        // Buffer is the size of the attribute times the number of instances and
+        // then the number of vertices in the mesh (This buffering mode does not
+        // take advantage of instancing. Better rendering performance, drastic
+        // reduction in making dynamic changes.)
+        bufferAttribute.resize(this.maxInstancedCount * vertexCount);
+        // Track our attribute in our geometry
         this.geometry.addAttribute(attribute.name, bufferAttribute);
+
+        // Get our storage for our new buffer locations
+        let newBufferLocations = attributeToNewBufferLocations.get(
+          attribute.name
+        );
+
+        if (!newBufferLocations) {
+          newBufferLocations = [];
+          attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
+        }
+
+        const allLocations = this.allBufferLocations[attribute.name] || [];
+        this.allBufferLocations[attribute.name] = allLocations;
 
         const internalAttribute: IInstanceAttributeInternal<TInstance> =
           Object.assign({}, attribute, {
             uid: uid(),
-            bufferAttribute: bufferAttribute,
+            bufferAttribute,
           });
+
+        for (let i = 0; i < this.maxInstancedCount; ++i) {
+          const newLocation: IVertexAttributeBufferLocation = {
+            attribute: internalAttribute,
+            buffer: {
+              data: bufferAttribute.data,
+            },
+            instanceIndex: i,
+            start: i * size,
+            end: i * size + size,
+          };
+
+          newBufferLocations.push(newLocation);
+          allLocations.push(newLocation);
+        }
 
         // Make an internal instance attribute for tracking
         this.attributes.push(internalAttribute);
@@ -469,89 +556,8 @@ export class InstanceAttributeBufferManager<
 
       // Ensure the draw range covers every instance in the geometry.
       this.geometry.maxInstancedCount = 0;
-    } else {
-      // If the geometry is already created, then we will expand each instanced
-      // attribute to the next growth level and generate the new buffer
-      // locations based on the expansion Since were are resizing the buffer,
-      // let's destroy the old buffer and make one anew
-      this.geometry.rebuild();
-      this.maxInstancedCount += growth;
-      // Ensure attributes is still defined
-      this.attributes = this.attributes || [];
-
-      // Resize all of the attributes to the new size
-      for (const attribute of this.attributes) {
-        // Resize the buffer to fit the new instances.
-        if (attribute.bufferAttribute.count < this.maxInstancedCount) {
-          // OPTIMIZATION:
-          // We double the backing buffer instead of tightly pack fit it. This
-          // allows us to reduce memory allocations and improve overall
-          // performance at the cost of some extra memory useage.
-          if (this.layer.props.bufferManagement?.optimize?.bufferDoubling) {
-            attribute.bufferAttribute.resize(
-              this.maxInstancedCount * 2,
-              previousInstanceAmount
-            );
-          }
-
-          // Otherwise we keep the buffer tightly packed to the instance growth
-          // + the base growth rate
-          else {
-            attribute.bufferAttribute.resize(
-              this.maxInstancedCount,
-              previousInstanceAmount
-            );
-          }
-        }
-      }
-    }
-
-    // Do the work of generating buffer locations for the new buffer size.
-    for (let a = 0, aMax = this.attributes.length; a < aMax; ++a) {
-      const attribute = this.attributes[a];
-      const bufferAttribute = attribute.bufferAttribute;
-      const size: number = attribute.size || 0;
-      const added = this.maxInstancedCount - previousInstanceAmount;
-      // Get the temp storage for new buffer locations
-      let newBufferLocations = attributeToNewBufferLocations.get(
-        attribute.name
-      );
-
-      if (!newBufferLocations) {
-        newBufferLocations = new Array(added);
-        attributeToNewBufferLocations.set(attribute.name, newBufferLocations);
-      }
-
-      // Set up some optimizations for this loop
-      let index = 0;
-
-      for (
-        let i = previousInstanceAmount, end = this.maxInstancedCount;
-        i < end;
-        ++i, ++index
-      ) {
-        newBufferLocations[index] = {
-          attribute,
-          // We set this to the attribute, that way when the attribute creates a
-          // new buffer object, the new reference will automatically be used
-          // which prevents us from having to manually update the reference
-          // across all generated locations.
-          buffer: bufferAttribute,
-          instanceIndex: i,
-          start: i * size,
-          end: i * size + size,
-        };
-      }
-    }
-
-    // Clear out the old model so we can regenerate it with out new geometry
-    // with new buffers.
-    if (this.scene && this.model && this.scene.container) {
-      this.scene.container.remove(this.model);
-    }
-
-    // Ensure material is defined
-    if (!this.material) {
+      // This is the material that is generated for the layer that utilizes all
+      // of the generated and Injected shader IO and shader fragments
       this.material = this.makeLayerMaterial();
 
       // Grab the global uniforms from the material and add it to the uniform's
@@ -561,8 +567,136 @@ export class InstanceAttributeBufferManager<
         const uniform = shaderIOInfo.uniforms[i];
         uniform.materialUniforms.push(this.material.uniforms[uniform.name]);
       }
+    } else {
+      // If the geometry is already created, then we will expand each instanced
+      // attribute to the next growth level and generate the new buffer
+      // locations based on the expansion Since were are resizing the buffer,
+      // let's destroy the old buffer and make one anew
+      this.geometry.rebuild();
+      const previousInstanceAmount = this.maxInstancedCount;
+      this.maxInstancedCount += growth;
+
+      // The geometry needs the vertex information (which should be shared
+      // amongst all instances of the layer) For this strategy, we need to
+      // expand the vertex buffers for every instance as well. And we need to
+      // perform a copy of the data instances to the new buffer (all the data is
+      // repeating and identical per instance)
+      for (const attribute of shaderIOInfo.vertexAttributes) {
+        if (attribute.materialAttribute) {
+          // Resize the buffer to account for the new instances
+          attribute.materialAttribute.resize(
+            vertexCount * this.maxInstancedCount
+          );
+
+          // Repeat the vertex information for each new instance. Vertex
+          // attributes will remain the same for all new instances.
+          attribute.materialAttribute.repeatInstances(
+            this.maxInstancedCount - previousInstanceAmount,
+            vertexCount,
+            previousInstanceAmount
+          );
+        }
+      }
+
+      // We now check to see if this layer is utilizing an index buffer. The
+      // index buffer will need to be sized up and have it's indices repeated
+      // but also change the copied indices to match the new instance within the
+      // buffer.
+      if (shaderIOInfo.indexBuffer && this.geometry.indexBuffer) {
+        const indexVertices = shaderIOInfo.indexBuffer.indexCount;
+
+        // Resize the index buffer to account for the new instances
+        this.geometry.indexBuffer.resize(
+          indexVertices * this.maxInstancedCount,
+          vertexCount * this.maxInstancedCount
+        );
+
+        // Repeat the instance indices within the buffer to account for the
+        // extra vertices that will be referenced.
+        this.geometry.indexBuffer.repeatInstances(
+          this.maxInstancedCount - previousInstanceAmount,
+          vertexCount,
+          indexVertices,
+          previousInstanceAmount
+        );
+      }
+
+      // Ensure attributes is still defined
+      this.attributes = this.attributes || [];
+
+      for (const attribute of this.attributes) {
+        const bufferAttribute = attribute.bufferAttribute;
+        const size: number = attribute.size || 0;
+
+        if (bufferAttribute.data instanceof Float32Array) {
+          // Resize the buffer to account for the new instances
+          attribute.bufferAttribute.resize(
+            this.maxInstancedCount * vertexCount
+          );
+
+          // Get the temp storage for new buffer locations
+          let newBufferLocations = attributeToNewBufferLocations.get(
+            attribute.name
+          );
+
+          // Since we have a new buffer object we are working with, we must
+          // update all of the existing buffer locations to utilize this new
+          // buffer. The locations keep everything else the same, but the buffer
+          // object itself should be updated
+          const allLocations = this.allBufferLocations[attribute.name] || [];
+          this.allBufferLocations[attribute.name] = allLocations;
+
+          for (let k = 0, endk = allLocations.length; k < endk; ++k) {
+            allLocations[k].buffer.data = attribute.bufferAttribute.data;
+          }
+
+          if (!newBufferLocations) {
+            newBufferLocations = [];
+            attributeToNewBufferLocations.set(
+              attribute.name,
+              newBufferLocations
+            );
+          }
+
+          // Set up some optimizations for this loop
+          let newLocation: IVertexAttributeBufferLocation;
+          let index = newBufferLocations.length;
+          const added = this.maxInstancedCount - previousInstanceAmount;
+          newBufferLocations.length += added;
+          allLocations.length += added;
+
+          for (
+            let i = previousInstanceAmount, end = this.maxInstancedCount;
+            i < end;
+            ++i, ++index
+          ) {
+            newLocation = {
+              attribute,
+              buffer: {
+                data: attribute.bufferAttribute.data,
+              },
+              instanceIndex: i,
+              start: i * size,
+              end: i * size + size,
+            };
+
+            newBufferLocations[index] = newLocation;
+            allLocations[i] = newLocation;
+          }
+        }
+      }
+
+      if (this.scene?.container && this.model) {
+        this.scene.container.remove(this.model);
+      }
     }
 
+    if (this.scene && this.model && this.scene.container) {
+      this.scene.container.remove(this.model);
+    }
+
+    // Ensure material is defined
+    this.material = this.material || this.makeLayerMaterial();
     // Remake the model with the generated geometry
     this.model = generateLayerModel(
       this.layer.id,
@@ -592,7 +726,7 @@ export class InstanceAttributeBufferManager<
   private gatherLocationsIntoGroups(
     attributeToNewBufferLocations: Map<
       string,
-      IInstanceAttributeBufferLocation[]
+      IVertexAttributeBufferLocation[]
     >,
     totalNewInstances: number
   ) {
@@ -603,9 +737,9 @@ export class InstanceAttributeBufferManager<
     // Optimize inner loops by pre-fetching lookups by names
     const attributesBufferLocations: {
       attribute: IInstanceAttribute<TInstance>;
-      bufferLocationsForAttribute: IInstanceAttributeBufferLocation[];
+      bufferLocationsForAttribute: IVertexAttributeBufferLocation[];
       childBufferLocations: {
-        location: IInstanceAttributeBufferLocation[];
+        location: IVertexAttributeBufferLocation[];
         // This is one of those odd but extremely necessary optimizations.
         // Normally while assigning these buffers to groups, one would simply
         // use the available items and shift() those items out into the group;
@@ -634,17 +768,17 @@ export class InstanceAttributeBufferManager<
       });
     });
 
-    let allLocations,
-      attribute: IInstanceAttribute<TInstance>,
-      ids: number[],
-      bufferLocationsForAttribute: IInstanceAttributeBufferLocation[],
-      bufferLocation: IInstanceAttributeBufferLocation | undefined,
-      childAttribute: IInstanceAttribute<TInstance>;
+    let allLocations: (typeof attributesBufferLocations)[number];
+    let attribute: IInstanceAttribute<TInstance>;
+    let ids: number[];
+    let bufferLocationsForAttribute: IVertexAttributeBufferLocation[];
+    let bufferLocation: IVertexAttributeBufferLocation | undefined;
+    let childAttribute: IInstanceAttribute<TInstance>;
 
     // Loop through all of the new instances available and gather all of the
     // buffer locations
     for (let i = 0; i < totalNewInstances; ++i) {
-      const group: IInstanceAttributeBufferLocationGroup = {
+      const group: IVertexAttributeBufferLocationGroup = {
         instanceIndex: -1,
         propertyToBufferLocation: {},
       };
@@ -663,7 +797,7 @@ export class InstanceAttributeBufferManager<
             "Instance Attribute Buffer Error",
             (count: number, id: string) => {
               console.warn(
-                `${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`
+                `${id}: There is an error in forming buffer location groups in VertexAttributeBufferManager. Error count: ${count}`
               );
             }
           );
@@ -678,7 +812,7 @@ export class InstanceAttributeBufferManager<
             "Instance Attribute Buffer Error",
             (count: number, id: string) => {
               console.warn(
-                `${id}: There is an error in forming buffer location groups in InstanceAttributeBufferManager. Error count: ${count}`
+                `${id}: There is an error in forming buffer location groups in VertexAttributeBufferManager. Error count: ${count}`
               );
             }
           );
@@ -755,6 +889,9 @@ export class InstanceAttributeBufferManager<
     debug(
       "COMPLETE: Unpacked attribute buffer manager buffer location grouping"
     );
+    // This helps ensure errors get reported in a timely fashion in case this
+    // triggers some massive looping
+    flushEmitOnce();
   }
 
   /**

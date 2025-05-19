@@ -88,9 +88,11 @@ export class ShaderModuleUnit {
   /**
    * Method for the unit to provide instance attributes for the module
    */
-  instanceAttributes?<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>
-  ): IInstanceAttribute<T>[];
+  instanceAttributes:
+    | (<T extends Instance, U extends ILayerProps<T>>(
+        layer: Layer<T, U>
+      ) => IInstanceAttribute<T>[])
+    | undefined;
 
   /**
    * Indicates this unit cannot be modified anymore.
@@ -122,16 +124,20 @@ export class ShaderModuleUnit {
   /**
    * Method so the unit can provide uniforms for the module.
    */
-  uniforms?<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>
-  ): IUniform[];
+  uniforms:
+    | (<T extends Instance, U extends ILayerProps<T>>(
+        layer: Layer<T, U>
+      ) => IUniform[])
+    | undefined;
 
   /**
    * Method so the unit can provide vertex attributes for the module.
    */
-  vertexAttributes?<T extends Instance, U extends ILayerProps<T>>(
-    layer: Layer<T, U>
-  ): IVertexAttribute[];
+  vertexAttributes:
+    | (<T extends Instance, U extends ILayerProps<T>>(
+        layer: Layer<T, U>
+      ) => IVertexAttribute[])
+    | undefined;
 
   /**
    * Default ctor for creating a new Shader Module Unit to be registered with

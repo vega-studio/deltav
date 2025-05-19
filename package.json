@@ -36,14 +36,13 @@
     "@types/seedrandom": "3.0.8",
     "assert": "2.0.0",
     "debug": "3.1.0",
-    "preact": "10.18.1",
     "rand-seed": "1.0.2",
     "fallback-dependencies": "git+ssh://github.com/vega-studio/fallback-dependencies.git#1.0.25"
   },
   "fallbackDependencies": {
     "devops": [
-      "git+ssh://github.com/vega-studio/node-devops.git#5.2.6",
-      "git+ssh://github.com/vega-studio/node-devops-public.git#5.2.6"
+      "git+ssh://github.com/vega-studio/node-devops.git#6.0.8",
+      "git+ssh://github.com/vega-studio/node-devops-public.git#6.0.8"
     ]
   },
   "eslintIgnore": [
@@ -56,17 +55,6 @@
     ]
   },
   "type": "module",
-  "native": {
-    "xcode": {
-      "tools": {
-        "path": "/Applications/Xcode.app/Contents/Developer",
-        "version": {
-          "min": "2397",
-          "max": "2397"
-        }
-      }
-    }
-  },
   "hosts": {
     "127.0.0.1": "local.deltav.com"
   },
@@ -84,6 +72,10 @@
     }
   },
   "dependencies": {
-    "react": "18.2.0"
+    "@types/react": "19.1.4",
+    "@types/react-dom": "19.1.5",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "typescript": "5.8.3"
   }
 }

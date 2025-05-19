@@ -1,5 +1,5 @@
-import { Camera2D } from "./camera-2d";
-import { Control2D } from "./control-2d";
+import { Camera2D } from "./camera-2d.js";
+import { Control2D } from "./control-2d.js";
 export interface IReferenceControl2DOptions {
     /** This is the base camera to monitor */
     base: Control2D;

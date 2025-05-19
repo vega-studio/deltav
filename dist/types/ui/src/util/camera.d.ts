@@ -1,6 +1,6 @@
-import { Vec3 } from "../math/vector";
-import { Mat4x4 } from "../math/matrix";
-import { Transform } from "../3d/scene-graph/transform";
+import { Transform } from "../3d/scene-graph/transform.js";
+import { Mat4x4 } from "../math/matrix.js";
+import { Vec3 } from "../math/vector.js";
 export declare enum CameraProjectionType {
     PERSPECTIVE = 0,
     ORTHOGRAPHIC = 1

@@ -1,5 +1,5 @@
 import { type Vec2 } from "../../../src/index.js";
-import { LineSegments } from "./line-segment";
+import { LineSegments } from "./line-segment.js";
 /**
  * Contains various line sweep tests for detecting intersections between
  * objects.

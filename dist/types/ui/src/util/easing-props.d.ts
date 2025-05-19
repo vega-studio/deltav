@@ -1,5 +1,5 @@
-import { IEasingProps } from "../types";
-import { Vec } from "../math/vector";
+import { Vec } from "../math/vector.js";
+import { IEasingProps } from "../types.js";
 /**
  * This object represents the data associated with easing. It provides the
  * information needed to make an easing equation execute to completion. It also

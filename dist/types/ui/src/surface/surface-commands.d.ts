@@ -1,6 +1,6 @@
-import { View } from "./view";
-import { RenderTarget } from "../gl/render-target";
-import { Surface } from "./surface";
+import { RenderTarget } from "../gl/render-target.js";
+import { Surface } from "./surface.js";
+import { View } from "./view.js";
 export interface ISurfaceCommandsOptions {
     surface: Surface;
 }

@@ -1,9 +1,9 @@
 import React from "react";
 import { IView2DProps } from "../../../2d";
-import { ILayerMaterialOptions, IUniform } from "../../../types";
-import { IPartialViewJSX } from "../scene/view-jsx";
 import { IRenderTextureResource } from "../../../resources";
-import { PostProcessLayer } from "./layer/post-process-layer";
+import { ILayerMaterialOptions, IUniform } from "../../../types.js";
+import { IPartialViewJSX } from "../scene/view-jsx.js";
+import { PostProcessLayer } from "./layer/post-process-layer.js";
 export interface IPostProcessJSX {
     /**
      * This specifies the texture buffers the post processing shaders will

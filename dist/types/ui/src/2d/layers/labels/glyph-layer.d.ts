@@ -1,9 +1,9 @@
-import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { IFontResourceRequest } from "../../../resources";
-import { GlyphInstance } from "./glyph-instance";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ScaleMode } from "../../types";
+import { IFontResourceRequest } from "../../../resources";
+import { ILayerMaterialOptions, IShaderInitialization } from "../../../types.js";
+import { ScaleMode } from "../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { GlyphInstance } from "./glyph-instance.js";
 /**
  * Options available to this layer as props.
  */

@@ -1,6 +1,6 @@
-import { BorderInstance } from "./border-instance";
-import { ILabelInstanceOptions, LabelInstance } from "./label-instance";
 import { Vec1Compat } from "../../../math";
+import { BorderInstance } from "./border-instance.js";
+import { ILabelInstanceOptions, LabelInstance } from "./label-instance.js";
 /**
  * Alignment mode for text within a region.
  */

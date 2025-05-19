@@ -1,6 +1,6 @@
-import { type ReadonlyVec3Compat, Vec3, Vec4 } from "./vector";
-import { EulerOrder, EulerRotation, type ReadonlyEulerRotation } from "../types";
-import { Mat3x3, Mat4x4, type ReadonlyMat3x3, type ReadonlyMat4x4 } from "./matrix";
+import { EulerOrder, EulerRotation, type ReadonlyEulerRotation } from "../types.js";
+import { Mat3x3, Mat4x4, type ReadonlyMat3x3, type ReadonlyMat4x4 } from "./matrix.js";
+import { type ReadonlyVec3Compat, Vec3, Vec4 } from "./vector.js";
 /** Expresses a quaternion [scalar, i, j, k] */
 export type Quaternion = Vec4;
 /** Expresses a readonly quaternion [scalar, i, j, k] */

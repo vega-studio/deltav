@@ -1,15 +1,16 @@
-import CursorEdgePointer from "./edge-pointer.svg";
-import CursorEndPointer from "./end-pointer.svg";
 import React from "react";
+
 import {
   type IMouseInteraction,
   length2,
   subtract2,
-  vec2,
   type Vec2,
+  vec2,
 } from "../../../src";
-import { LineSegments } from "./line-segment";
-import { LineSweep } from "./line-sweep";
+import CursorEdgePointer from "./edge-pointer.svg";
+import CursorEndPointer from "./end-pointer.svg";
+import { LineSegments } from "./line-segment.js";
+import { LineSweep } from "./line-sweep.js";
 
 export enum CursorMode {
   MOVE_END = "move_end",
@@ -107,7 +108,7 @@ export class CursorUtil {
    * mode, the callback will be called with the mode applied to the executeMode
    * property.
    */
-  static willStartDragMode(cb: Function) {
+  static willStartDragMode(cb: () => void) {
     // Check if we met the requirements to begin
     if (
       this.dragDelta.length > this.executeOnDragModeThreshold &&

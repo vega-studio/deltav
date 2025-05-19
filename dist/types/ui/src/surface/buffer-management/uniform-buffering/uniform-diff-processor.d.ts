@@ -1,8 +1,8 @@
-import { BaseDiffProcessor } from "../base-diff-processor.js";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
-import { ILayerProps } from "../../layer.js";
 import { Instance } from "../../../instance-provider/index.js";
 import { InstanceDiff } from "../../../types.js";
+import { ILayerProps } from "../../layer.js";
+import { BaseDiffProcessor } from "../base-diff-processor.js";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
 import { IUniformBufferLocation } from "./uniform-buffer-manager.js";
 /**
  * Manages diffs for layers that are utilizing the base uniform instancing buffer strategy.

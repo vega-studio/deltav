@@ -1,7 +1,6 @@
-/// <reference types="react" />
 import { IView2DProps } from "../../../../2d";
-import { ILayerMaterialOptions } from "../../../../types";
-import type { IPartialViewJSX } from "../../scene/view-jsx";
+import { ILayerMaterialOptions } from "../../../../types.js";
+import type { IPartialViewJSX } from "../../scene/view-jsx.js";
 export interface IDrawJSX {
     /**
      * Specifies the resource taken in that will be blurred for the output.

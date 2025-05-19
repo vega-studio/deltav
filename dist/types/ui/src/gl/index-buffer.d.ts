@@ -1,4 +1,4 @@
-import { GLProxy } from "./gl-proxy";
+import { GLProxy } from "./gl-proxy.js";
 /**
  * Defines an index buffer applied to a geometry object. This keeps track of a
  * buffer filled with the indices that defines the vertex ordering within the

@@ -7,8 +7,8 @@
  *
  * Thus, we pack down the attributes into appropriate block indices and slots.
  */
-import { IInstanceAttribute } from "../../types";
-import { Instance } from "../../instance-provider/instance";
+import { Instance } from "../../instance-provider/instance.js";
+import { IInstanceAttribute } from "../../types.js";
 /**
  * This is the packing method that calculates the block and block index best
  * suited for an attribute so a layer developer does not have to worry about it.

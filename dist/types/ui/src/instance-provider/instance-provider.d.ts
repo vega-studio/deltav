@@ -1,5 +1,5 @@
-import { IInstanceProvider, InstanceDiff } from "../types";
-import { Instance } from "./instance";
+import { IInstanceProvider, InstanceDiff } from "../types.js";
+import { Instance } from "./instance.js";
 /**
  * This is an optimized provider, that can provide instances that use the internal observable system
  * to deliver updates to the framework.

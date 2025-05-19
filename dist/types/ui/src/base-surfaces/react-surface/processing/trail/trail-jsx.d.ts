@@ -1,8 +1,7 @@
-/// <reference types="react" />
-import { ILayerMaterialOptions } from "../../../../types";
-import { IPartialViewJSX } from "../../scene/view-jsx";
 import { IView2DProps } from "../../../../2d";
 import type { Vec2 } from "../../../../math";
+import { ILayerMaterialOptions } from "../../../../types.js";
+import { IPartialViewJSX } from "../../scene/view-jsx.js";
 export interface ITrailJSX {
     /**
      * Specifies the texture that has the previous trail and the texture to add to

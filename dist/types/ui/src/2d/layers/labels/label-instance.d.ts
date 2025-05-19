@@ -1,9 +1,9 @@
-import { Anchor } from "../../types";
-import { GlyphInstance } from "./glyph-instance";
-import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
-import { Size } from "../../../types";
-import { TextAreaInstance } from "./text-area-instance";
+import { IInstanceOptions, Instance } from "../../../instance-provider/instance.js";
 import { Vec2 } from "../../../math";
+import { Size } from "../../../types.js";
+import { Anchor } from "../../types.js";
+import { GlyphInstance } from "./glyph-instance.js";
+import { TextAreaInstance } from "./text-area-instance.js";
 export interface ILabelInstanceOptions extends IInstanceOptions {
     /**
      * The point on the label which will be placed in world space via the x, y coords. This is also the point

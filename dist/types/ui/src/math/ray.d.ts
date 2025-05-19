@@ -1,4 +1,4 @@
-import { type ReadonlyVec3Compat, Vec3 } from "../math/vector";
+import { type ReadonlyVec3Compat, Vec3 } from "../math/vector.js";
 /**
  * Represents a ray starting from some origin eminating in a direction. [Origin,
  * Direction]. The direction is a unit vector so:

@@ -1,4 +1,4 @@
-import { Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from "../ui/src/math/vector";
+import { Vec1, Vec1Compat, Vec2, Vec2Compat, Vec3, Vec3Compat, Vec4, Vec4Compat } from "../ui/src/math/vector.js";
 export declare function fail1(actual: Vec1Compat, expected: Vec1Compat): string;
 export declare function fail2(actual: Vec2Compat, expected: Vec2Compat): string;
 export declare function fail3(actual: Vec3Compat, expected: Vec3Compat): string;

@@ -1,12 +1,12 @@
-import { Vec2 } from "../math/vector";
-import { Bounds } from "../math/primitives";
 import { CanvasElement } from "../gl";
-import { EventManager } from "./event-manager";
-import { IEventInteraction, IMouseInteraction, IMouseMetrics, IMultiTouchMetrics, ISingleTouchInteraction, ITouchMetrics, IWheelMetrics } from "./types";
-import { IViewProps, View } from "../surface/view";
-import { LayerScene } from "../surface/layer-scene";
-import { QuadTree } from "../util/quad-tree";
-import { Surface } from "../surface/surface";
+import { Bounds } from "../math/primitives";
+import { Vec2 } from "../math/vector.js";
+import { LayerScene } from "../surface/layer-scene.js";
+import { Surface } from "../surface/surface.js";
+import { IViewProps, View } from "../surface/view.js";
+import { QuadTree } from "../util/quad-tree.js";
+import { EventManager } from "./event-manager.js";
+import { IEventInteraction, IMouseInteraction, IMouseMetrics, IMultiTouchMetrics, ISingleTouchInteraction, ITouchMetrics, IWheelMetrics } from "./types.js";
 /**
  * This manages mouse events on the provided canvas and provides some higher
  * level interactions with the surface.

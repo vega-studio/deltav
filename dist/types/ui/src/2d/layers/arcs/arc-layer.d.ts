@@ -1,7 +1,7 @@
-import { ArcInstance } from "./arc-instance";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
+import { ILayerMaterialOptions, IShaderInitialization } from "../../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { ArcInstance } from "./arc-instance.js";
 export declare enum ArcScaleType {
     /** All dimensions are within world space */
     NONE = 0,

@@ -1,5 +1,5 @@
-import { IRectangleInstanceOptions, RectangleInstance } from "../rectangle/rectangle-instance";
 import { Vec2 } from "../../../math";
+import { IRectangleInstanceOptions, RectangleInstance } from "../rectangle/rectangle-instance.js";
 export interface IBorderInstanceOptions extends IRectangleInstanceOptions {
     /** Sets the fontScale of textArea the border locates */
     fontScale?: number;

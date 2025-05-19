@@ -1,9 +1,9 @@
-import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
-import { BaseResourceManager } from "./base-resource-manager";
-import { ILayerProps, Layer } from "../surface/layer";
-import { Instance } from "../instance-provider/instance";
-import { InstanceIOValue, IResourceContext, IResourceType } from "../types";
 import { WebGLRenderer } from "../gl";
+import { Instance } from "../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../surface/layer.js";
+import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion.js";
+import { InstanceIOValue, IResourceContext, IResourceType } from "../types.js";
+import { BaseResourceManager } from "./base-resource-manager.js";
 /**
  * This is the manager of all Resource Managers. This handles registering managers for various resource types
  * and delegates resource requests to the appropriate manager.

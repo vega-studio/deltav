@@ -1,6 +1,6 @@
 import { Mat4x4, Quaternion, Vec3 } from "../../math";
-import { Instance3D } from "./instance-3d";
-import { TreeNode } from "./tree-node";
+import { Instance3D } from "./instance-3d.js";
+import { TreeNode } from "./tree-node.js";
 /**
  * The initial properties of the transform on creation
  */

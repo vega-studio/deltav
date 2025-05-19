@@ -1,10 +1,10 @@
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { ILayerProps, Layer, LayerInitializer } from "./layer";
-import { Instance } from "../instance-provider/instance";
-import { IViewProps, View, ViewInitializer } from "./view";
-import { ReactiveDiff } from "../util/reactive-diff";
-import { Scene } from "../gl/scene";
-import { Surface } from "./surface";
+import { Scene } from "../gl/scene.js";
+import { Instance } from "../instance-provider/instance.js";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key.js";
+import { ReactiveDiff } from "../util/reactive-diff.js";
+import { ILayerProps, Layer, LayerInitializer } from "./layer.js";
+import { Surface } from "./surface.js";
+import { IViewProps, View, ViewInitializer } from "./view.js";
 /**
  * Defines the input for an available scene layers can add themselves to. Each scene can be rendered with multiple
  * views.

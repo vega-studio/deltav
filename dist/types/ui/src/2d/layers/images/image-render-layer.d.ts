@@ -1,8 +1,8 @@
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { ImageInstance } from "./image-instance";
 import { LayerScene, Surface } from "../../../surface";
+import { ILayerMaterialOptions, IShaderInitialization } from "../../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { ImageInstance } from "./image-instance.js";
 export interface IImageRenderLayerProps<TInstance extends ImageInstance> extends ILayer2DProps<TInstance> {
     /** The id of the atlas to load resources into */
     atlas?: string;

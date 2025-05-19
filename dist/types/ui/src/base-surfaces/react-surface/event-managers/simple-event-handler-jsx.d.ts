@@ -1,7 +1,7 @@
 import React from "react";
 import { EventManager } from "../../../event-management/event-manager.js";
-import { IEventManagerJSX } from "./as-event-manager.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
+import { IEventManagerJSX } from "./as-event-manager.js";
 export interface ISimpleEventHandlerJSX extends Partial<IEventManagerJSX> {
     handlers: Partial<EventManager>;
 }

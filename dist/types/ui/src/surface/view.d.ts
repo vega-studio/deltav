@@ -1,16 +1,15 @@
-import { AbsolutePosition } from "../math/primitives/absolute-position";
-import { BaseProjection, SimpleProjection } from "../math/base-projection";
-import { BaseResourceOptions } from "../resources/base-resource-manager";
-import { Bounds } from "../math/primitives/bounds";
-import { Camera } from "../util/camera";
-import { Color, FragmentOutputType, Omit } from "../types";
-import { IColorBufferResource } from "../resources/color-buffer";
-import { GLState, RenderTarget } from "../gl";
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { IRenderTextureResource } from "../resources/texture/render-texture";
-import { LayerScene } from "./layer-scene";
-import { ResourceRouter } from "../resources/resource-router";
-import { Vec2 } from "../math";
+import { GLState, RenderTarget } from "../gl/index.js";
+import { BaseProjection, SimpleProjection } from "../math/base-projection.js";
+import { type AbsolutePosition, Vec2 } from "../math/index.js";
+import { Bounds } from "../math/primitives/bounds.js";
+import { BaseResourceOptions } from "../resources/base-resource-manager.js";
+import { IColorBufferResource } from "../resources/color-buffer/index.js";
+import { ResourceRouter } from "../resources/resource-router.js";
+import { IRenderTextureResource } from "../resources/texture/render-texture.js";
+import { Color, FragmentOutputType, Omit } from "../types.js";
+import { Camera } from "../util/camera.js";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key.js";
+import { LayerScene } from "./layer-scene.js";
 export declare enum ClearFlags {
     COLOR = 1,
     DEPTH = 2,

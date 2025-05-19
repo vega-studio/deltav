@@ -1,11 +1,11 @@
-import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { BaseResourceManager, BaseResourceOptions } from "../base-resource-manager";
-import { IFontResourceOptions } from "./font-manager";
-import { FontMap } from "./font-map";
-import { IFontResourceRequest } from "./font-resource-request";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { InstanceIOValue, IResourceContext } from "../../types";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion.js";
+import { InstanceIOValue, IResourceContext } from "../../types.js";
+import { BaseResourceManager, BaseResourceOptions } from "../base-resource-manager.js";
+import { IFontResourceOptions } from "./font-manager.js";
+import { FontMap } from "./font-map.js";
+import { IFontResourceRequest } from "./font-resource-request.js";
 export interface IFontResourceRequestInternal extends IFontResourceRequest {
     /**
      * This is used to flag a request object as requested so that the same request

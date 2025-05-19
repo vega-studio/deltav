@@ -1,11 +1,11 @@
-import { Anchor, AnchorType, ScaleMode } from "../../types";
+import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
   Instance,
-} from "../../../instance-provider/instance";
-import { makeObservable, observable } from "../../../instance-provider";
-import { Vec2, type Vec4 } from "../../../math/vector";
-import type { Color } from "../../../types";
+} from "../../../instance-provider/instance.js";
+import { Vec2, type Vec4 } from "../../../math/vector.js";
+import type { Color } from "../../../types.js";
+import { Anchor, AnchorType, ScaleMode } from "../../types.js";
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {
   /**
@@ -134,7 +134,7 @@ export class RectangleInstance extends Instance {
     this.outlineColor = options.outlineColor || this.outlineColor;
 
     // Make sure the anchor is set to the appropriate location
-    options.anchor && this.setAnchor(options.anchor);
+    if (options.anchor) this.setAnchor(options.anchor);
   }
 
   get anchor() {

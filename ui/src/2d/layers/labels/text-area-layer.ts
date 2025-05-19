@@ -1,25 +1,25 @@
-import { add2, copy4, scale2, Vec, Vec2 } from "../../../math/vector";
-import { AnchorType, ScaleMode } from "../../types";
-import { BorderInstance } from "./border-instance";
-import { BorderLayer } from "./border-layer";
-import { createChildLayer } from "../../../util/create-layer";
+import { InstanceProvider } from "../../../instance-provider/instance-provider.js";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method.js";
+import { add2, copy4, scale2, Vec, Vec2 } from "../../../math/vector.js";
 import { fontRequest, IFontResourceRequest } from "../../../resources";
-import { GlyphInstance } from "./glyph-instance";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
-import { IGlyphLayerOptions } from "./glyph-layer";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ILayerConstructionClass } from "../../../surface/layer";
-import { InstanceDiffType, newLineRegEx } from "../../../types";
-import { InstanceProvider } from "../../../instance-provider/instance-provider";
-import { LabelInstance } from "./label-instance";
-import { LabelLayer } from "./label-layer";
+import { ILayerConstructionClass } from "../../../surface/layer.js";
+import { InstanceDiffType, newLineRegEx } from "../../../types.js";
+import { createChildLayer } from "../../../util/create-layer.js";
+import { AnchorType, ScaleMode } from "../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { BorderInstance } from "./border-instance.js";
+import { BorderLayer } from "./border-layer";
+import { GlyphInstance } from "./glyph-instance.js";
+import { IGlyphLayerOptions } from "./glyph-layer.js";
+import { LabelInstance } from "./label-instance.js";
+import { LabelLayer } from "./label-layer.js";
 import {
   NewLineCharacterMode,
   TextAlignment,
   TextAreaInstance,
   TextAreaLabel,
   WordWrap,
-} from "./text-area-instance";
+} from "./text-area-instance.js";
 
 /** CalculatesanchorCalulater the ancho position of a textArea based on AnchorType */
 const anchorCalulater: {

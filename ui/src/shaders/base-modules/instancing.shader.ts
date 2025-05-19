@@ -1,11 +1,11 @@
+import { Instance } from "../../instance-provider/instance.js";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
   LayerBufferType,
   ShaderInjectionTarget,
   VertexAttributeSize,
-} from "../../types";
-import { Instance } from "../../instance-provider/instance";
+} from "../../types.js";
 import { ShaderModule } from "../processing";
 
 const doc = `

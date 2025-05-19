@@ -1,15 +1,15 @@
-import { BaseDiffProcessor } from "./base-diff-processor.js";
-import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base.js";
-import { IBufferLocationGroup } from "./buffer-manager-base.js";
-import { ILayerProps, ILayerShaderIOInfo } from "../layer.js";
+import { Instance } from "../../instance-provider/instance.js";
+import { ResourceRouter } from "../../resources/index.js";
 import {
   INonePickingMetrics,
   ISinglePickingMetrics,
   LayerBufferType,
 } from "../../types.js";
-import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, ILayerShaderIOInfo } from "../layer.js";
+import { BaseDiffProcessor } from "./base-diff-processor.js";
+import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base.js";
+import { IBufferLocationGroup } from "./buffer-manager-base.js";
 import { InstanceAttributeDiffProcessor } from "./instance-attribute-buffering/instance-attribute-diff-processor.js";
-import { ResourceRouter } from "../../resources/index.js";
 import { UniformDiffProcessor } from "./uniform-buffering/uniform-diff-processor.js";
 import { VertexAttributeDiffProcessor } from "./vertex-attribute-buffering/vertex-attribute-diff-processor.js";
 

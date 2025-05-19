@@ -1,7 +1,7 @@
-import { ILayerProps, Layer } from "./layer";
-import { Instance } from "../instance-provider/instance";
-import { InstanceProvider } from "../instance-provider/instance-provider";
-import { Surface } from "./surface";
+import { Instance } from "../instance-provider/instance.js";
+import { InstanceProvider } from "../instance-provider/instance-provider.js";
+import { ILayerProps, Layer } from "./layer.js";
+import { Surface } from "./surface.js";
 
 export type CommandCallback = (surface: Surface) => void;
 

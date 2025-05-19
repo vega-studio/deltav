@@ -1,6 +1,6 @@
-import { GaussianBlur } from "./gaussian-blur";
-import { scaleLinear } from "./scale-linear";
-import type { Vec2 } from "../../../src";
+import type { Vec2 } from "../../../src/math/index.js";
+import { GaussianBlur } from "./gaussian-blur.js";
+import { scaleLinear } from "./scale-linear.js";
 
 const { abs, floor, max, min, random } = Math;
 

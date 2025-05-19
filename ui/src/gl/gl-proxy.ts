@@ -1,6 +1,9 @@
 import Debug from "debug";
-import { Attribute } from "./attribute";
-import { ColorBuffer } from "./color-buffer";
+
+import { isString } from "../types.js";
+import { Attribute } from "./attribute.js";
+import { ColorBuffer } from "./color-buffer.js";
+import { Geometry } from "./geometry.js";
 import {
   colorBufferFormat,
   depthBufferFormat,
@@ -12,18 +15,16 @@ import {
   stencilBufferFormat,
   texelFormat,
   wrapMode,
-} from "./gl-decode";
-import { Geometry } from "./geometry";
-import { GLContext, IExtensions } from "./types";
-import { GLSettings } from "./gl-settings";
-import { GLState } from "./gl-state";
-import { isString } from "../types";
-import { Material } from "./material";
-import { Model } from "./model";
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
-import { WebGLStat } from "./webgl-stat";
-import type { IndexBuffer } from "./index-buffer";
+} from "./gl-decode.js";
+import { GLSettings } from "./gl-settings.js";
+import { GLState } from "./gl-state.js";
+import type { IndexBuffer } from "./index-buffer.js";
+import { Material } from "./material.js";
+import { Model } from "./model.js";
+import { RenderTarget } from "./render-target.js";
+import { Texture } from "./texture.js";
+import { GLContext, IExtensions } from "./types.js";
+import { WebGLStat } from "./webgl-stat.js";
 
 const debug = Debug("performance");
 

@@ -1,7 +1,7 @@
 import { Geometry } from "../../gl";
-import { type IIndexBufferInternal, IVertexAttributeInternal } from "../../types";
-import { Instance } from "../../instance-provider/instance";
-import { Layer } from "../layer";
+import { Instance } from "../../instance-provider/instance.js";
+import { type IIndexBufferInternal, IVertexAttributeInternal } from "../../types.js";
+import { Layer } from "../layer.js";
 /**
  * Produces the initial geometry for the vertex attributes and index buffers.
  *

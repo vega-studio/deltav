@@ -1,12 +1,12 @@
+import { Instance } from "../../instance-provider/index.js";
+import { InstanceDiff } from "../../types.js";
+import { ILayerProps } from "../layer.js";
 import {
   BufferManagerBase,
   IBufferLocation,
   IBufferLocationGroup,
 } from "./buffer-manager-base.js";
 import { IInstanceDiffManagerTarget } from "./instance-diff-manager.js";
-import { ILayerProps } from "../layer.js";
-import { Instance } from "../../instance-provider/index.js";
-import { InstanceDiff } from "../../types.js";
 
 /**
  * Base requirements for handling diffs from a layer.

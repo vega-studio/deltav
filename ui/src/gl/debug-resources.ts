@@ -1,8 +1,8 @@
-import { Attribute } from "./attribute";
-import { Geometry } from "./geometry";
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
-import { WebGLRenderer } from "./webgl-renderer";
+import { Attribute } from "./attribute.js";
+import { Geometry } from "./geometry.js";
+import { RenderTarget } from "./render-target.js";
+import { Texture } from "./texture.js";
+import { WebGLRenderer } from "./webgl-renderer.js";
 
 const positionData = new Float32Array([
   // Top tri

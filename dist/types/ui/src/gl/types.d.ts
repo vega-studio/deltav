@@ -1,5 +1,5 @@
 import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../math";
-import { Texture } from "./texture";
+import { Texture } from "./texture.js";
 export declare enum MaterialUniformType {
     /** A single float */
     FLOAT = 0,

@@ -1,4 +1,4 @@
-import { PascalTriangle } from "./pascal-triangle";
+import { PascalTriangle } from "./pascal-triangle.js";
 
 export interface IGaussianBlurOptions {
   /** Number of samples taken per data slot */

@@ -1,7 +1,6 @@
-/// <reference types="react" />
-import { type ILayerMaterialOptions } from "../../../../types";
-import { IPartialViewJSX } from "../../scene/view-jsx";
 import { IView2DProps } from "../../../../2d";
+import { type ILayerMaterialOptions } from "../../../../types.js";
+import { IPartialViewJSX } from "../../scene/view-jsx.js";
 export interface IBloomJSX {
     /** Name to apply to the scenes this produces */
     name?: string;

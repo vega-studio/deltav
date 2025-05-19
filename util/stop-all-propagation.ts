@@ -22,7 +22,7 @@ export function stopPropagation(
       anyEvent.nativeEvent.preventDefault?.();
     }
     return false;
-  } catch (err) {
+  } catch (_err) {
     // no - op
     return false;
   }

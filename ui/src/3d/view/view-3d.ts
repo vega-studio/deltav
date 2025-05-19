@@ -1,8 +1,12 @@
-import { Bounds } from "../../math/primitives/bounds";
-import { Camera, CameraProjectionType, isPerspective } from "../../util/camera";
+import { Bounds } from "../../math/primitives/bounds.js";
 import { IViewProps, View } from "../../surface";
-import { LayerScene } from "../../surface/layer-scene";
-import { Projection3D } from "./projection-3d";
+import { LayerScene } from "../../surface/layer-scene.js";
+import {
+  Camera,
+  CameraProjectionType,
+  isPerspective,
+} from "../../util/camera.js";
+import { Projection3D } from "./projection-3d.js";
 
 /**
  * Defines the input metrics of a view for a scene.

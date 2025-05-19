@@ -1,6 +1,6 @@
-import { ILayerProps, Layer } from "./layer";
-import { Instance } from "../instance-provider/instance";
-import { Surface } from "./surface";
+import { Instance } from "../instance-provider/instance.js";
+import { ILayerProps, Layer } from "./layer.js";
+import { Surface } from "./surface.js";
 export type CommandCallback = (surface: Surface) => void;
 export interface ICommandLayerProps<T extends Instance> extends ILayerProps<T> {
     commands: CommandCallback;

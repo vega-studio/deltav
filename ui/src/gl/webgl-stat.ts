@@ -146,7 +146,7 @@ function initStats() {
       }
 
       return null;
-    } catch (e) {
+    } catch (_e) {
       return null;
     }
   }

@@ -1,10 +1,10 @@
-import GaussVerticalBlurFS from "./gauss-vertical-blur-jsx.fs";
 import {
   FragmentOutputType,
   ShaderInjectionTarget,
   UniformSize,
 } from "../../../../types.js";
 import { PostProcessJSX } from "../post-process-jsx.js";
+import GaussVerticalBlurFS from "./gauss-vertical-blur-jsx.fs";
 
 export interface IGaussVerticalBlurJSX {
   /** Specifies the resource taken in that will be blurred for the output */

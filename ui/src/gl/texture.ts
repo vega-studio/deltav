@@ -1,7 +1,7 @@
-import { GLProxy } from "./gl-proxy";
-import { GLSettings } from "./gl-settings";
-import { Omit } from "../types";
-import { uid } from "../util/uid";
+import { Omit } from "../types.js";
+import { uid } from "../util/uid.js";
+import { GLProxy } from "./gl-proxy.js";
+import { GLSettings } from "./gl-settings.js";
 
 /**
  * This is the options to apply to a texture

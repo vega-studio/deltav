@@ -1,9 +1,10 @@
 import React from "react";
+
 import { Camera2D, View2D } from "../../../2d";
 import { CommandCallback, CommandLayer } from "../../../surface";
-import { LayerJSX } from "../scene/layer-jsx";
+import { LayerJSX } from "../scene/layer-jsx.js";
 import { SceneJSX } from "../scene/scene-jsx.jsx";
-import { ViewJSX } from "../scene/view-jsx";
+import { ViewJSX } from "../scene/view-jsx.js";
 
 interface ICommandsJSX {
   /**

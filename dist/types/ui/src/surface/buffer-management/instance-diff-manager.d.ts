@@ -1,10 +1,10 @@
+import { Instance } from "../../instance-provider/instance.js";
+import { ResourceRouter } from "../../resources/index.js";
+import { INonePickingMetrics, ISinglePickingMetrics, LayerBufferType } from "../../types.js";
+import { ILayerProps, ILayerShaderIOInfo } from "../layer.js";
 import { BaseDiffProcessor } from "./base-diff-processor.js";
 import { BufferManagerBase, IBufferLocation } from "./buffer-manager-base.js";
 import { IBufferLocationGroup } from "./buffer-manager-base.js";
-import { ILayerProps, ILayerShaderIOInfo } from "../layer.js";
-import { INonePickingMetrics, ISinglePickingMetrics, LayerBufferType } from "../../types.js";
-import { Instance } from "../../instance-provider/instance.js";
-import { ResourceRouter } from "../../resources/index.js";
 /** Signature of a method that handles a diff */
 export type DiffHandler<TInstance extends Instance, TProps extends ILayerProps<TInstance>> = (manager: BaseDiffProcessor<TInstance, TProps>, instance: TInstance, propIds: number[], bufferLocations?: IBufferLocation | IBufferLocationGroup<IBufferLocation>) => void;
 /** A set of diff handling methods in this order [change, add, remove] */

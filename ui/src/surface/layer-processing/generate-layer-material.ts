@@ -1,17 +1,17 @@
 import {
-  IInstancingUniform,
-  IUniform,
-  OutputFragmentShader,
-  UniformSize,
-} from "../../types";
-import { ILayerProps, Layer } from "../layer";
-import { Instance } from "../../instance-provider/instance";
-import {
   Material,
   MaterialFragmentShader,
   MaterialOptions,
   MaterialUniformType,
-} from "../../gl";
+} from "../../gl/index.js";
+import { Instance } from "../../instance-provider/instance.js";
+import {
+  IInstancingUniform,
+  IUniform,
+  OutputFragmentShader,
+  UniformSize,
+} from "../../types.js";
+import { ILayerProps, Layer } from "../layer.js";
 
 const UNIFORM_SIZE_TO_MATERIAL_TYPE: { [key: number]: MaterialUniformType } = {
   [UniformSize.ONE]: MaterialUniformType.FLOAT,

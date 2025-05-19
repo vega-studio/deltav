@@ -1,10 +1,10 @@
-import React from "react";
-import { BaseResourceOptions } from "../../resources/index.js";
-import { EventManager } from "../../event-management/index.js";
-import { ILayerProps, ISceneOptions, ISurfaceOptions, IViewProps, LayerInitializer, Surface, ViewInitializer } from "../../surface/index.js";
-import { Instance } from "../../instance-provider/instance.js";
-import { PromiseResolver } from "../../util/promise-resolver.js";
 import "./surface-jsx.scss";
+import React from "react";
+import { EventManager } from "../../event-management/index.js";
+import { Instance } from "../../instance-provider/instance.js";
+import { BaseResourceOptions } from "../../resources/index.js";
+import { ILayerProps, ISceneOptions, ISurfaceOptions, IViewProps, LayerInitializer, Surface, ViewInitializer } from "../../surface/index.js";
+import { PromiseResolver } from "../../util/promise-resolver.js";
 export interface ISurfaceJSX {
     /** Accepts children */
     children?: React.ReactNode;

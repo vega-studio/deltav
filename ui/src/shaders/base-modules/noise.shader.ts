@@ -1,7 +1,7 @@
+import { ShaderInjectionTarget } from "../../types.js";
+import { ShaderModule } from "../processing";
 import SimplexNoise2DFS from "./shader-fragments/simplex-noise-2d.fs";
 import SimplexNoise3DFS from "./shader-fragments/simplex-noise-3d.fs";
-import { ShaderInjectionTarget } from "../../types";
-import { ShaderModule } from "../processing";
 
 ShaderModule.register({
   moduleId: "simplexNoise3D",

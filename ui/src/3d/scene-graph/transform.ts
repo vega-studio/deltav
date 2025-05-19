@@ -25,10 +25,10 @@ import {
   V3R,
   Vec3,
 } from "../../math";
-import { Instance3D } from "./instance-3d";
-import { resolveUpdate, scheduleUpdate } from "./transform-base";
-import { TreeNode } from "./tree-node";
-import { UpdateProp } from "../../types";
+import { UpdateProp } from "../../types.js";
+import { Instance3D } from "./instance-3d.js";
+import { resolveUpdate, scheduleUpdate } from "./transform-base.js";
+import { TreeNode } from "./tree-node.js";
 
 /**
  * The initial properties of the transform on creation

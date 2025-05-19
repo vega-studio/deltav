@@ -1,5 +1,5 @@
-import { Bounds } from "../math/primitives/bounds";
-import { isVec2, Vec2 } from "../math/vector";
+import { Bounds } from "../math/primitives/bounds.js";
+import { isVec2, Vec2 } from "../math/vector.js";
 
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and
@@ -8,27 +8,6 @@ const maxPopulation = 5;
 const maxDepth = 10;
 
 export type IQuadTreeItem = Bounds<any>;
-
-/**
- * This filters a quad tree query by type
- *
- * @export
- * @template T
- */
-export function filterQuery<T extends IQuadTreeItem>(
-  type: Function[],
-  queryValues: IQuadTreeItem[]
-): T[] {
-  const filtered: T[] = [];
-
-  queryValues.forEach((obj: IQuadTreeItem) => {
-    if (type.find((t) => obj instanceof t)) {
-      filtered.push(obj as T);
-    }
-  });
-
-  return filtered;
-}
 
 /**
  * Allows typing of a callback argument

@@ -1,6 +1,6 @@
+import { Instance } from "../instance-provider/index.js";
 import { ILayerConstructable, ILayerProps, LayerInitializer } from "../surface";
-import { Instance } from "../instance-provider";
-import { Omit } from "../types";
+import { Omit } from "../types.js";
 /**
  * Can use this instead of createLayer to view changes streaming through a layer.
  */

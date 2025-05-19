@@ -13,10 +13,12 @@ import {
   Vec3,
   VertexAttributeSize,
 } from "../../../../src";
-import { CubeInstance } from "./cube-instance";
+import { CubeInstance } from "./cube-instance.js";
 
 export interface ICubeLayerProps<TInstance extends CubeInstance>
-  extends ILayerProps<TInstance> {}
+  extends ILayerProps<TInstance> {
+  fake?: string;
+}
 
 /**
  * Layer for rendering simple cube primitives

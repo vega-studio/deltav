@@ -1,4 +1,4 @@
-import { GLProxy } from "./gl-proxy";
+import { GLProxy } from "./gl-proxy.js";
 /**
  * Defines an attribute applied to a geometry object. This keeps track of a
  * buffer associated with the attribute to bind to attributes within the shader

@@ -1,5 +1,5 @@
-import { ShaderInjectionTarget } from "../../types";
-import { ShaderModuleUnit, ShaderModuleUnitOptions } from "./shader-module-unit";
+import { ShaderInjectionTarget } from "../../types.js";
+import { ShaderModuleUnit, ShaderModuleUnitOptions } from "./shader-module-unit.js";
 /**
  * This is the results expected from a compile() operation from the
  * ShaderModule.
@@ -21,8 +21,8 @@ export declare class ShaderModule {
      * These are all of the currently registered modules for the Shader Modules
      */
     static modules: Map<string, {
-        fs?: ShaderModuleUnit | undefined;
-        vs?: ShaderModuleUnit | undefined;
+        fs?: ShaderModuleUnit;
+        vs?: ShaderModuleUnit;
     }>;
     /**
      * This registers a new ShaderModuleUnit. It makes the module available by

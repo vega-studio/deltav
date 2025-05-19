@@ -4,7 +4,7 @@
  */
 export declare class PromiseResolver<T> {
     resolver: (val: T | PromiseLike<T>) => void;
-    rejector: Function;
+    rejector: (reason: any) => void;
     promise: Promise<T>;
     constructor();
     resolve(val: T): void;

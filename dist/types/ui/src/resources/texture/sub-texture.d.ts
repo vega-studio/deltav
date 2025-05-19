@@ -1,8 +1,8 @@
-import { Bounds } from "../../math/primitives/bounds";
-import { InstanceIOValue, Omit } from "../../types";
-import { Texture } from "../../gl/texture";
-import { Vec2 } from "../../math/vector";
-import { VideoTextureMonitor } from "./video-texture-monitor";
+import { Texture } from "../../gl/texture.js";
+import { Bounds } from "../../math/primitives/bounds.js";
+import { Vec2 } from "../../math/vector.js";
+import { InstanceIOValue, Omit } from "../../types.js";
+import { VideoTextureMonitor } from "./video-texture-monitor.js";
 /**
  * Converts a SubTexture reference to a valid Instance IO value where:
  * [top left x, top left y, bottom right x, bottom right y]

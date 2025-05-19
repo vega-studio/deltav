@@ -1,4 +1,7 @@
+import { StoryFn } from "@storybook/react";
 import React from "react";
+
+import { useLifecycle } from "../../../util/hooks/use-life-cycle.js";
 import {
   AutoEasingMethod,
   BasicCamera2DControllerJSX,
@@ -30,11 +33,9 @@ import {
   View3D,
   ViewJSX,
 } from "../../src";
-import { PerlinNoise } from "./signal-processing";
-import { StoryFn } from "@storybook/react";
-import { SurfaceTileInstance } from "./layers/surface-tile/surface-tile-instance";
-import { SurfaceTileLayer } from "./layers/surface-tile/surface-tile-layer";
-import { useLifecycle } from "../../../util/hooks/use-life-cycle";
+import { SurfaceTileInstance } from "./layers/surface-tile/surface-tile-instance.js";
+import { SurfaceTileLayer } from "./layers/surface-tile/surface-tile-layer.js";
+import { PerlinNoise } from "./signal-processing/index.js";
 
 export default {
   title: "Deltav/Interactions",

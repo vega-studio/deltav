@@ -1,12 +1,12 @@
-import { BaseResourceManager } from "../base-resource-manager";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { InstanceIOValue, IResourceContext, TextureSize } from "../../types.js";
+import { BaseResourceManager } from "../base-resource-manager.js";
 import {
   ColorBufferResource,
   IColorBufferResource,
-} from "./color-buffer-resource";
-import { IColorBufferResourceRequest } from "./color-buffer-resource-request";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { InstanceIOValue, IResourceContext, TextureSize } from "../../types";
+} from "./color-buffer-resource.js";
+import { IColorBufferResourceRequest } from "./color-buffer-resource-request.js";
 
 /**
  * This manager handles creation and destruction of simple Texture Resources.

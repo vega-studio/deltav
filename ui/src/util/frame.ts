@@ -1,4 +1,4 @@
-import { PromiseResolver } from "./promise-resolver";
+import { PromiseResolver } from "./promise-resolver.js";
 
 /**
  * The structure of a command that can be injected into the queue. The time

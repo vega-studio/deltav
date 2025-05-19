@@ -1,11 +1,12 @@
 import React from "react";
+
 import { Camera2D, IView2DProps, View2D } from "../../../2d";
-import { ILayerMaterialOptions, IUniform } from "../../../types";
-import { IPartialViewJSX, ViewJSX } from "../scene/view-jsx";
 import { IRenderTextureResource } from "../../../resources";
-import { LayerJSX } from "../scene/layer-jsx";
-import { PostProcessLayer } from "./layer/post-process-layer";
-import { SceneJSX } from "../scene/scene-jsx";
+import { ILayerMaterialOptions, IUniform } from "../../../types.js";
+import { LayerJSX } from "../scene/layer-jsx.js";
+import { SceneJSX } from "../scene/scene-jsx.js";
+import { IPartialViewJSX, ViewJSX } from "../scene/view-jsx.js";
+import { PostProcessLayer } from "./layer/post-process-layer.js";
 
 export interface IPostProcessJSX {
   /**

@@ -1,6 +1,6 @@
-import { Vec2, Vec2Compat } from "./vector";
-import { Bounds } from "./primitives/bounds";
-import { Ray } from "./ray";
+import { Bounds } from "./primitives/bounds.js";
+import { Ray } from "./ray.js";
+import { Vec2, Vec2Compat } from "./vector.js";
 /**
  * This object expresses a suite of methods that aids in projecting values from
  * screen to world and vice versa. These methods can be implemented in many ways

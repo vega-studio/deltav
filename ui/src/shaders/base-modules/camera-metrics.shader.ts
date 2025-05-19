@@ -1,7 +1,7 @@
-import VS from "./shader-fragments/projection.vs";
-import { Layer } from "../../surface/layer";
-import { ShaderInjectionTarget, UniformSize } from "../../types";
+import { Layer } from "../../surface/layer.js";
+import { ShaderInjectionTarget, UniformSize } from "../../types.js";
 import { ShaderModule } from "../processing";
+import VS from "./shader-fragments/projection.vs";
 
 const doc = `
 These are properties injected from the

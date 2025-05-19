@@ -1,8 +1,8 @@
-import { createUniform } from "../../util";
 import { identity4 } from "../../math";
-import { SceneGraphLayer } from "./scene-graph-layer";
-import { ShaderInjectionTarget, UniformSize } from "../../types";
 import { ShaderModule } from "../../shaders";
+import { ShaderInjectionTarget, UniformSize } from "../../types.js";
+import { createUniform } from "../../util";
+import { SceneGraphLayer } from "./scene-graph-layer.js";
 
 const doc = `
 When working with SceneGraphLayers, the

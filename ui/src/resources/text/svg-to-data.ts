@@ -1,5 +1,5 @@
 import { PromiseResolver } from "../../util";
-import type { IFontMapMetrics } from "./font-manager";
+import type { IFontMapMetrics } from "./font-manager.js";
 
 const img = document.createElement("img");
 const canvas = document.createElement("canvas");

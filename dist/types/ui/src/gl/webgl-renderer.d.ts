@@ -1,12 +1,12 @@
-import { Attribute } from "./attribute";
-import { Geometry } from "./geometry";
-import { GLProxy } from "./gl-proxy";
-import { GLState } from "./gl-state";
-import { RenderTarget } from "./render-target";
-import { Scene } from "./scene";
-import { Size } from "../types";
 import { Vec4 } from "../math";
-import type { IndexBuffer } from "./index-buffer";
+import { Size } from "../types.js";
+import { Attribute } from "./attribute.js";
+import { Geometry } from "./geometry.js";
+import { GLProxy } from "./gl-proxy.js";
+import { GLState } from "./gl-state.js";
+import type { IndexBuffer } from "./index-buffer.js";
+import { RenderTarget } from "./render-target.js";
+import { Scene } from "./scene.js";
 /**
  * Options used to create or update the renderer.
  */

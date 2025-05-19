@@ -1,20 +1,20 @@
-import { compare4, copy4, flatten4, Vec4 } from "../math/vector";
-import { FragmentOutputType, TypeVec } from "../types";
-import { GLProxy } from "./gl-proxy";
-import { GLSettings } from "./gl-settings";
+import Debug from "debug";
+
+import { compare4, copy4, flatten4, Vec4 } from "../math/vector.js";
+import { FragmentOutputType, TypeVec } from "../types.js";
+import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode.js";
+import { GLProxy } from "./gl-proxy.js";
+import { GLSettings } from "./gl-settings.js";
+import { Material } from "./material.js";
+import { RenderTarget } from "./render-target.js";
+import { Texture } from "./texture.js";
 import {
   IExtensions,
   IMaterialUniform,
   MaterialUniformType,
   MaterialUniformValue,
   UseMaterialStatus,
-} from "./types";
-import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode";
-import { Material } from "./material";
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
-
-import Debug from "debug";
+} from "./types.js";
 
 const debug = Debug("performance");
 
@@ -876,9 +876,12 @@ export class GLState {
   setDepthTest(depthTest: boolean) {
     if (this._depthTestEnabled !== depthTest) {
       this._depthTestEnabled = depthTest;
-      this._depthTestEnabled
-        ? this.gl.enable(this.gl.DEPTH_TEST)
-        : this.gl.disable(this.gl.DEPTH_TEST);
+
+      if (this._depthTestEnabled) {
+        this.gl.enable(this.gl.DEPTH_TEST);
+      } else {
+        this.gl.disable(this.gl.DEPTH_TEST);
+      }
     }
   }
 
@@ -926,9 +929,12 @@ export class GLState {
   setDithering(dithering: boolean) {
     if (this._ditheringEnabled !== dithering) {
       this._ditheringEnabled = dithering;
-      this._ditheringEnabled
-        ? this.gl.enable(this.gl.DITHER)
-        : this.gl.disable(this.gl.DITHER);
+
+      if (this._ditheringEnabled) {
+        this.gl.enable(this.gl.DITHER);
+      } else {
+        this.gl.disable(this.gl.DITHER);
+      }
     }
   }
 
@@ -1301,14 +1307,30 @@ export class GLState {
   syncState() {
     const gl = this.gl;
 
-    this._blendingEnabled ? gl.enable(gl.BLEND) : gl.disable(gl.BLEND);
-    this._ditheringEnabled ? gl.enable(gl.DITHER) : gl.disable(gl.DITHER);
-    this._depthTestEnabled
-      ? gl.enable(gl.DEPTH_TEST)
-      : gl.disable(gl.DEPTH_TEST);
-    this._scissorTestEnabled
-      ? gl.enable(gl.SCISSOR_TEST)
-      : gl.disable(gl.SCISSOR_TEST);
+    if (this._blendingEnabled) {
+      gl.enable(gl.BLEND);
+    } else {
+      gl.disable(gl.BLEND);
+    }
+
+    if (this._ditheringEnabled) {
+      gl.enable(gl.DITHER);
+    } else {
+      gl.disable(gl.DITHER);
+    }
+
+    if (this._depthTestEnabled) {
+      gl.enable(gl.DEPTH_TEST);
+    } else {
+      gl.disable(gl.DEPTH_TEST);
+    }
+
+    if (this._scissorTestEnabled) {
+      gl.enable(gl.SCISSOR_TEST);
+    } else {
+      gl.disable(gl.SCISSOR_TEST);
+    }
+
     this.setActiveTextureUnit(this._activeTextureUnit);
     this.applyClearColor();
     this.applyCullFace();

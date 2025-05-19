@@ -1,3 +1,11 @@
+## 4.3.1
+
+## Fixed
+
+- [`FIXED`]: Dependency clean ups
+- [`FIXED`]: Updated to latest configuration settings and latest devops
+- [`FIXED`]: Updated deltav to latest react to stop react error conflicts
+
 ## 4.3.0
 
 ## Added

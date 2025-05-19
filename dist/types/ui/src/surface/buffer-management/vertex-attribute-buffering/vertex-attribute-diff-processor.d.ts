@@ -1,8 +1,8 @@
-import { BaseDiffProcessor } from "../base-diff-processor.js";
-import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
-import { ILayerProps } from "../../layer.js";
 import { Instance } from "../../../instance-provider/instance.js";
+import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
+import { ILayerProps } from "../../layer.js";
+import { BaseDiffProcessor } from "../base-diff-processor.js";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
 import { IVertexAttributeBufferLocationGroup } from "./vertex-attribute-buffer-manager.js";
 /**
  * Manages diffs for layers that are utilizing the vertex buffer strategy.

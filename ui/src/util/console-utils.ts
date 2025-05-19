@@ -1,4 +1,4 @@
-import { onAnimationLoop, stopAnimationLoop } from "./frame";
+import { onAnimationLoop, stopAnimationLoop } from "./frame.js";
 
 /**
  * THIS IS A DEBUGGING UTILITY AND SHOULD NOT BE IMPORTED IN ANY WAY FOR A PRODUCTION BUILD

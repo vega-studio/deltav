@@ -1,13 +1,13 @@
-import { add2, scale2, Vec2 } from "../../math/vector";
-import { FontMapSource, IFontResourceOptions } from "./font-manager";
-import { FontRenderer, KerningPairs } from "./font-renderer";
-import { GLSettings, Texture, TextureOptions } from "../../gl";
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types";
-import { PackNode } from "../texture/pack-node";
-import { SubTexture } from "../texture/sub-texture";
-
 import Debug from "debug";
+
+import { GLSettings, Texture, TextureOptions } from "../../gl";
+import { add2, scale2, Vec2 } from "../../math/vector.js";
+import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types.js";
+import { IdentifyByKey } from "../../util/identify-by-key.js";
+import { PackNode } from "../texture/pack-node.js";
+import { SubTexture } from "../texture/sub-texture.js";
+import { FontMapSource, IFontResourceOptions } from "./font-manager.js";
+import { FontRenderer, KerningPairs } from "./font-renderer.js";
 
 const debug = Debug("performance");
 
@@ -169,7 +169,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
             "Count:",
             totalKernsLoaded
           );
-        } catch (err) {
+        } catch (_err) {
           /** do nothing as the kerning info is not valid */
         }
       }
@@ -200,7 +200,7 @@ export class FontMap extends IdentifyByKey implements IFontResourceOptions {
         debug("Storing kerning info in cache...");
         const kerningCache = JSON.stringify(this.kerning);
         localStorage.setItem(this.getKerningCacheName(), kerningCache);
-      } catch (err) {
+      } catch (_err) {
         // Failures just silently fail
         debug("Could not cache kerning info");
       }

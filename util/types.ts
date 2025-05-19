@@ -86,7 +86,7 @@ export function isNumber(val: any): val is number {
 /**
  * Typeguard for functions
  */
-export function isFunction(val: any): val is Function {
+export function isFunction(val: any): val is (...args: any[]) => any {
   return typeof val === "function";
 }
 

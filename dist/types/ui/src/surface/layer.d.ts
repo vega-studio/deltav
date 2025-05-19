@@ -1,14 +1,14 @@
-import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base";
-import { ResourceRouter } from "../resources";
-import { type IIndexBufferInternal, IInstanceAttribute, IInstanceProvider, IInstancingUniform, ILayerEasingManager, ILayerMaterialOptions, ILayerRef, INonePickingMetrics, IPickInfo, IShaderInitialization, type IShaderInputInstancing, ISinglePickingMetrics, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, OutputFragmentShader, PickType, StreamChangeStrategy } from "../types";
-import { GLSettings } from "../gl";
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { Instance } from "../instance-provider";
-import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
-import { IViewProps, View } from "./view";
-import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { LayerScene } from "./layer-scene";
-import { Surface } from "./surface";
+import { GLSettings } from "../gl/index.js";
+import { Instance } from "../instance-provider/index.js";
+import { ResourceRouter } from "../resources/index.js";
+import { type IIndexBufferInternal, IInstanceAttribute, IInstanceProvider, IInstancingUniform, ILayerEasingManager, ILayerMaterialOptions, ILayerRef, INonePickingMetrics, IPickInfo, IShaderInitialization, type IShaderInputInstancing, ISinglePickingMetrics, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, OutputFragmentShader, PickType, StreamChangeStrategy } from "../types.js";
+import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key.js";
+import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base.js";
+import { InstanceDiffManager } from "./buffer-management/instance-diff-manager.js";
+import { LayerInteractionHandler } from "./layer-interaction-handler.js";
+import { LayerScene } from "./layer-scene.js";
+import { Surface } from "./surface.js";
+import { IViewProps, View } from "./view.js";
 /**
  * A type to describe the constructor of a Layer class.
  */
@@ -621,7 +621,7 @@ export declare class Layer<TInstance extends Instance, TProps extends ILayerProp
      * Set preserverProvider to true to let the system know the provider's changes
      * are still required.
      */
-    resolveChanges(preserveProvider?: boolean): import("../types").InstanceDiff<TInstance>[];
+    resolveChanges(preserveProvider?: boolean): import("../types.js").InstanceDiff<TInstance>[];
     /**
      * Applies a buffer manager to the layer which handles instance changes and
      * applies those changes to an appropriate buffer at the appropriate location.

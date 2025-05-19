@@ -1,19 +1,23 @@
-import { Atlas, IAtlasResource, isAtlasResource } from "./atlas";
-import { AtlasManager } from "./atlas-manager";
-import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
+import { WebGLRenderer } from "../../gl";
+import { Texture } from "../../gl/texture.js";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion.js";
+import {
+  InstanceIOValue,
+  IResourceContext,
+  ResourceType,
+} from "../../types.js";
+import { nextFrame } from "../../util";
 import {
   BaseResourceManager,
   BaseResourceOptions,
-} from "../base-resource-manager";
-import { IAtlasResourceRequest } from "./atlas-resource-request";
-import { ILayerProps, Layer } from "../../surface";
-import { Instance } from "../../instance-provider/instance";
-import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
-import { nextFrame } from "../../util";
-import { subTextureIOValue } from "./sub-texture";
-import { Texture } from "../../gl/texture";
-import { TextureIOExpansion } from "./texture-io-expansion";
-import { WebGLRenderer } from "../../gl";
+} from "../base-resource-manager.js";
+import { Atlas, IAtlasResource, isAtlasResource } from "./atlas.js";
+import { AtlasManager } from "./atlas-manager.js";
+import { IAtlasResourceRequest } from "./atlas-resource-request.js";
+import { subTextureIOValue } from "./sub-texture.js";
+import { TextureIOExpansion } from "./texture-io-expansion.js";
 
 export interface IAtlasResourceManagerOptions {
   /** This is the atlas manager that handles operations with our atlas' */

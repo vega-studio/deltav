@@ -4,4 +4,4 @@
  *
  * Returns a disposer method to deregister the event
  */
-export declare function windowFocusEvents(onFocus: Function, onBlur: Function): Function;
+export declare function windowFocusEvents(onFocus: (...args: any[]) => void, onBlur: (...args: any[]) => void): () => void;

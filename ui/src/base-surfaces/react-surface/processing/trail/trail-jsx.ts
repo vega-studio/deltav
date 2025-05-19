@@ -1,15 +1,15 @@
+import { IView2DProps } from "../../../../2d";
+import type { Vec2 } from "../../../../math";
 import { ClearFlags } from "../../../../surface";
-import { createUniform } from "../../../../util";
 import {
   FragmentOutputType,
   ILayerMaterialOptions,
   ShaderInjectionTarget,
   UniformSize,
-} from "../../../../types";
-import { IPartialViewJSX } from "../../scene/view-jsx";
-import { IView2DProps } from "../../../../2d";
-import { PostProcessJSX } from "../post-process-jsx";
-import type { Vec2 } from "../../../../math";
+} from "../../../../types.js";
+import { createUniform } from "../../../../util";
+import { IPartialViewJSX } from "../../scene/view-jsx.js";
+import { PostProcessJSX } from "../post-process-jsx.js";
 
 export interface ITrailJSX {
   /**

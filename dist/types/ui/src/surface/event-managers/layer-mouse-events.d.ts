@@ -1,4 +1,4 @@
-import { QueuedEventHandler } from "../../event-management/queued-event-handler";
+import { QueuedEventHandler } from "../../event-management/queued-event-handler.js";
 /**
  * This class is an injected event manager for the surface, it specifically
  * handles taking in mouse events intended for view interactions and broadcasts

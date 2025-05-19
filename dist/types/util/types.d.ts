@@ -58,7 +58,7 @@ export declare function isNumber(val: any): val is number;
 /**
  * Typeguard for functions
  */
-export declare function isFunction(val: any): val is Function;
+export declare function isFunction(val: any): val is (...args: any[]) => any;
 /**
  * Typegaurd for ensuring an element is non-null and not undefined.
  */

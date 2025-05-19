@@ -1,4 +1,4 @@
-import { GLProxy } from "./gl-proxy";
+import { GLProxy } from "./gl-proxy.js";
 /**
  * This is the options to apply to a texture
  */

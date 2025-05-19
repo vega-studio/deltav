@@ -1,5 +1,5 @@
-import { IEasingControl, IEasingProps } from "../types";
-import { InstanceProvider } from "./instance-provider";
+import { IEasingControl, IEasingProps } from "../types.js";
+import { InstanceProvider } from "./instance-provider.js";
 export interface IInstanceOptions {
     /** The instance can be declared with an initial active state */
     active?: boolean;

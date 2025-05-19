@@ -1,5 +1,5 @@
-import { Color } from "../../../types";
-import { IInstance3DOptions, Instance3D } from "../../scene-graph/instance-3d";
+import { Color } from "../../../types.js";
+import { IInstance3DOptions, Instance3D } from "../../scene-graph/instance-3d.js";
 /** Customizes a new Triangle instance */
 export interface ITriangleOptions extends IInstance3DOptions {
     /** Sets the color of the Triangle */

@@ -7,8 +7,9 @@
  * Glow: https://twigl.app/?mode=0&source=precision%20highp%20float;%0Auniform%20float%20time;%0Avoid%20main()%7Bvec4%20p%3Dvec4((gl_FragCoord.xy/4e2),0,-4);for(int%20i%3D0;i%3C9;%2B%2Bi)p%2B%3Dvec4(sin(-(p.x%2Btime*.2))%2Batan(p.y*p.w),cos(-p.x)%2Batan(p.z*p.w),cos(-(p.x%2Bsin(time*.8)))%2Batan(p.z*p.w),0);gl_FragColor%3Dp;%7D
  */
 
+import { StoryFn } from "@storybook/react";
 import React from "react";
-import { BaseShaderTransform } from "../../src/shaders/processing/base-shader-transform";
+
 import {
   ClearFlags,
   createUniform,
@@ -24,8 +25,8 @@ import {
   TextureJSX,
   TextureSize,
   UniformSize,
-} from "../../src";
-import { StoryFn } from "@storybook/react";
+} from "../../src/index.js";
+import { BaseShaderTransform } from "../../src/shaders/processing/base-shader-transform.js";
 
 export default {
   title: "Deltav/One Liners",

@@ -1,7 +1,7 @@
-import { IAutoEasingMethod } from "../../math/auto-easing-method";
-import { Camera2D } from "./camera-2d";
-import { Vec3 } from "../../math/vector";
+import { IAutoEasingMethod } from "../../math/auto-easing-method.js";
+import { Vec3 } from "../../math/vector.js";
 import { Surface } from "../../surface";
+import { Camera2D } from "./camera-2d.js";
 export interface IControl2DOptions {
     /** The world space offset of elements in the chart */
     offset?: Vec3;

@@ -1,15 +1,4 @@
-import { AbsolutePosition } from "../math/primitives/absolute-position";
-import { BaseProjection, SimpleProjection } from "../math/base-projection";
-import { BaseResourceOptions } from "../resources/base-resource-manager";
-import { Bounds } from "../math/primitives/bounds";
-import { Camera } from "../util/camera";
-import { Color, FragmentOutputType, Omit } from "../types";
-import { ColorBuffer } from "../gl/color-buffer";
-import {
-  colorBufferRequest,
-  IColorBufferResource,
-  isColorBufferResource,
-} from "../resources/color-buffer";
+import { ColorBuffer } from "../gl/color-buffer.js";
 import {
   GLSettings,
   GLState,
@@ -17,18 +6,31 @@ import {
   RenderTarget,
   Texture,
   WebGLStat,
-} from "../gl";
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { Instance, InstanceProvider } from "../instance-provider";
+} from "../gl/index.js";
+import { Instance, InstanceProvider } from "../instance-provider/index.js";
+import { BaseProjection, SimpleProjection } from "../math/base-projection.js";
+import { type AbsolutePosition, Vec2 } from "../math/index.js";
+import { Bounds } from "../math/primitives/bounds.js";
+import { BaseResourceOptions } from "../resources/base-resource-manager.js";
+import {
+  colorBufferRequest,
+  IColorBufferResource,
+  isColorBufferResource,
+} from "../resources/color-buffer/index.js";
+import { ResourceRouter } from "../resources/resource-router.js";
 import {
   IRenderTextureResource,
   isRenderTextureResource,
-} from "../resources/texture/render-texture";
-import { Layer } from "./layer";
-import { LayerScene } from "./layer-scene";
-import { ResourceRouter } from "../resources/resource-router";
-import { textureRequest } from "../resources/texture/render-texture-resource-request";
-import { Vec2 } from "../math";
+} from "../resources/texture/render-texture.js";
+import { textureRequest } from "../resources/texture/render-texture-resource-request.js";
+import { Color, FragmentOutputType, Omit } from "../types.js";
+import { Camera } from "../util/camera.js";
+import {
+  IdentifyByKey,
+  IdentifyByKeyOptions,
+} from "../util/identify-by-key.js";
+import { Layer } from "./layer.js";
+import { LayerScene } from "./layer-scene.js";
 
 export enum ClearFlags {
   COLOR = 0b0001,

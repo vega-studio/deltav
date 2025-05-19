@@ -1,14 +1,14 @@
-import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
+import Debug from "debug";
+
+import { WebGLRenderer } from "../gl";
+import { Instance } from "../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../surface/layer.js";
+import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion.js";
+import { InstanceIOValue, IResourceContext, IResourceType } from "../types.js";
 import {
   BaseResourceManager,
   INVALID_RESOURCE_MANAGER,
-} from "./base-resource-manager";
-import { ILayerProps, Layer } from "../surface/layer";
-import { Instance } from "../instance-provider/instance";
-import { InstanceIOValue, IResourceContext, IResourceType } from "../types";
-import { WebGLRenderer } from "../gl";
-
-import Debug from "debug";
+} from "./base-resource-manager.js";
 
 const debug = Debug("performance");
 

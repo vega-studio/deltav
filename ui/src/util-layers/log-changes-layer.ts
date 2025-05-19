@@ -1,4 +1,4 @@
-import { createChildLayer, createLayer } from "../util/create-layer";
+import { Instance, InstanceProvider } from "../instance-provider/index.js";
 import {
   ILayerConstructable,
   ILayerProps,
@@ -7,8 +7,8 @@ import {
   LayerScene,
   Surface,
 } from "../surface";
-import { Instance, InstanceProvider } from "../instance-provider";
-import { Omit } from "../types";
+import { Omit } from "../types.js";
+import { createChildLayer, createLayer } from "../util/create-layer.js";
 
 /**
  * Options for generating a Logging layer

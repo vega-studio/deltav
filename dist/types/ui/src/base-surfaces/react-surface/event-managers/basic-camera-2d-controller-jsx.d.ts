@@ -1,7 +1,7 @@
 import React from "react";
 import { IBasicCamera2DControllerOptions } from "../../../2d/index.js";
-import { IEventManagerJSX } from "./as-event-manager.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
+import { IEventManagerJSX } from "./as-event-manager.js";
 export interface IBasicCamera2DControllerJSX extends Partial<IEventManagerJSX> {
     config: IBasicCamera2DControllerOptions;
 }

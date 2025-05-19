@@ -1,6 +1,6 @@
-import { GLProxy } from "./gl-proxy";
-import { GLSettings } from "./gl-settings";
 import { Vec2 } from "../math";
+import { GLProxy } from "./gl-proxy.js";
+import { GLSettings } from "./gl-settings.js";
 
 /**
  * This is the options to apply to a texture

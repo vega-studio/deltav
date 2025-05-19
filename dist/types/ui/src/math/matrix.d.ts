@@ -1,4 +1,4 @@
-import { type ReadonlyVec2Compat, type ReadonlyVec3Compat, Vec2, Vec3, Vec3Compat, Vec4 } from "./vector";
+import { type ReadonlyVec2Compat, type ReadonlyVec3Compat, Vec2, Vec3, Vec3Compat, Vec4 } from "./vector.js";
 /**
  * This represents a matrix with enough elements to define a 2x2 matrix. This is
  * specifically used to express a matrix in a linear buffer intentionally to

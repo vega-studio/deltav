@@ -1,4 +1,4 @@
-import { Instance } from "./instance";
+import { Instance } from "./instance.js";
 export declare class ObservableMonitoring {
     /**
      * Flag to help gathering Ids not gather Ids that arise from setting values

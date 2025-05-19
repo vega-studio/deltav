@@ -1,9 +1,15 @@
+import { Instance } from "../../../instance-provider";
 import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
-} from "../../../math/auto-easing-method";
-import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion";
-import { EasingProps } from "../../../util/easing-props";
+} from "../../../math/auto-easing-method.js";
+import { Vec, VecMath, VecMethods } from "../../../math/vector.js";
+import {
+  ShaderDeclarationStatements,
+  ShaderIOHeaderInjectionResult,
+} from "../../../shaders/processing/base-shader-io-injection.js";
+import { MetricsProcessing } from "../../../shaders/processing/metrics-processing.js";
+import { ILayerProps, Layer } from "../../../surface/layer.js";
 import {
   FrameMetrics,
   IEasingInstanceAttribute,
@@ -14,19 +20,13 @@ import {
   IUniform,
   IVertexAttribute,
   ShaderInjectionTarget,
-} from "../../../types";
-import { ILayerProps, Layer } from "../../../surface/layer";
-import { Instance } from "../../../instance-provider";
+} from "../../../types.js";
+import { EasingProps } from "../../../util/easing-props.js";
 import {
   IShaderTemplateRequirements,
   shaderTemplate,
-} from "../../../util/shader-templating";
-import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
-import {
-  ShaderDeclarationStatements,
-  ShaderIOHeaderInjectionResult,
-} from "../../../shaders/processing/base-shader-io-injection";
-import { Vec, VecMath, VecMethods } from "../../../math/vector";
+} from "../../../util/shader-templating.js";
+import { BaseIOExpansion, ShaderIOExpansion } from "../base-io-expansion.js";
 
 const debugCtx = "EasingIOExpansion";
 

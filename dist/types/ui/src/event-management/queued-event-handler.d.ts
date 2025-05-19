@@ -1,5 +1,5 @@
-import { EventManager } from "./event-manager";
-import { IMouseInteraction, ITouchInteraction } from "./types";
+import { EventManager } from "./event-manager.js";
+import { IMouseInteraction, ITouchInteraction } from "./types.js";
 /**
  * This takes in events and stores them for a later moment to be dequeued in a
  * controlled manner where timing is important relative to other actions

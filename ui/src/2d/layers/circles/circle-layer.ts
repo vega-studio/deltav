@@ -1,9 +1,7 @@
-import CircleLayerFS from "./circle-layer.fs";
-import CircleLayerPointsFS from "./circle-layer-points.fs";
-import CircleLayerPointsVS from "./circle-layer-points.vs";
-import CircleLayerVS from "./circle-layer.vs";
-import { CircleInstance } from "./circle-instance";
-import { CommonMaterialOptions } from "../../../util";
+import { GLSettings } from "../../../gl";
+import { InstanceProvider } from "../../../instance-provider";
+import { Vec } from "../../../math";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method.js";
 import {
   FragmentOutputType,
   ILayerMaterialOptions,
@@ -15,12 +13,14 @@ import {
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize,
-} from "../../../types";
-import { GLSettings } from "../../../gl";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { InstanceProvider } from "../../../instance-provider";
-import { Vec } from "../../../math";
+} from "../../../types.js";
+import { CommonMaterialOptions } from "../../../util";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { CircleInstance } from "./circle-instance.js";
+import CircleLayerFS from "./circle-layer.fs";
+import CircleLayerVS from "./circle-layer.vs";
+import CircleLayerPointsFS from "./circle-layer-points.fs";
+import CircleLayerPointsVS from "./circle-layer-points.vs";
 
 export interface ICircleLayerProps<T extends CircleInstance>
   extends ILayer2DProps<T> {

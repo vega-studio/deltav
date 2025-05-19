@@ -1,8 +1,11 @@
 import { Camera2D, IView2DProps } from "../../../../2d";
-import { emitOnce } from "../../../../util/emit-once";
-import { FragmentOutputType, ILayerMaterialOptions } from "../../../../types";
-import { PostProcessJSX } from "../post-process-jsx";
-import type { IPartialViewJSX } from "../../scene/view-jsx";
+import {
+  FragmentOutputType,
+  ILayerMaterialOptions,
+} from "../../../../types.js";
+import { emitOnce } from "../../../../util/emit-once.js";
+import type { IPartialViewJSX } from "../../scene/view-jsx.js";
+import { PostProcessJSX } from "../post-process-jsx.js";
 
 export interface IDrawJSX {
   /**

@@ -1,4 +1,4 @@
-let toEmit: { [key: string]: [Function, number, number] } = {};
+let toEmit: { [key: string]: [(...args: any[]) => void, number, number] } = {};
 
 export function emitOnce(
   id: string,

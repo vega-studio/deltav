@@ -1,6 +1,6 @@
-import { Attribute } from "./attribute";
-import { GLProxy } from "./gl-proxy";
-import type { IndexBuffer } from "./index-buffer";
+import { Attribute } from "./attribute.js";
+import { GLProxy } from "./gl-proxy.js";
+import type { IndexBuffer } from "./index-buffer.js";
 /**
  * This represents a buffer of data that is expressed as attributes to be placed
  * within a scene. This is generally paired with a Material in a Model to

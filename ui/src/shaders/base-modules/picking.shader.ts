@@ -1,7 +1,7 @@
-import picking from "./shader-fragments/picking.vs";
-import { InstanceAttributeSize, ShaderInjectionTarget } from "../../types";
-import { Layer } from "../../surface/layer";
+import { Layer } from "../../surface/layer.js";
+import { InstanceAttributeSize, ShaderInjectionTarget } from "../../types.js";
 import { ShaderModule } from "../processing";
+import picking from "./shader-fragments/picking.vs";
 
 ShaderModule.register([
   {

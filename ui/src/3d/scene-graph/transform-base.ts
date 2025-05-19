@@ -1,4 +1,4 @@
-import { onAnimationLoop } from "../../util/frame";
+import { onAnimationLoop } from "../../util/frame.js";
 
 /**
  * This is the minimal interface required for a Transform node. This base exists
@@ -13,6 +13,7 @@ import { onAnimationLoop } from "../../util/frame";
  * single axis of rotation and x,y coordinates which requires significantly less
  * operations to manage.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ITransformBase {}
 
 /**

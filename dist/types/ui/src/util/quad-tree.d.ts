@@ -1,13 +1,6 @@
-import { Bounds } from "../math/primitives/bounds";
-import { Vec2 } from "../math/vector";
+import { Bounds } from "../math/primitives/bounds.js";
+import { Vec2 } from "../math/vector.js";
 export type IQuadTreeItem = Bounds<any>;
-/**
- * This filters a quad tree query by type
- *
- * @export
- * @template T
- */
-export declare function filterQuery<T extends IQuadTreeItem>(type: Function[], queryValues: IQuadTreeItem[]): T[];
 /**
  * Allows typing of a callback argument
  */

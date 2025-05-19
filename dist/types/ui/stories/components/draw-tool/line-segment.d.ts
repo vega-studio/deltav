@@ -1,5 +1,5 @@
 import { EdgeInstance, EdgeType, Vec2, type Vec4 } from "../../../src";
-import type { LineSweep } from "./line-sweep";
+import type { LineSweep } from "./line-sweep.js";
 /**
  * As a utility class: Provides helper equations for line segments.
  *

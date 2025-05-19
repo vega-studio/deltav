@@ -1,4 +1,3 @@
-/// <reference types="react" />
 export interface IGaussHorizontalBlurJSX {
     /** Specifies the resource taken in that will be blurred for the output */
     input: string;

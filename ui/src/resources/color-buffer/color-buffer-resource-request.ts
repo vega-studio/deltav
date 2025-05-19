@@ -1,6 +1,6 @@
-import { BaseResourceRequest } from "../base-resource-manager";
-import { ColorBuffer } from "../../gl/color-buffer";
-import { Omit, ResourceType } from "../../types";
+import { ColorBuffer } from "../../gl/color-buffer.js";
+import { Omit, ResourceType } from "../../types.js";
+import { BaseResourceRequest } from "../base-resource-manager.js";
 
 /**
  * Base information an RenderTexture resource can provide.

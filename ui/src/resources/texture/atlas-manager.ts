@@ -1,4 +1,5 @@
-import { Atlas, IAtlasResource } from "./atlas";
+import Debug from "debug";
+
 import {
   Attribute,
   Geometry,
@@ -11,15 +12,14 @@ import {
   Texture,
   WebGLRenderer,
 } from "../../gl";
-import { Bounds } from "../../math/primitives/bounds";
-import { IAtlasResourceRequest } from "./atlas-resource-request";
-import { ImageRasterizer } from "../../resources/texture/image-rasterizer";
-import { IPackNodeDimensions, PackNode } from "./pack-node";
-import { isString } from "../../types";
-import { SubTexture } from "./sub-texture";
-import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor";
-
-import Debug from "debug";
+import { Bounds } from "../../math/primitives/bounds.js";
+import { ImageRasterizer } from "../../resources/texture/image-rasterizer.js";
+import { VideoTextureMonitor } from "../../resources/texture/video-texture-monitor.js";
+import { isString } from "../../types.js";
+import { Atlas, IAtlasResource } from "./atlas.js";
+import { IAtlasResourceRequest } from "./atlas-resource-request.js";
+import { IPackNodeDimensions, PackNode } from "./pack-node.js";
+import { SubTexture } from "./sub-texture.js";
 
 const debug = Debug("performance");
 

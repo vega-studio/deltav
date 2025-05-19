@@ -1,11 +1,11 @@
-import { BaseResourceOptions } from "../base-resource-manager";
-import { IAtlasResourceRequest } from "./atlas-resource-request";
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { Omit, ResourceType, TextureSize } from "../../types";
-import { PackNode } from "./pack-node";
-import { SubTexture } from "./sub-texture";
-import { Texture, TextureOptions } from "../../gl/texture";
-import { VideoTextureMonitor } from "./video-texture-monitor";
+import { Texture, TextureOptions } from "../../gl/texture.js";
+import { Omit, ResourceType, TextureSize } from "../../types.js";
+import { IdentifyByKey } from "../../util/identify-by-key.js";
+import { BaseResourceOptions } from "../base-resource-manager.js";
+import { IAtlasResourceRequest } from "./atlas-resource-request.js";
+import { PackNode } from "./pack-node.js";
+import { SubTexture } from "./sub-texture.js";
+import { VideoTextureMonitor } from "./video-texture-monitor.js";
 /**
  * Options required for generating an atlas.
  */
@@ -51,7 +51,7 @@ export declare class Atlas extends IdentifyByKey implements IAtlasResource {
      * a count of 1, then the resource is disposed and it's space on the atlas is flagged for freeing up
      * should the atlas need to consolidate resources.
      */
-    resourceReferences: Map<import("./atlas-resource-request").AtlasResource, ResourceReference>;
+    resourceReferences: Map<import("./atlas-resource-request.js").AtlasResource, ResourceReference>;
     /** This is the actual texture object that represents the atlas on the GPU */
     texture?: Texture;
     /** These are the applied settings to our texture */

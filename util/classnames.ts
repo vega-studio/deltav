@@ -22,12 +22,12 @@ export function classnames(...str: ClassOption[]): string {
   while (i < iMax) {
     if ((c = str[i++])) {
       if (isString(c)) {
-        out && (out += " ");
+        if (out) out += " ";
         out += c;
       } else {
         for (k in c) {
           if (c[k]) {
-            out && (out += " ");
+            if (out) out += " ";
             out += k;
           }
         }

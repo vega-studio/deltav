@@ -1,18 +1,19 @@
-import TriangleLayerFS from "./triangle-layer.fs";
-import TriangleLayerVS from "./triangle-layer.vs";
-import { CommonMaterialOptions, createAttribute } from "../../../util";
 import { GLSettings } from "../../../gl";
-import { IdentityTransform } from "../../scene-graph";
-import { ILayerProps, Layer } from "../../../surface/layer";
+import { InstanceProvider } from "../../../instance-provider";
+import { Vec3 } from "../../../math/vector.js";
+import { ILayerProps, Layer } from "../../../surface/layer.js";
 import {
   InstanceAttributeSize,
   IShaderInitialization,
   VertexAttributeSize,
-} from "../../../types";
-import { InstanceProvider } from "../../../instance-provider";
-import { TriangleInstance } from "./triangle-instance";
-import { Vec3 } from "../../../math/vector";
+} from "../../../types.js";
+import { CommonMaterialOptions, createAttribute } from "../../../util";
+import { IdentityTransform } from "../../scene-graph";
+import { TriangleInstance } from "./triangle-instance.js";
+import TriangleLayerFS from "./triangle-layer.fs";
+import TriangleLayerVS from "./triangle-layer.vs";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ITriangleLayerProps<TInstance extends TriangleInstance>
   extends ILayerProps<TInstance> {}
 

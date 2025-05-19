@@ -1,6 +1,6 @@
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
-import { WebGLRenderer } from "./webgl-renderer";
+import { RenderTarget } from "./render-target.js";
+import { Texture } from "./texture.js";
+import { WebGLRenderer } from "./webgl-renderer.js";
 /**
  * This makes the contents of the render target appear in the bottom right of the screen.
  * This will only show the color buffer. If there are texture render targets, then you will

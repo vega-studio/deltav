@@ -1,5 +1,7 @@
+import { StoryFn } from "@storybook/react";
 import React from "react";
-import RedHatDisplayTTF from "../../assets/fonts/RedHatDisplay-Regular.ttf";
+
+import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
 import {
   AnchorType,
   BasicCamera2DControllerJSX,
@@ -19,9 +21,8 @@ import {
   TextureSize,
   View2D,
   ViewJSX,
-} from "../../../src";
-import { StoryFn } from "@storybook/react";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
+} from "../../../src/index.js";
+import RedHatDisplayTTF from "../../assets/fonts/RedHatDisplay-Regular.ttf";
 
 export default {
   title: "Deltav/2D/Label",

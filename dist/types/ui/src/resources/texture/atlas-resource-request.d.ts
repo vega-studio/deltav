@@ -1,6 +1,6 @@
-import { BaseResourceRequest } from "../base-resource-manager";
-import { Omit, ResourceType } from "../../types";
-import { SubTexture } from "./sub-texture";
+import { Omit, ResourceType } from "../../types.js";
+import { BaseResourceRequest } from "../base-resource-manager.js";
+import { SubTexture } from "./sub-texture.js";
 export type AtlasVideoResource = {
     videoSrc: string;
 };

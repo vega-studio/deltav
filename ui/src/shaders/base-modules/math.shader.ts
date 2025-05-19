@@ -1,20 +1,20 @@
+import { ShaderInjectionTarget } from "../../types.js";
+import { ShaderModule } from "../processing";
 import arc from "./shader-fragments/arc.vs";
 import bezier1 from "./shader-fragments/bezier1.vs";
 import bezier2 from "./shader-fragments/bezier2.vs";
-import fcos from "./shader-fragments/fcos.vs";
-import fmod from "./shader-fragments/fmod.vs";
-import fsin from "./shader-fragments/fsin.vs";
 import PI from "./shader-fragments/constants/pi.vs";
-import PI2 from "./shader-fragments/constants/pi2.vs";
-import PI2_INV from "./shader-fragments/constants/pi2_inv.vs";
 import PI_2 from "./shader-fragments/constants/pi_2.vs";
 import PI_4 from "./shader-fragments/constants/pi_4.vs";
 import PI_INV from "./shader-fragments/constants/pi_inv.vs";
+import PI2 from "./shader-fragments/constants/pi2.vs";
+import PI2_INV from "./shader-fragments/constants/pi2_inv.vs";
 import toDegrees from "./shader-fragments/constants/to-degrees.vs";
 import toRadians from "./shader-fragments/constants/to-radians.vs";
+import fcos from "./shader-fragments/fcos.vs";
+import fmod from "./shader-fragments/fmod.vs";
+import fsin from "./shader-fragments/fsin.vs";
 import wrap from "./shader-fragments/wrap.vs";
-import { ShaderInjectionTarget } from "../../types";
-import { ShaderModule } from "../processing";
 
 // All of the constants fragments
 const constants = [

@@ -1,2 +1,2 @@
-export * from "./ring-instance";
+export * from "./ring-instance.js";
 export * from "./ring-layer";

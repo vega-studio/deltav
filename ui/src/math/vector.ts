@@ -284,7 +284,7 @@ export function length1Components(x: number): number {
 
 export function vec1(
   values: Readonly<number[] | number>,
-  ...args: Readonly<(number | number[])[]>
+  ...args: readonly (number | number[])[]
 ): Vec1 {
   let out: number[];
   args = args || [];
@@ -769,7 +769,7 @@ export function reverse3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3 {
 
 export function vec3(
   values: Readonly<number[] | number>,
-  ...args: Readonly<(number | number[])[]>
+  ...args: readonly (number | number[])[]
 ): Vec3 {
   let out: number[];
   args = args || [];

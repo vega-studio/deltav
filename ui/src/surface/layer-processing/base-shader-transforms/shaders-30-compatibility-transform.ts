@@ -1,6 +1,6 @@
-import { BaseShaderTransform } from "../../../shaders/processing/base-shader-transform";
-import { removeComments } from "../../../util/remove-comments";
-import { WebGLStat } from "../../../gl/webgl-stat";
+import { WebGLStat } from "../../../gl/webgl-stat.js";
+import { BaseShaderTransform } from "../../../shaders/processing/base-shader-transform.js";
+import { removeComments } from "../../../util/remove-comments.js";
 
 /**
  * This transform is a last pass to resolve odds and ends differences that can

@@ -1,9 +1,9 @@
+import { ShaderInjectionTarget } from "../../types.js";
+import { ShaderModule } from "../processing";
 import rotation from "./shader-fragments/matrix/rotation.vs";
 import scale from "./shader-fragments/matrix/scale.vs";
 import transform from "./shader-fragments/matrix/transform.vs";
 import translation from "./shader-fragments/matrix/translation.vs";
-import { ShaderInjectionTarget } from "../../types";
-import { ShaderModule } from "../processing";
 
 ShaderModule.register([
   {

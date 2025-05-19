@@ -1,5 +1,5 @@
-import { Camera } from "../../util/camera";
-import { Control2D, IControl2DOptions } from "./control-2d";
+import { Camera } from "../../util/camera.js";
+import { Control2D, IControl2DOptions } from "./control-2d.js";
 /**
  * This is a complex camera that layers simpler 2D concepts over an actual 3D projection camera. This camera FORCES the
  * orthographic projection type to work with the 2D layering system created.
@@ -12,7 +12,7 @@ export declare class Camera2D extends Camera {
     _control2D: Control2D;
     get control2D(): Control2D;
     set control2D(val: Control2D);
-    get scale2D(): import("../..").Vec3;
-    get offset(): import("../..").Vec3;
+    get scale2D(): import("../../index.js").Vec3;
+    get offset(): import("../../index.js").Vec3;
     constructor(options?: IControl2DOptions);
 }

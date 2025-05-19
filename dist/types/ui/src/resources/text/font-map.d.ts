@@ -1,11 +1,11 @@
-import { Vec2 } from "../../math/vector";
-import { FontMapSource, IFontResourceOptions } from "./font-manager";
-import { FontRenderer, KerningPairs } from "./font-renderer";
 import { Texture } from "../../gl";
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { ResourceType, Size } from "../../types";
-import { PackNode } from "../texture/pack-node";
-import { SubTexture } from "../texture/sub-texture";
+import { Vec2 } from "../../math/vector.js";
+import { ResourceType, Size } from "../../types.js";
+import { IdentifyByKey } from "../../util/identify-by-key.js";
+import { PackNode } from "../texture/pack-node.js";
+import { SubTexture } from "../texture/sub-texture.js";
+import { FontMapSource, IFontResourceOptions } from "./font-manager.js";
+import { FontRenderer, KerningPairs } from "./font-renderer.js";
 export declare enum FontMapGlyphType {
     /** Straight images for each glyph */
     BITMAP = 0,

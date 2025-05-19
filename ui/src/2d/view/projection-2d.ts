@@ -1,5 +1,5 @@
 import { BaseProjection, Ray, Vec2 } from "../../math";
-import { Camera2D } from "./camera-2d";
+import { Camera2D } from "./camera-2d.js";
 
 /** Provides a guaranteed camera object if none is provided */
 const NO_CAMERA = new Camera2D();

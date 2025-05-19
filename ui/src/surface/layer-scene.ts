@@ -1,18 +1,22 @@
 import Debug from "debug";
-import { generateDefaultScene } from "./layer-processing/generate-default-scene";
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
+
+import { Scene } from "../gl/scene.js";
+import { Instance } from "../instance-provider/instance.js";
+import {
+  IdentifyByKey,
+  IdentifyByKeyOptions,
+} from "../util/identify-by-key.js";
+import { ReactiveDiff } from "../util/reactive-diff.js";
 import {
   ILayerProps,
   ILayerPropsInternal,
   Layer,
   LayerInitializer,
   LayerInitializerInternal,
-} from "./layer";
-import { Instance } from "../instance-provider/instance";
-import { IViewProps, View, ViewInitializer } from "./view";
-import { ReactiveDiff } from "../util/reactive-diff";
-import { Scene } from "../gl/scene";
-import { Surface } from "./surface";
+} from "./layer.js";
+import { generateDefaultScene } from "./layer-processing/generate-default-scene.js";
+import { Surface } from "./surface.js";
+import { IViewProps, View, ViewInitializer } from "./view.js";
 
 const debug = Debug("performance");
 

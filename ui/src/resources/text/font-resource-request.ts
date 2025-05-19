@@ -1,7 +1,7 @@
-import { BaseResourceRequest } from "../base-resource-manager";
-import { FontMap, KernedLayout } from "./font-map";
-import { ResourceType } from "../../types";
-import { Texture } from "../../gl/texture";
+import { Texture } from "../../gl/texture.js";
+import { ResourceType } from "../../types.js";
+import { BaseResourceRequest } from "../base-resource-manager.js";
+import { FontMap, KernedLayout } from "./font-map.js";
 
 export enum FontResourceRequestFetch {
   /** Retrieves the tex coordinates on the font map of the specified character glyph. Defaults to [0, 0, 0, 0] */

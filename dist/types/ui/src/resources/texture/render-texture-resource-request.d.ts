@@ -1,6 +1,6 @@
-import { BaseResourceRequest } from "../base-resource-manager";
-import { Omit, ResourceType } from "../../types";
-import { Texture } from "../../gl/texture";
+import { Texture } from "../../gl/texture.js";
+import { Omit, ResourceType } from "../../types.js";
+import { BaseResourceRequest } from "../base-resource-manager.js";
 /**
  * Base information an RenderTexture resource can provide.
  */

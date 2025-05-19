@@ -1,7 +1,7 @@
-import { BorderInstance } from "./border-instance";
 import { IAutoEasingMethod, Vec } from "../../../math";
+import { ILayerMaterialOptions, IShaderInitialization } from "../../../types.js";
 import { ILayer2DProps, Layer2D } from "../../view";
-import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
+import { BorderInstance } from "./border-instance.js";
 export interface IBorderLayerProps<T extends BorderInstance> extends ILayer2DProps<T> {
     animate?: {
         color?: IAutoEasingMethod<Vec>;

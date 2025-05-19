@@ -1,17 +1,17 @@
-import { Attribute } from "./attribute";
-import { Geometry } from "./geometry";
-import { GLProxy } from "./gl-proxy";
-import { GLState } from "./gl-state";
-import { Model } from "./model";
-import { RenderTarget } from "./render-target";
-import { Scene } from "./scene";
-import { Size } from "../types";
-import { UseMaterialStatus } from "./types";
-import { Vec4 } from "../math";
-import { WebGLStat } from "./webgl-stat";
-
 import Debug from "debug";
-import type { IndexBuffer } from "./index-buffer";
+
+import { Vec4 } from "../math";
+import { Size } from "../types.js";
+import { Attribute } from "./attribute.js";
+import { Geometry } from "./geometry.js";
+import { GLProxy } from "./gl-proxy.js";
+import { GLState } from "./gl-state.js";
+import type { IndexBuffer } from "./index-buffer.js";
+import { Model } from "./model.js";
+import { RenderTarget } from "./render-target.js";
+import { Scene } from "./scene.js";
+import { UseMaterialStatus } from "./types.js";
+import { WebGLStat } from "./webgl-stat.js";
 
 const debug = Debug("performance");
 

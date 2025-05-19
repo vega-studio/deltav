@@ -1,4 +1,4 @@
-import { dot2, subtract2, Vec2 } from "../../math/vector";
+import { dot2, subtract2, Vec2 } from "../../math/vector.js";
 
 const { ceil, max, log2, pow, sqrt } = Math;
 

@@ -1,5 +1,5 @@
 import { BaseProjection, Ray, Vec2 } from "../../math";
-import { Camera2D } from "./camera-2d";
+import { Camera2D } from "./camera-2d.js";
 /**
  * Provides the projection methods for shifting coordinates between vector
  * spaces.

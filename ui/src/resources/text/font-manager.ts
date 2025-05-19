@@ -1,14 +1,14 @@
-import { BaseResourceOptions } from "../base-resource-manager";
-import { Bounds } from "../../math/primitives";
-import { FontMap, FontMapGlyphType } from "./font-map";
-import { FontRenderer } from "./font-renderer";
-import { fontRequest, IFontResourceRequest } from "./font-resource-request";
-import { Omit, ResourceType, Size } from "../../types";
-import { PackNode } from "../../resources/texture/pack-node";
-import { SubTexture } from "../texture/sub-texture";
-
 import Debug from "debug";
-import { loadFonts } from "./load-fonts";
+
+import { Bounds } from "../../math/primitives";
+import { PackNode } from "../../resources/texture/pack-node.js";
+import { Omit, ResourceType, Size } from "../../types.js";
+import { BaseResourceOptions } from "../base-resource-manager.js";
+import { SubTexture } from "../texture/sub-texture.js";
+import { FontMap, FontMapGlyphType } from "./font-map.js";
+import { FontRenderer } from "./font-renderer.js";
+import { fontRequest, IFontResourceRequest } from "./font-resource-request.js";
+import { loadFonts } from "./load-fonts.js";
 
 const debug = Debug("performance");
 

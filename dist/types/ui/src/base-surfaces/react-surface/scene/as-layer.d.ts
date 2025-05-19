@@ -1,5 +1,5 @@
-import { ILayerProps, LayerInitializer } from "../../../surface/index.js";
 import { Instance } from "../../../instance-provider/index.js";
+import { ILayerProps, LayerInitializer } from "../../../surface/index.js";
 import { IResolverProvider } from "../use-child-resolver.js";
 /**
  * Base props required for the component to implement to be a LayerJSX

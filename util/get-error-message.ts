@@ -18,7 +18,7 @@ export function getErrorMessage(e: unknown): string {
 
   try {
     return JSON.stringify(e, null, 2);
-  } catch (err) {
+  } catch (_err) {
     // NOOP
   }
 

@@ -1,9 +1,9 @@
+import { Material } from "../../gl/index.js";
+import { Instance } from "../../instance-provider/instance.js";
+import { Vec4 } from "../../math/index.js";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../types.js";
 import { ILayerProps, Layer } from "../layer.js";
-import { Instance } from "../../instance-provider/instance.js";
 import { LayerScene } from "../layer-scene.js";
-import { Material } from "../../gl/index.js";
-import { Vec4 } from "../../math/index.js";
 export declare function isBufferLocation(val: any): val is IBufferLocation;
 export declare function isBufferLocationGroup(val: any): val is IBufferLocationGroup<IBufferLocation>;
 /**

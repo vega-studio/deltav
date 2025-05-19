@@ -1,4 +1,4 @@
-import { Vec2 } from "../vector";
+import { Vec2 } from "../vector.js";
 export interface IBoundsOptions {
     /** Top left x position */
     x?: number;

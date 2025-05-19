@@ -1,4 +1,4 @@
-import type { Vec2 } from "../../../src";
+import type { Vec2 } from "../../../src/math/index.js";
 export interface IPerlinOptions {
     /** Output width */
     width: number;

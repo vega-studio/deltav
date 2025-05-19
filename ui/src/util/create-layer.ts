@@ -1,10 +1,10 @@
+import { Instance } from "../instance-provider/instance.js";
 import {
   ILayerConstructable,
   ILayerConstructionClass,
   ILayerProps,
   LayerInitializer,
-} from "../surface/layer";
-import { Instance } from "../instance-provider/instance";
+} from "../surface/layer.js";
 
 /**
  * Used for reactive layer generation and updates.

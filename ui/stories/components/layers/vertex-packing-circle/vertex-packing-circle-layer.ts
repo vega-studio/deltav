@@ -1,5 +1,3 @@
-import CircleLayerFS from "./vertex-packing-circle-layer.fs";
-import CircleLayerVS from "./vertex-packing-circle-layer.vs";
 import {
   AutoEasingMethod,
   CommonMaterialOptions,
@@ -18,7 +16,9 @@ import {
   UniformSize,
   VertexAttributeSize,
 } from "../../../../src/index.js";
-import type { VertexPackingCircleInstance } from "./vertex-packing-circle-instance";
+import type { VertexPackingCircleInstance } from "./vertex-packing-circle-instance.js";
+import CircleLayerFS from "./vertex-packing-circle-layer.fs";
+import CircleLayerVS from "./vertex-packing-circle-layer.vs";
 
 export interface IVertexPackingCircleLayerProps<
   T extends VertexPackingCircleInstance,

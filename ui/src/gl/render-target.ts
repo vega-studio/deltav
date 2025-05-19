@@ -1,10 +1,10 @@
-import { ColorBuffer } from "./color-buffer";
-import { FragmentOutputType } from "../types";
-import { GLProxy } from "./gl-proxy";
-import { GLSettings } from "./gl-settings";
-import { Material } from "./material";
-import { Texture } from "./texture";
-import { uid } from "../util/uid";
+import { FragmentOutputType } from "../types.js";
+import { uid } from "../util/uid.js";
+import { ColorBuffer } from "./color-buffer.js";
+import { GLProxy } from "./gl-proxy.js";
+import { GLSettings } from "./gl-settings.js";
+import { Material } from "./material.js";
+import { Texture } from "./texture.js";
 
 /**
  * This specifies a buffer and matches it to a hinting output type. The buffer

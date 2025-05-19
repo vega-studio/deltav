@@ -1,10 +1,10 @@
-import { EventManager } from "./event-manager";
+import { EventManager } from "./event-manager.js";
+import { SimpleEventHandler } from "./simple-event-handler.js";
 import {
   IEventInteraction,
   IMouseInteraction,
   ITouchInteraction,
-} from "./types";
-import { SimpleEventHandler } from "./simple-event-handler";
+} from "./types.js";
 
 /**
  * This takes in events and stores them for a later moment to be dequeued in a

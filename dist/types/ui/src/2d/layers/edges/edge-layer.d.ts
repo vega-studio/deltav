@@ -1,8 +1,8 @@
-import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
-import { EdgeInstance } from "./edge-instance";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
+import { ILayerMaterialOptions, IShaderInitialization } from "../../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { EdgeInstance } from "./edge-instance.js";
+import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types.js";
 export interface IEdgeLayerProps<T extends EdgeInstance> extends ILayer2DProps<T> {
     /** Properties for animating attributes */
     animate?: {

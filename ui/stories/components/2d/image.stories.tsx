@@ -1,5 +1,8 @@
+import { StoryFn } from "@storybook/react";
 import React from "react";
-import { AtlasJSX } from "../../../src/base-surfaces/react-surface/resource/atlas-jsx";
+
+import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
+import { AtlasJSX } from "../../../src/base-surfaces/react-surface/resource/atlas-jsx.js";
 import {
   BasicCamera2DControllerJSX,
   Camera2D,
@@ -14,9 +17,7 @@ import {
   SurfaceJSX,
   View2D,
   ViewJSX,
-} from "../../../src";
-import { StoryFn } from "@storybook/react";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
+} from "../../../src/index.js";
 
 export default {
   title: "Deltav/2D/Image",

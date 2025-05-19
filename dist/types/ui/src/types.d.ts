@@ -1,13 +1,13 @@
-import { Attribute, GLSettings, IMaterialUniform, MaterialOptions, MaterialUniformType, Texture } from "./gl";
-import { BaseProjection } from "./math";
-import { BaseResourceOptions } from "./resources/base-resource-manager";
-import { IAutoEasingMethod } from "./math/auto-easing-method";
-import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "./event-management";
-import { Instance } from "./instance-provider/instance";
-import { ISceneOptions } from "./surface/layer-scene";
-import { IViewProps, View } from "./surface/view";
-import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec2Compat, Vec3, Vec4 } from "./math";
-import type { IndexBuffer } from "./gl/index-buffer";
+import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "./event-management/index.js";
+import { Attribute, GLSettings, IMaterialUniform, MaterialOptions, MaterialUniformType, Texture } from "./gl/index.js";
+import type { IndexBuffer } from "./gl/index-buffer.js";
+import { Instance } from "./instance-provider/instance.js";
+import { IAutoEasingMethod } from "./math/auto-easing-method.js";
+import { BaseProjection } from "./math/index.js";
+import { Mat3x3, Mat4x4, Vec, Vec1, Vec2, Vec2Compat, Vec3, Vec4 } from "./math/index.js";
+import { BaseResourceOptions } from "./resources/base-resource-manager.js";
+import { ISceneOptions } from "./surface/layer-scene.js";
+import { IViewProps, View } from "./surface/view.js";
 export type Diff<T extends string, U extends string> = ({
     [P in T]: P;
 } & {

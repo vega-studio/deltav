@@ -1,8 +1,8 @@
-import { BaseResourceOptions } from "../base-resource-manager";
-import { FontMap, FontMapGlyphType } from "./font-map";
-import { FontRenderer } from "./font-renderer";
-import { IFontResourceRequest } from "./font-resource-request";
-import { Omit, ResourceType, Size } from "../../types";
+import { Omit, ResourceType, Size } from "../../types.js";
+import { BaseResourceOptions } from "../base-resource-manager.js";
+import { FontMap, FontMapGlyphType } from "./font-map.js";
+import { FontRenderer } from "./font-renderer.js";
+import { IFontResourceRequest } from "./font-resource-request.js";
 /**
  * Valid glyph rendering sizes that the system will use when rendering the glyphs to the font map's texture.
  */

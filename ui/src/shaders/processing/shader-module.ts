@@ -1,11 +1,11 @@
-import { ShaderInjectionTarget } from "../../types";
+import Debug from "debug";
+
+import { ShaderInjectionTarget } from "../../types.js";
+import { shaderTemplate } from "../../util/shader-templating.js";
 import {
   ShaderModuleUnit,
   ShaderModuleUnitOptions,
-} from "./shader-module-unit";
-import { shaderTemplate } from "../../util/shader-templating";
-
-import Debug from "debug";
+} from "./shader-module-unit.js";
 
 const debug = Debug("performance");
 const debugModuleVS = Debug("shader-module-vs");

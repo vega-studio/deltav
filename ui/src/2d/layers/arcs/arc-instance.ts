@@ -1,8 +1,8 @@
+import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
   Instance,
-} from "../../../instance-provider/instance";
-import { makeObservable, observable } from "../../../instance-provider";
+} from "../../../instance-provider/instance.js";
 import { Vec2, Vec4 } from "../../../math";
 
 export interface IArcInstanceOptions extends IInstanceOptions {

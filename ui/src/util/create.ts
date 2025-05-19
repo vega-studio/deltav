@@ -1,11 +1,11 @@
 /**
  * This file contains all of the utilities for creating common object types
  */
-import { createAttribute } from "./create-attribute";
-import { createLayer } from "./create-layer";
-import { createUniform } from "./create-uniform";
-import { createVertex } from "./create-vertex";
-import { createView } from "../surface/view";
+import { createView } from "../surface/view.js";
+import { createAttribute } from "./create-attribute.js";
+import { createLayer } from "./create-layer.js";
+import { createUniform } from "./create-uniform.js";
+import { createVertex } from "./create-vertex.js";
 
 /**
  * Quick reference to the creation methods commonly used.

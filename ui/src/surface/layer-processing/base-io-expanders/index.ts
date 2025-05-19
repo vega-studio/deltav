@@ -1,3 +1,3 @@
-export * from "./easing-io-expansion";
-export * from "./basic-io-expansion";
-export * from "./active-io-expansion";
+export * from "./easing-io-expansion.js";
+export * from "./basic-io-expansion.js";
+export * from "./active-io-expansion.js";

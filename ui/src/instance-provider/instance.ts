@@ -1,7 +1,7 @@
-import { EasingProps } from "../util/easing-props";
-import { IEasingControl, IEasingProps } from "../types";
-import { InstanceProvider } from "./instance-provider";
-import { makeObservable, observable } from "./observable";
+import { IEasingControl, IEasingProps } from "../types.js";
+import { EasingProps } from "../util/easing-props.js";
+import { InstanceProvider } from "./instance-provider.js";
+import { makeObservable, observable } from "./observable.js";
 
 let instanceUID = 0;
 

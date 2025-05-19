@@ -1,5 +1,5 @@
-import { GLSettings } from "../gl/gl-settings";
-import { ILayerMaterialOptions } from "../types";
+import { GLSettings } from "../gl/gl-settings.js";
+import { ILayerMaterialOptions } from "../types.js";
 
 export type CommonMaterial = ILayerMaterialOptions & {
   modify(options: ILayerMaterialOptions): Omit<CommonMaterial, "modify>">;

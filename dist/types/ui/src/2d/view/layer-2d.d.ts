@@ -1,6 +1,6 @@
-import { ILayerProps, Layer, LayerScene, Surface } from "../../surface";
 import { Instance } from "../../instance-provider";
-import { IShaderInitialization } from "../../types";
+import { ILayerProps, Layer, LayerScene, Surface } from "../../surface";
+import { IShaderInitialization } from "../../types.js";
 export interface ILayer2DProps<TInstance extends Instance> extends ILayerProps<TInstance> {
 }
 /**

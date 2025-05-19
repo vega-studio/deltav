@@ -1,6 +1,6 @@
 import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../math";
-import { NOOP } from "../types";
-import { Texture } from "./texture";
+import { NOOP } from "../types.js";
+import { Texture } from "./texture.js";
 
 export enum MaterialUniformType {
   /** A single float */

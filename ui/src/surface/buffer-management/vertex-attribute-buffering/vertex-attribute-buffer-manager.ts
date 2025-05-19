@@ -1,25 +1,25 @@
 "use strict";
 
+import Debug from "debug";
+
 import { Attribute, Geometry, Material, Model } from "../../../gl";
+import { Instance, ObservableMonitoring } from "../../../instance-provider";
+import {
+  IInstanceAttribute,
+  IInstanceAttributeInternal,
+  InstanceDiffType,
+} from "../../../types.js";
+import { emitOnce, flushEmitOnce } from "../../../util/emit-once.js";
+import { uid } from "../../../util/uid.js";
+import { ILayerProps, Layer } from "../../layer.js";
+import { generateLayerModel } from "../../layer-processing/generate-layer-model.js";
+import { LayerScene } from "../../layer-scene.js";
 import {
   BufferManagerBase,
   IBufferLocation,
   IBufferLocationGroup,
   isBufferLocationGroup,
-} from "../buffer-manager-base";
-import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
-import { generateLayerModel } from "../../layer-processing/generate-layer-model";
-import {
-  IInstanceAttribute,
-  IInstanceAttributeInternal,
-  InstanceDiffType,
-} from "../../../types";
-import { ILayerProps, Layer } from "../../layer";
-import { Instance, ObservableMonitoring } from "../../../instance-provider";
-import { LayerScene } from "../../layer-scene";
-import { uid } from "../../../util/uid";
-
-import Debug from "debug";
+} from "../buffer-manager-base.js";
 
 const debug = Debug("performance");
 const { max } = Math;

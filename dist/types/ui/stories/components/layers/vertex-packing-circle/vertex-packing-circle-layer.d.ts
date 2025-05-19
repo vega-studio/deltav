@@ -1,5 +1,5 @@
 import { ILayer2DProps, ILayerMaterialOptions, IShaderInitialization, Layer2D } from "../../../../src/index.js";
-import type { VertexPackingCircleInstance } from "./vertex-packing-circle-instance";
+import type { VertexPackingCircleInstance } from "./vertex-packing-circle-instance.js";
 export interface IVertexPackingCircleLayerProps<T extends VertexPackingCircleInstance> extends ILayer2DProps<T> {
     /** Opacity of the layer as a whole */
     opacity?(): number;

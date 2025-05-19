@@ -1,10 +1,10 @@
-import { BaseResourceManager } from "../base-resource-manager";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { InstanceIOValue, IResourceContext } from "../../types";
-import { IRenderTextureResource, RenderTexture } from "./render-texture";
-import { IRenderTextureResourceRequest } from "./render-texture-resource-request";
-import { TextureIOExpansion } from "./texture-io-expansion";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { InstanceIOValue, IResourceContext } from "../../types.js";
+import { BaseResourceManager } from "../base-resource-manager.js";
+import { IRenderTextureResource, RenderTexture } from "./render-texture.js";
+import { IRenderTextureResourceRequest } from "./render-texture-resource-request.js";
+import { TextureIOExpansion } from "./texture-io-expansion.js";
 /**
  * This manager handles creation and destruction of simple Texture Resources.
  * Render Textures are more used on a higher level with the Surface

@@ -1,9 +1,9 @@
-import { BaseDiffProcessor } from "../base-diff-processor.js";
-import { IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager.js";
-import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
-import { ILayerProps } from "../../layer.js";
 import { Instance } from "../../../instance-provider/instance.js";
+import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
+import { ILayerProps } from "../../layer.js";
+import { BaseDiffProcessor } from "../base-diff-processor.js";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
+import { IInstanceAttributeBufferLocationGroup } from "./instance-attribute-buffer-manager.js";
 /**
  * Manages diffs for layers that are utilizing the instance attribute instancing
  * buffer strategy.

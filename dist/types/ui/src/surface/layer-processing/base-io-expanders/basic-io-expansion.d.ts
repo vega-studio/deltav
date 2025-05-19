@@ -1,9 +1,9 @@
-import { BaseIOExpansion } from "../../../surface/layer-processing/base-io-expansion";
-import { IInstanceAttribute, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../../types";
-import { ILayerProps, Layer } from "../../../surface/layer";
-import { Instance } from "../../../instance-provider/instance";
-import { MetricsProcessing } from "../../../shaders/processing/metrics-processing";
-import { ShaderDeclarationStatements, ShaderIOHeaderInjectionResult } from "../../../shaders/processing/base-shader-io-injection";
+import { Instance } from "../../../instance-provider/instance.js";
+import { ShaderDeclarationStatements, ShaderIOHeaderInjectionResult } from "../../../shaders/processing/base-shader-io-injection.js";
+import { MetricsProcessing } from "../../../shaders/processing/metrics-processing.js";
+import { ILayerProps, Layer } from "../../../surface/layer.js";
+import { BaseIOExpansion } from "../../../surface/layer-processing/base-io-expansion.js";
+import { IInstanceAttribute, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../../types.js";
 /**
  * This is the basic needs of processing attributes and uniforms and injecting
  * their declarations into the shader. This will handle buffer management

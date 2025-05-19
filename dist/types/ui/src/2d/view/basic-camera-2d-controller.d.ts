@@ -1,9 +1,9 @@
+import { SimpleEventHandler } from "../../event-management/simple-event-handler.js";
+import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "../../event-management/types.js";
 import { BaseProjection, Vec3 } from "../../math";
-import { Bounds } from "../../math/primitives/bounds";
-import { Camera2D } from "./camera-2d";
-import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "../../event-management/types";
-import { IViewProps, View } from "../../surface/view";
-import { SimpleEventHandler } from "../../event-management/simple-event-handler";
+import { Bounds } from "../../math/primitives/bounds.js";
+import { IViewProps, View } from "../../surface/view.js";
+import { Camera2D } from "./camera-2d.js";
 /**
  * Anchor options for the controller
  */

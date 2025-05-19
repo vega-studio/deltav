@@ -1,4 +1,4 @@
-import { ILayerMaterialOptions } from "../types";
+import { ILayerMaterialOptions } from "../types.js";
 export type CommonMaterial = ILayerMaterialOptions & {
     modify(options: ILayerMaterialOptions): Omit<CommonMaterial, "modify>">;
 };

@@ -123,7 +123,7 @@ export declare function tod1(left: ReadonlyVec1Compat, right: ReadonlyVec1Compat
 export declare function linear1(start: ReadonlyVec1Compat, end: ReadonlyVec1Compat, t: number, out?: Vec1Compat): Vec1;
 export declare function length1(start: ReadonlyVec1Compat): number;
 export declare function length1Components(x: number): number;
-export declare function vec1(values: Readonly<number[] | number>, ...args: Readonly<(number | number[])[]>): Vec1;
+export declare function vec1(values: Readonly<number[] | number>, ...args: readonly (number | number[])[]): Vec1;
 export declare function apply2(v: Vec2Compat | undefined, v0: number, v1: number): Vec2;
 export declare function add2(left: ReadonlyVec2Compat, right: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
 export declare function ceil2(vec: ReadonlyVec2Compat, out?: Vec2Compat): Vec2;
@@ -206,7 +206,7 @@ export declare function tod3(left: ReadonlyVec3Compat, right: ReadonlyVec3Compat
  * Swaps component direction [x, y, z] -> [z, y, x]
  */
 export declare function reverse3(vec: ReadonlyVec3Compat, out?: Vec3Compat): Vec3;
-export declare function vec3(values: Readonly<number[] | number>, ...args: Readonly<(number | number[])[]>): Vec3;
+export declare function vec3(values: Readonly<number[] | number>, ...args: readonly (number | number[])[]): Vec3;
 /**
  * Produces a directional vector that is straight up from the provided reference vectors (90 degress elevated from
  * the forward vector)

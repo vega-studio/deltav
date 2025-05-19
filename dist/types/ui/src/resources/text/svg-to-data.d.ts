@@ -1,4 +1,4 @@
-import type { IFontMapMetrics } from "./font-manager";
+import type { IFontMapMetrics } from "./font-manager.js";
 /**
  * This takes a very simple svg and converts it to a data object for pixel
  * examination.

@@ -1,4 +1,4 @@
-import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
+import { IInstanceOptions, Instance } from "../../../instance-provider/instance.js";
 import { Vec2 } from "../../../math";
 export interface IRingInstanceOptions extends IInstanceOptions {
     /** The center of the ring */

@@ -1,10 +1,10 @@
-import { generateLayerMaterial } from "../layer-processing/index.js";
+import { Material } from "../../gl/index.js";
+import { Instance } from "../../instance-provider/instance.js";
+import { Vec4 } from "../../math/index.js";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../types.js";
 import { ILayerProps, Layer } from "../layer.js";
-import { Instance } from "../../instance-provider/instance.js";
+import { generateLayerMaterial } from "../layer-processing/index.js";
 import { LayerScene } from "../layer-scene.js";
-import { Material } from "../../gl/index.js";
-import { Vec4 } from "../../math/index.js";
 
 export function isBufferLocation(val: any): val is IBufferLocation {
   return val && val.buffer && val.buffer.value;

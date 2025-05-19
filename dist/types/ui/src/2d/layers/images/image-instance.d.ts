@@ -1,8 +1,8 @@
-import { Anchor, ScaleMode } from "../../types";
-import { IAtlasResourceRequest } from "../../../resources";
 import { IInstanceOptions, Instance } from "../../../instance-provider";
+import { Vec2 } from "../../../math/vector.js";
+import { IAtlasResourceRequest } from "../../../resources";
+import { Anchor, ScaleMode } from "../../types.js";
 import { ImageInstanceResource } from "./image-layer";
-import { Vec2 } from "../../../math/vector";
 export interface IImageInstanceOptions extends IInstanceOptions {
     /**
      * The point on the image which will be placed in world space via the x, y coords. This is also the point

@@ -1,12 +1,12 @@
-import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { BaseIOSorting } from "./base-io-sorting";
-import { BaseShaderTransform } from "./base-shader-transform";
-import { type IIndexBufferInternal, IInstanceAttribute, IInstancingUniform, IShaderInitialization, IUniformInternal, IVertexAttributeInternal, MapValueType, OutputFragmentShader, OutputFragmentShaderSource, OutputFragmentShaderTarget } from "../../types";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { MetricsProcessing } from "./metrics-processing";
-import { ShaderDeclarationStatementLookup, ShaderDeclarationStatements } from "./base-shader-io-injection";
-import { ShaderModuleUnit } from "./shader-module-unit";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion.js";
+import { type IIndexBufferInternal, IInstanceAttribute, IInstancingUniform, IShaderInitialization, IUniformInternal, IVertexAttributeInternal, MapValueType, OutputFragmentShader, OutputFragmentShaderSource, OutputFragmentShaderTarget } from "../../types.js";
+import { BaseIOSorting } from "./base-io-sorting.js";
+import { ShaderDeclarationStatementLookup, ShaderDeclarationStatements } from "./base-shader-io-injection.js";
+import { BaseShaderTransform } from "./base-shader-transform.js";
+import { MetricsProcessing } from "./metrics-processing.js";
+import { ShaderModuleUnit } from "./shader-module-unit.js";
 /**
  * This is the expected results from processing the shader and it's layer's attributes.
  */

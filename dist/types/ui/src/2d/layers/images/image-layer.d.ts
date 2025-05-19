@@ -1,8 +1,8 @@
-import { AtlasResource, IAtlasResourceRequest } from "../../../resources";
-import { IImageRenderLayerProps } from "./image-render-layer";
-import { ImageInstance } from "./image-instance";
 import { InstanceProvider } from "../../../instance-provider";
-import { Layer2D } from "../../view/layer-2d";
+import { AtlasResource, IAtlasResourceRequest } from "../../../resources";
+import { Layer2D } from "../../view/layer-2d.js";
+import { ImageInstance } from "./image-instance.js";
+import { IImageRenderLayerProps } from "./image-render-layer.js";
 export interface IImageLayerProps<T extends ImageInstance> extends IImageRenderLayerProps<T> {
 }
 export type ImageVideoResource = {
@@ -66,7 +66,7 @@ export declare class ImageLayer<TInstance extends ImageInstance, TProps extends 
      * In cases where the image has a special case loading procedure like videos,
      * the image will have it's onReady
      */
-    originalOnReadyCallbacks: Map<ImageInstance, ((image: ImageInstance, video?: HTMLVideoElement | undefined) => void) | undefined>;
+    originalOnReadyCallbacks: Map<ImageInstance, ((image: ImageInstance, video?: HTMLVideoElement) => void) | undefined>;
     /**
      * The image layer will manage the resources for the images, and the child
      * layer will concern itself with rendering.

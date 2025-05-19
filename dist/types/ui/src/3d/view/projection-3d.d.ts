@@ -1,7 +1,7 @@
-import { Vec2, Vec3 } from "../../math/vector";
-import { BaseProjection } from "../../math/base-projection";
-import { Camera } from "../../util/camera";
 import { Ray } from "../../math";
+import { BaseProjection } from "../../math/base-projection.js";
+import { Vec2, Vec3 } from "../../math/vector.js";
+import { Camera } from "../../util/camera.js";
 export declare class Projection3D extends BaseProjection<any> {
     /** Camera used for the 3d view. */
     camera: Camera;

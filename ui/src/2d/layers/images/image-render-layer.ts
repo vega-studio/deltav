@@ -1,19 +1,19 @@
-import ImageLayerFS from "./image-layer.fs";
-import ImageLayerRotationVS from "./image-layer-rotation.vs";
-import ImageLayerVS from "./image-layer.vs";
-import { CommonMaterialOptions } from "../../../util/common-options";
+import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
+import { LayerScene, Surface } from "../../../surface";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
   VertexAttributeSize,
-} from "../../../types";
-import { ImageInstance } from "./image-instance";
-import { InstanceProvider } from "../../../instance-provider";
-import { LayerScene, Surface } from "../../../surface";
+} from "../../../types.js";
+import { CommonMaterialOptions } from "../../../util/common-options.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { ImageInstance } from "./image-instance.js";
+import ImageLayerFS from "./image-layer.fs";
+import ImageLayerVS from "./image-layer.vs";
+import ImageLayerRotationVS from "./image-layer-rotation.vs";
 
 export interface IImageRenderLayerProps<TInstance extends ImageInstance>
   extends ILayer2DProps<TInstance> {
@@ -149,6 +149,7 @@ export class ImageRenderLayer<
             name: "imageAtlas",
           },
           update: (o) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             o.source;
 
             if (!o.request) {

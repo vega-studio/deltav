@@ -1,4 +1,14 @@
 import {
+  Mat4x4,
+  multiply4x4,
+  project3As4ToScreen,
+  Ray,
+  ray,
+  rayFromPoints,
+  transform4,
+} from "../../math";
+import { BaseProjection } from "../../math/base-projection.js";
+import {
   apply2,
   apply3,
   scale2,
@@ -7,18 +17,8 @@ import {
   Vec3,
   vec3,
   vec4,
-} from "../../math/vector";
-import { BaseProjection } from "../../math/base-projection";
-import { Camera, CameraProjectionType } from "../../util/camera";
-import {
-  Mat4x4,
-  multiply4x4,
-  project3As4ToScreen,
-  ray,
-  Ray,
-  rayFromPoints,
-  transform4,
-} from "../../math";
+} from "../../math/vector.js";
+import { Camera, CameraProjectionType } from "../../util/camera.js";
 
 export class Projection3D extends BaseProjection<any> {
   /** Camera used for the 3d view. */

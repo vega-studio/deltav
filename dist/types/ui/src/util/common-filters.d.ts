@@ -1,4 +1,4 @@
-import { ISingleTouchInteraction } from "../event-management/types";
+import { ISingleTouchInteraction } from "../event-management/types.js";
 /**
  * This file contains common methods for filtering data within the framework.
  */
@@ -28,6 +28,6 @@ export declare function touchesHasStartView(view: string | string[]): (touch: IS
  * interactions who only have a view that was under the start position of the touch.
  */
 export declare function touchesContainsStartView(view: string | string[]): (touch: ISingleTouchInteraction) => {
-    position: import("..").Vec2;
-    view: import("..").View<import("..").IViewProps>;
+    position: import("../index.js").Vec2;
+    view: import("../index.js").View<import("../index.js").IViewProps>;
 } | undefined;

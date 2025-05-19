@@ -1,7 +1,7 @@
 import React from "react";
 import { IRenderTextureResource } from "../../../resources/index.js";
-import { IResourceJSX } from "./as-resource.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
+import { IResourceJSX } from "./as-resource.js";
 export interface IAtlasPropsJSX extends Partial<IResourceJSX> {
     /**
      * Resource name for debugging mostly. Maps to resource "key" in the deltav

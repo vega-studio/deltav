@@ -1,15 +1,15 @@
-import { ScaleMode } from "../../types";
-import { Vec } from "../../../math/vector";
+import { InstanceProvider } from "../../../instance-provider/instance-provider.js";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method.js";
+import { Vec } from "../../../math/vector.js";
 import { IFontResourceRequest } from "../../../resources";
-import { GlyphInstance } from "./glyph-instance";
-import { IGlyphLayerOptions } from "./glyph-layer";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ILayerConstructionClass } from "../../../surface/layer";
-import { IPickInfo } from "../../../types";
-import { InstanceProvider } from "../../../instance-provider/instance-provider";
-import { KernedLayout } from "../../../resources/text/font-map";
-import { LabelInstance } from "./label-instance";
+import { KernedLayout } from "../../../resources/text/font-map.js";
+import { ILayerConstructionClass } from "../../../surface/layer.js";
+import { IPickInfo } from "../../../types.js";
+import { ScaleMode } from "../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { GlyphInstance } from "./glyph-instance.js";
+import { IGlyphLayerOptions } from "./glyph-layer.js";
+import { LabelInstance } from "./label-instance.js";
 /**
  * Constructor props for making a new label layer
  */
@@ -85,7 +85,7 @@ export declare class LabelLayer<TInstance extends LabelInstance, TProps extends 
      * the labels changes by converting the label into glyphs and applying the changes to
      * it's set of glyphs.
      */
-    childLayers(): import("../../../surface/layer").LayerInitializer<import("../../..").Instance, import("../../../surface/layer").ILayerProps<import("../../..").Instance>>[];
+    childLayers(): import("../../../surface/layer.js").LayerInitializer<import("../../../index.js").Instance, import("../../../surface/layer.js").ILayerProps<import("../../../index.js").Instance>>[];
     /**
      * We override the draw method of the layer to handle the diffs of the provider in a
      * custom fashion by delegating the changes of the provider to the child layers.

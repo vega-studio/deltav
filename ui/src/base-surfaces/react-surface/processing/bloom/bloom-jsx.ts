@@ -1,18 +1,18 @@
-import {
-  BoxSampleJSX,
-  BoxSampleJSXDirection,
-} from "../box-sample/box-sample-jsx";
-import { createUniform } from "../../../../util";
+import { IView2DProps } from "../../../../2d";
+import { GLSettings } from "../../../../gl";
 import {
   FragmentOutputType,
   type ILayerMaterialOptions,
   ShaderInjectionTarget,
   UniformSize,
-} from "../../../../types";
-import { GLSettings } from "../../../../gl";
-import { IPartialViewJSX } from "../../scene/view-jsx";
-import { IView2DProps } from "../../../../2d";
-import { PostProcessJSX } from "../post-process-jsx";
+} from "../../../../types.js";
+import { createUniform } from "../../../../util";
+import { IPartialViewJSX } from "../../scene/view-jsx.js";
+import {
+  BoxSampleJSX,
+  BoxSampleJSXDirection,
+} from "../box-sample/box-sample-jsx";
+import { PostProcessJSX } from "../post-process-jsx.js";
 
 export interface IBloomJSX {
   /** Name to apply to the scenes this produces */

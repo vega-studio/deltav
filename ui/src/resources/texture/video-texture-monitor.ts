@@ -1,5 +1,5 @@
 import { onFrame } from "../../util";
-import { SubTexture } from "./sub-texture";
+import { SubTexture } from "./sub-texture.js";
 
 /**
  * This object monitors a video and it's corresponding texture it is rendered to. This will ensure the video and the

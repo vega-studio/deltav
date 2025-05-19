@@ -1,5 +1,5 @@
-import { IEasingControl } from "../types";
-import { Instance } from "../instance-provider";
+import { Instance } from "../instance-provider/index.js";
+import { IEasingControl } from "../types.js";
 /** Handler type for discovered easing controls using the all() method */
 export type EasingUtilAllHandler<T extends Instance> = (easing: IEasingControl, instance: T, instanceIndex: number, attrIndex: number) => void;
 /**

@@ -1,6 +1,6 @@
 import { Mat4x4, Quaternion, Vec2Compat, Vec3 } from "../../math";
-import { Instance2D } from "./instance-2d";
-import { TreeNode } from "./tree-node";
+import { Instance2D } from "./instance-2d.js";
+import { TreeNode } from "./tree-node.js";
 /**
  * This is a transform node that specifically only operates on x y positions and
  * single value rotations. It still is compatible with the 3D node system but

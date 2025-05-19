@@ -12,7 +12,6 @@ export * from "./shader-templating.js";
 export * from "./shallow-compare.js";
 export * from "./uid.js";
 export * from "./wait.js";
-export * from "./wait-for-valid-dimensions.js";
 export * from "./create.js";
 export * from "./create-attribute.js";
 export * from "./create-layer.js";

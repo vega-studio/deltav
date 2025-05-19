@@ -27,7 +27,7 @@ export function cookieParser(manual?: string) {
         },
         {} as Record<string, string>
       );
-  } catch (err) {
+  } catch (_err) {
     console.error("Unexpected cookie format");
   }
 

@@ -1,7 +1,7 @@
-import { Anchor, ScaleMode } from "../../types";
-import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
-import { Vec2, type Vec4 } from "../../../math/vector";
-import type { Color } from "../../../types";
+import { IInstanceOptions, Instance } from "../../../instance-provider/instance.js";
+import { Vec2, type Vec4 } from "../../../math/vector.js";
+import type { Color } from "../../../types.js";
+import { Anchor, ScaleMode } from "../../types.js";
 export interface IRectangleInstanceOptions extends IInstanceOptions {
     /**
      * The point on the rectangle which will be placed in world space via the x, y coords. This is also the point

@@ -5,9 +5,9 @@
  * Returns a disposer method to deregister the event
  */
 export function windowFocusEvents(
-  onFocus: Function,
-  onBlur: Function
-): Function {
+  onFocus: (...args: any[]) => void,
+  onBlur: (...args: any[]) => void
+): () => void {
   let hidden = "hidden";
 
   // Standards:

@@ -1,8 +1,8 @@
-import { CircleInstance } from "./circle-instance";
-import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import { Vec } from "../../../math";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method.js";
+import { ILayerMaterialOptions, IShaderInitialization } from "../../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { CircleInstance } from "./circle-instance.js";
 export interface ICircleLayerProps<T extends CircleInstance> extends ILayer2DProps<T> {
     /**
      * This is the properties that can toggle on animations.

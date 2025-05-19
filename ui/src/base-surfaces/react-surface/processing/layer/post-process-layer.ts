@@ -1,3 +1,13 @@
+import { GLSettings, Texture } from "../../../../gl";
+import {
+  Instance,
+  InstanceProvider,
+  makeObservable,
+  observable,
+} from "../../../../instance-provider";
+import { Vec2 } from "../../../../math";
+import { IRenderTextureResource, textureRequest } from "../../../../resources";
+import { ILayerProps, Layer } from "../../../../surface";
 import {
   Color,
   InstanceAttributeSize,
@@ -6,19 +16,9 @@ import {
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize,
-} from "../../../../types";
+} from "../../../../types.js";
 import { CommonMaterialOptions, isDefined } from "../../../../util";
-import { flatten2D } from "../../../../util/array";
-import { GLSettings, Texture } from "../../../../gl";
-import { ILayerProps, Layer } from "../../../../surface";
-import {
-  Instance,
-  InstanceProvider,
-  makeObservable,
-  observable,
-} from "../../../../instance-provider";
-import { IRenderTextureResource, textureRequest } from "../../../../resources";
-import { Vec2 } from "../../../../math";
+import { flatten2D } from "../../../../util/array.js";
 
 export class PostProcessInstance extends Instance {
   @observable tint: Color = [1, 1, 1, 1];
@@ -123,6 +123,7 @@ export class PostProcessLayer extends Layer<
               shaderInjection: ShaderInjectionTarget.FRAGMENT,
               size: UniformSize.TWO,
               update: () => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 this.props;
                 this.resource.request(this, dummyInstance, request);
                 const data = (request.texture || emptyTexture).data;

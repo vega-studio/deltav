@@ -1,4 +1,6 @@
 import { Attribute, Geometry } from "../../gl";
+import { IndexBuffer } from "../../gl/index-buffer.js";
+import { Instance } from "../../instance-provider/instance.js";
 import {
   type IIndexBufferInternal,
   IndexBufferSize,
@@ -6,10 +8,8 @@ import {
   IVertexAttribute,
   IVertexAttributeInternal,
   ShaderIOValue,
-} from "../../types";
-import { IndexBuffer } from "../../gl/index-buffer";
-import { Instance } from "../../instance-provider/instance";
-import { Layer } from "../layer";
+} from "../../types.js";
+import { Layer } from "../layer.js";
 
 function isNumberCluster(
   val: ShaderIOValue

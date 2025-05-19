@@ -1,13 +1,13 @@
-import { IFontResourceRequest } from "../../../resources";
 import {
   IInstanceOptions,
   Instance,
   makeObservable,
   observable,
 } from "../../../instance-provider";
-import { LabelInstance } from "./label-instance";
-import { Omit } from "../../../types";
-import { Vec2, Vec4 } from "../../../math/vector";
+import { Vec2, Vec4 } from "../../../math/vector.js";
+import { IFontResourceRequest } from "../../../resources";
+import { Omit } from "../../../types.js";
+import { LabelInstance } from "./label-instance.js";
 
 export type GlyphInstanceOptions = Omit<
   Partial<GlyphInstance>,

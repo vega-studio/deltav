@@ -1,11 +1,11 @@
-import { Vec4 } from "../math/vector";
-import { TypeVec } from "../types";
-import { GLProxy } from "./gl-proxy";
-import { GLSettings } from "./gl-settings";
-import { IExtensions, IMaterialUniform, MaterialUniformType, UseMaterialStatus } from "./types";
-import { Material } from "./material";
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
+import { Vec4 } from "../math/vector.js";
+import { TypeVec } from "../types.js";
+import { GLProxy } from "./gl-proxy.js";
+import { GLSettings } from "./gl-settings.js";
+import { Material } from "./material.js";
+import { RenderTarget } from "./render-target.js";
+import { Texture } from "./texture.js";
+import { IExtensions, IMaterialUniform, MaterialUniformType, UseMaterialStatus } from "./types.js";
 /**
  * This class represents all of the current state and settings that the gl context is in currently. This
  * helps to decide when to make gl calls to alter the state and not do so unecessarily.

@@ -1,4 +1,4 @@
-import { compare3, Vec3 } from "../math/vector";
+import { Transform } from "../3d/scene-graph/transform.js";
 import {
   compare4x4,
   copy4x4,
@@ -7,10 +7,10 @@ import {
   multiply4x4,
   orthographic4x4,
   perspective4x4,
-} from "../math/matrix";
-import { shallowCompare } from "./shallow-compare";
-import { Transform } from "../3d/scene-graph/transform";
-import { uid } from "./uid";
+} from "../math/matrix.js";
+import { compare3, Vec3 } from "../math/vector.js";
+import { shallowCompare } from "./shallow-compare.js";
+import { uid } from "./uid.js";
 
 export enum CameraProjectionType {
   PERSPECTIVE,

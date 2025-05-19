@@ -1,4 +1,7 @@
+import { StoryFn } from "@storybook/react";
 import React from "react";
+
+import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
 import {
   add2,
   AutoEasingMethod,
@@ -19,13 +22,11 @@ import {
   subtract2,
   Surface,
   SurfaceJSX,
-  vec2,
   type Vec2,
+  vec2,
   View2D,
   ViewJSX,
 } from "../../../src";
-import { StoryFn } from "@storybook/react";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
 export default {
   title: "Deltav/2D/Edge",
   args: {},

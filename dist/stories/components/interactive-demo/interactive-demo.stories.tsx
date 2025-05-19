@@ -1,4 +1,7 @@
+import { StoryFn } from "@storybook/react";
 import React from "react";
+
+import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
 import {
   add2,
   AnchorType,
@@ -25,9 +28,7 @@ import {
   View2D,
   ViewJSX,
 } from "../../../src";
-import { Employee, type IGrid } from "./employee";
-import { StoryFn } from "@storybook/react";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
+import { Employee, type IGrid } from "./employee.js";
 
 export default {
   title: "Deltav/InteractiveDemo",
@@ -169,7 +170,7 @@ export const Basic: StoryFn = (() => {
         grid,
       };
 
-      const disposers: Function[] = [];
+      const disposers: (() => void)[] = [];
 
       // Make our employees to start attacking the grid
       for (let i = 0, iMax = employeeCount; i < iMax; ++i) {

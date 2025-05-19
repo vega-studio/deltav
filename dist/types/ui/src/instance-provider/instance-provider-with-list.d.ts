@@ -1,5 +1,5 @@
-import { Instance } from "./instance";
-import { InstanceProvider } from "./instance-provider";
+import { Instance } from "./instance.js";
+import { InstanceProvider } from "./instance-provider.js";
 /**
  * A less performant version of the instance provider that provides a tracked
  * list of all instances in the provider. This is very convenient when you need

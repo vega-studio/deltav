@@ -1,7 +1,7 @@
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { RectangleInstance } from "./rectangle-instance";
+import { ILayerMaterialOptions, IShaderInitialization } from "../../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { RectangleInstance } from "./rectangle-instance.js";
 export interface IRectangleLayerProps<T extends RectangleInstance> extends ILayer2DProps<T> {
     animate?: {
         color?: IAutoEasingMethod<Vec>;

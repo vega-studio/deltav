@@ -1,20 +1,20 @@
 import { Attribute, Geometry, Material, Model } from "../../../gl";
-import {
-  BufferManagerBase,
-  IBufferLocation,
-  IBufferLocationGroup,
-} from "../buffer-manager-base";
-import { emitOnce, flushEmitOnce } from "../../../util/emit-once";
-import { generateLayerModel } from "../../layer-processing/generate-layer-model";
+import { Instance, ObservableMonitoring } from "../../../instance-provider";
 import {
   IInstanceAttribute,
   IInstanceAttributeInternal,
   InstanceDiffType,
-} from "../../../types";
-import { ILayerProps, Layer } from "../../layer";
-import { Instance, ObservableMonitoring } from "../../../instance-provider";
-import { LayerScene } from "../../layer-scene";
-import { uid } from "../../../util/uid";
+} from "../../../types.js";
+import { emitOnce, flushEmitOnce } from "../../../util/emit-once.js";
+import { uid } from "../../../util/uid.js";
+import { ILayerProps, Layer } from "../../layer.js";
+import { generateLayerModel } from "../../layer-processing/generate-layer-model.js";
+import { LayerScene } from "../../layer-scene.js";
+import {
+  BufferManagerBase,
+  IBufferLocation,
+  IBufferLocationGroup,
+} from "../buffer-manager-base.js";
 
 const { max } = Math;
 import Debug from "debug";
@@ -25,6 +25,7 @@ const debug = Debug("performance");
  * This represents the location of data for an instance's property to the piece of attribute buffer
  * it will update when it changes.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IVertexAttributePackingBufferLocation
   extends IBufferLocation {}
 

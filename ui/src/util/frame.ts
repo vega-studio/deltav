@@ -29,11 +29,11 @@ let immediateQueuedCommands: [Command, number, number][] = [];
 let nextFrameCommands: Command[] = [];
 /**
  * Commands that are going to be executed repeatedly on the animation loop.
- * [Command, interval, intervalStartTime, duration, durationStartTime]
+ * [Command, interval, intervalStartTime, duration, durationStartTime, zeroedTFlag]
  */
 const animationLoopCommands = new Map<
   Promise<number>,
-  [Command, number, number, number, number]
+  [Command, number, number, number, number, boolean]
 >();
 
 /**
@@ -47,8 +47,14 @@ const loop = (time: number) => {
   // Execute all of the animation loop commands
   animationLoopCommands.forEach((command, id) => {
     keepLooping = true;
-    let [commandFn, interval, intervalStartTime, duration, durationStartTime] =
-      command;
+    let {
+      0: commandFn,
+      1: interval,
+      2: intervalStartTime,
+      3: duration,
+      4: durationStartTime,
+      5: zeroTime,
+    } = command;
 
     // Check to see if the command has a specified duration
     if (duration !== -1) {
@@ -66,6 +72,14 @@ const loop = (time: number) => {
       }
     }
 
+    // Always ensure we have the duration of the command stored
+    else if (durationStartTime === -1) {
+      durationStartTime = time;
+      command[4] = time;
+    }
+
+    const zeroedTimeAdjust = zeroTime ? durationStartTime : 0;
+
     // Check to see if the command has interval assertions
     if (interval !== -1) {
       // Initialize interval time start
@@ -76,7 +90,7 @@ const loop = (time: number) => {
 
       // If we are greater than our interval we execute our command
       if (time - intervalStartTime >= interval) {
-        commandFn(time);
+        commandFn(time - zeroedTimeAdjust);
 
         while (time - intervalStartTime >= interval) {
           command[2] += interval;
@@ -84,7 +98,7 @@ const loop = (time: number) => {
         }
       }
     } else {
-      commandFn(time);
+      commandFn(time - zeroedTimeAdjust);
     }
   });
 
@@ -99,9 +113,9 @@ const loop = (time: number) => {
   const immediate = immediateQueuedCommands.slice();
   immediateQueuedCommands = [];
 
-  // Execute all imeediately queued commands
+  // Execute all immediately queued commands
   for (let i = 0, iMax = immediate.length; i < iMax; ++i) {
-    const [command, interval, startTime] = immediate[i];
+    const { 0: command, 1: interval, 2: startTime } = immediate[i];
 
     // If an interval is not specified, then we simply execute the command
     // immediately
@@ -203,7 +217,7 @@ export function onFrame(command?: Command, interval?: number) {
  * since last time this command executed.
  *
  * You can also specify a duration so the commands will only execute so long as
- * the duration specified has not been exceeeded. Once the duration is met or
+ * the duration specified has not been exceeded. Once the duration is met or
  * exceeded, the command will be removed from the loop queue and no longer fire.
  * There will ALWAYS be a final frame that is executed for the command that will
  * provide the time the command SHOULD HAVE finished (not necessarily the actual
@@ -213,11 +227,15 @@ export function onFrame(command?: Command, interval?: number) {
  * the animation loop. If NO duration is specified, then the promise resolves
  * the first time the command is executed. If a duration IS specified, then the
  * promise resolves after the duration has completed.
+ *
+ * Set the zeroTime flag to true to make the reported time parameter start from
+ * zero.
  */
 export function onAnimationLoop(
   command: Command,
   interval?: number,
-  duration?: number
+  duration?: number,
+  zeroTime: boolean = false
 ) {
   const id = new PromiseResolver<number>();
 
@@ -239,6 +257,7 @@ export function onAnimationLoop(
     -1,
     duration || -1,
     -1,
+    zeroTime,
   ]);
 
   if (animationFrameId === -1) {

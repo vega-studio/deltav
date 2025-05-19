@@ -1,3 +1,9 @@
+## 4.4.0
+
+## Added
+
+- [`ADDED`]: Added the ability to make animation loops that have their t start at zero from their first execution.
+
 ## 4.3.1
 
 ## Fixed

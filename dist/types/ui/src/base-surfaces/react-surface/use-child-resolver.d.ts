@@ -1,6 +1,6 @@
 import React from "react";
-import { groupSurfaceChildren, SurfaceJSXType } from "./group-surface-children";
-import { PromiseResolver } from "../../util/promise-resolver";
+import { PromiseResolver } from "../../util/promise-resolver.js";
+import { groupSurfaceChildren, SurfaceJSXType } from "./group-surface-children.js";
 /**
  * Base class for any type of JSX resource that provides a result through a
  * promise resolver.

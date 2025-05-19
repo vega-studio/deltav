@@ -1,6 +1,6 @@
 import React from "react";
 import { type IMouseInteraction, type Vec2 } from "../../../src";
-import { LineSegments } from "./line-segment";
+import { LineSegments } from "./line-segment.js";
 export declare enum CursorMode {
     MOVE_END = "move_end",
     MOVE_CURVE = "move_curve",
@@ -92,7 +92,7 @@ export declare class CursorUtil {
      * mode, the callback will be called with the mode applied to the executeMode
      * property.
      */
-    static willStartDragMode(cb: Function): void;
+    static willStartDragMode(cb: () => void): void;
     /**
      * Gets the nearest edge from the cursor within a specified range. If an edge
      * isn't within range this will return null.

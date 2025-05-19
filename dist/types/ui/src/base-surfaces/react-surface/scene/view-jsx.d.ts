@@ -1,7 +1,7 @@
 import React from "react";
 import { IViewConstructable, IViewProps } from "../../../surface/index.js";
-import { IViewBaseJSX } from "./as-view.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
+import { IViewBaseJSX } from "./as-view.js";
 export interface IViewJSX<TProps extends IViewProps> extends Partial<IViewBaseJSX<TProps>> {
     /**
      * Resource name for debugging mostly. Maps to resource "key" in the deltav

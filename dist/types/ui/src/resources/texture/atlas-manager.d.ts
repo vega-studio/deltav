@@ -1,6 +1,6 @@
-import { Atlas, IAtlasResource } from "./atlas";
 import { WebGLRenderer } from "../../gl";
-import { IAtlasResourceRequest } from "./atlas-resource-request";
+import { Atlas, IAtlasResource } from "./atlas.js";
+import { IAtlasResourceRequest } from "./atlas-resource-request.js";
 /**
  * Defines a manager of atlas', which includes generating the atlas and
  * producing textures defining those pieces of atlas.

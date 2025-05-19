@@ -1,18 +1,18 @@
-import { BaseIOExpansion } from "./layer-processing/base-io-expansion";
-import { BaseIOSorting } from "../shaders/processing/base-io-sorting";
-import { BaseProjection } from "../math";
-import { BaseResourceManager, BaseResourceOptions, BaseResourceRequest, ResourceRouter } from "../resources";
-import { BaseShaderTransform } from "../shaders/processing/base-shader-transform";
-import { Bounds } from "../math/primitives/bounds";
-import { IViewProps, View } from "./view";
-import { EventManager } from "../event-management/event-manager";
-import { FrameMetrics } from "../types";
-import { IdentifiableById, IPipeline, IResourceType } from "../types";
-import { ISceneOptions, LayerScene } from "./layer-scene";
-import { ReactiveDiff } from "../util/reactive-diff";
-import { SurfaceCommands } from "./surface-commands";
-import { UserInputEventManager } from "../event-management/user-input-event-manager";
-import { WebGLRenderer } from "../gl/webgl-renderer";
+import { EventManager } from "../event-management/event-manager.js";
+import { UserInputEventManager } from "../event-management/user-input-event-manager.js";
+import { WebGLRenderer } from "../gl/webgl-renderer.js";
+import { BaseProjection } from "../math/index.js";
+import { Bounds } from "../math/primitives/bounds.js";
+import { BaseResourceManager, BaseResourceOptions, BaseResourceRequest, ResourceRouter } from "../resources/index.js";
+import { BaseIOSorting } from "../shaders/processing/base-io-sorting.js";
+import { BaseShaderTransform } from "../shaders/processing/base-shader-transform.js";
+import { FrameMetrics } from "../types.js";
+import { IdentifiableById, IPipeline, IResourceType } from "../types.js";
+import { ReactiveDiff } from "../util/reactive-diff.js";
+import { BaseIOExpansion } from "./layer-processing/base-io-expansion.js";
+import { ISceneOptions, LayerScene } from "./layer-scene.js";
+import { SurfaceCommands } from "./surface-commands.js";
+import { IViewProps, View } from "./view.js";
 /**
  * Default IO expansion controllers applied to the system when explicit settings
  * are not provided.
@@ -247,7 +247,7 @@ export declare class Surface {
      * As users interact with the surface, this provides a quick way to view the
      * latest interaction that occurred from User events.
      */
-    getCurrentInteraction(): import("..").IEventInteraction | undefined;
+    getCurrentInteraction(): import("../index.js").IEventInteraction | undefined;
     /**
      * Retrieves all IO Expanders applied to this surface
      */

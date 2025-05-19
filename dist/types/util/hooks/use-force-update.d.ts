@@ -1,2 +1,2 @@
 import React from "react";
-export declare function useForceUpdate(): React.DispatchWithoutAction;
+export declare function useForceUpdate(): React.ActionDispatch<[]>;

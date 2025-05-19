@@ -1,9 +1,9 @@
 import { Attribute } from "../../gl";
-import { IInstanceAttribute, IInstancingUniform, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../types";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { IViewProps, View } from "../../surface/view";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
+import { Instance } from "../../instance-provider/instance.js";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { IViewProps, View } from "../../surface/view.js";
+import { IInstanceAttribute, IInstancingUniform, IUniform, IVertexAttribute, ShaderInjectionTarget } from "../../types.js";
 /**
  * The result of an injection into the header of a shader. Allows for injection content into the header
  * and provide extra Shader IO such as uniforms and attributes.

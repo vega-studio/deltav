@@ -1,1 +1,1 @@
-export * from "./shaders-30-compatibility-transform";
+export * from "./shaders-30-compatibility-transform.js";

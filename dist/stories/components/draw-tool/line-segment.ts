@@ -14,7 +14,7 @@ import {
   Vec2,
   type Vec4,
 } from "../../../src";
-import type { LineSweep } from "./line-sweep";
+import type { LineSweep } from "./line-sweep.js";
 
 // These are temp vector storage registers for storing results for multiple
 // vector steps. Using these as out values greatly reduces allocations.

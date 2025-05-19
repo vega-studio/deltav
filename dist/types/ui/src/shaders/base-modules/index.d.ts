@@ -5,6 +5,6 @@ import "./instancing.shader.js";
 import "./math.shader.js";
 import "./matrix.shader.js";
 import "./noise.shader.js";
-import "./pack-float";
+import "./pack-float.js";
 import "./picking.shader.js";
 import "./util.shader.js";

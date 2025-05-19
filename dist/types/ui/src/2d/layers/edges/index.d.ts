@@ -1,3 +1,3 @@
-export * from "./edge-layer";
-export * from "./edge-instance";
-export * from "./types";
+export * from "./edge-layer.js";
+export * from "./edge-instance.js";
+export * from "./types.js";

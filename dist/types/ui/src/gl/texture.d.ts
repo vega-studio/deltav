@@ -1,5 +1,5 @@
-import { GLProxy } from "./gl-proxy";
-import { Omit } from "../types";
+import { Omit } from "../types.js";
+import { GLProxy } from "./gl-proxy.js";
 /**
  * This is the options to apply to a texture
  */

@@ -1,5 +1,5 @@
+import { IInstanceOptions, Instance } from "../../../instance-provider/instance.js";
 import { Vec2, Vec4 } from "../../../math";
-import { IInstanceOptions, Instance } from "../../../instance-provider/instance";
 export interface IEdgeInstanceOptions extends IInstanceOptions {
     /** This is the list of control points  */
     control?: Vec2[];

@@ -1,7 +1,7 @@
 import { Control2D } from "../../2d";
-import { ILayerConstructable, ILayerProps } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { Omit } from "../../types";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerConstructable, ILayerProps } from "../../surface/layer.js";
+import { Omit } from "../../types.js";
 /**
  * Specifies a 2D axis system within a 3D world.
  */
@@ -30,4 +30,4 @@ export declare function createLayer2Din3D<TInstance extends Instance, TProps ext
     defaultProps: TProps;
 }, props: Omit<TProps, "key" | "data"> & Partial<Pick<TProps, "key" | "data">> & {
     control2D: Control2D;
-}): import("../../surface/layer").LayerInitializer<TInstance, TProps>;
+}): import("../../surface/layer.js").LayerInitializer<TInstance, TProps>;

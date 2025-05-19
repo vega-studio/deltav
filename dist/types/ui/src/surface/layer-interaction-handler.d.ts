@@ -1,8 +1,8 @@
-import { IColorPickingData } from "../types";
-import { ILayerProps, Layer } from "./layer";
-import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "../event-management/types";
-import { Instance } from "../instance-provider/instance";
-import { IViewProps, View } from "./view";
+import { IMouseInteraction, ISingleTouchInteraction, ITouchInteraction } from "../event-management/types.js";
+import { Instance } from "../instance-provider/instance.js";
+import { IColorPickingData } from "../types.js";
+import { ILayerProps, Layer } from "./layer.js";
+import { IViewProps, View } from "./view.js";
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining
  * how to make the interaction translate to picking events for the layer's instances.

@@ -1,5 +1,5 @@
-import { GLContext, IExtensions } from "./types";
-import { GLSettings } from "./gl-settings";
+import { GLSettings } from "./gl-settings.js";
+import { GLContext, IExtensions } from "./types.js";
 /**
  * This file contains all method used to decode/encode GLSettings to GL types
  */

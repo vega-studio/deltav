@@ -1,5 +1,5 @@
-import { IViewProps, View } from "../surface/view";
-import { Vec2 } from "../math/vector";
+import { Vec2 } from "../math/vector.js";
+import { IViewProps, View } from "../surface/view.js";
 export declare enum MouseButton {
     /** No button detected */
     NONE = -1,

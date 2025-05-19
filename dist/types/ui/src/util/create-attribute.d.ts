@@ -1,5 +1,5 @@
-import { IInstanceAttribute } from "../types";
-import { Instance } from "../instance-provider/instance";
+import { Instance } from "../instance-provider/instance.js";
+import { IInstanceAttribute } from "../types.js";
 /**
  * Makes it easier to type out and get better editor help in establishing initShader
  */

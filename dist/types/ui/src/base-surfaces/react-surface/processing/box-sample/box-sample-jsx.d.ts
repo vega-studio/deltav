@@ -1,7 +1,6 @@
-/// <reference types="react" />
-import { ILayerMaterialOptions } from "../../../../types";
-import { IPartialViewJSX } from "../../scene/view-jsx";
 import { IView2DProps } from "../../../../2d";
+import { ILayerMaterialOptions } from "../../../../types.js";
+import { IPartialViewJSX } from "../../scene/view-jsx.js";
 export declare enum BoxSampleJSXDirection {
     DOWN = 0,
     UP = 1

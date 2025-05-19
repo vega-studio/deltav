@@ -1,4 +1,4 @@
-import { BaseShaderTransform } from "../../../shaders/processing/base-shader-transform";
+import { BaseShaderTransform } from "../../../shaders/processing/base-shader-transform.js";
 /**
  * This transform is a last pass to resolve odds and ends differences that can
  * slip in from the way a shader is written. This will attempt it's best to

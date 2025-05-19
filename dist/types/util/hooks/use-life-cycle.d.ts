@@ -1,4 +1,3 @@
-/// <reference types="react" />
 type WillUnmount = () => void;
 /**
  * A target that wishes to interact with a component's lifecycle.

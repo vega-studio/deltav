@@ -1,6 +1,6 @@
-import { Camera } from "../../util";
 import { IMouseInteraction } from "../../event-management";
-import { SimpleEventHandler } from "../../event-management/simple-event-handler";
+import { SimpleEventHandler } from "../../event-management/simple-event-handler.js";
+import { Camera } from "../../util";
 export interface IMouseSwivelCameraController {
     /**
      * This is a 3D camera this handler will use to control the scene.

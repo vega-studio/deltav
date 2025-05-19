@@ -1,7 +1,7 @@
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ILayerMaterialOptions, IShaderInitialization } from "../../../types";
-import { RingInstance } from "./ring-instance";
+import { ILayerMaterialOptions, IShaderInitialization } from "../../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { RingInstance } from "./ring-instance.js";
 export interface IRingLayerProps<T extends RingInstance> extends ILayer2DProps<T> {
     /** This sets a scaling factor for the circle's radius */
     scaleFactor?(): number;

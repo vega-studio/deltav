@@ -1,7 +1,7 @@
-import { BufferManagerBase, IBufferLocation, IBufferLocationGroup } from "../buffer-manager-base";
-import { ILayerProps, Layer } from "../../layer";
 import { Instance } from "../../../instance-provider";
-import { LayerScene } from "../../layer-scene";
+import { ILayerProps, Layer } from "../../layer.js";
+import { LayerScene } from "../../layer-scene.js";
+import { BufferManagerBase, IBufferLocation, IBufferLocationGroup } from "../buffer-manager-base.js";
 /**
  * This represents the location of data for an instance's property to the piece
  * of attribute buffer it will update when it changes.

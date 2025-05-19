@@ -1,2 +1,2 @@
-export * from "./absolute-position";
-export * from "./bounds";
+export * from "./absolute-position.js";
+export * from "./bounds.js";

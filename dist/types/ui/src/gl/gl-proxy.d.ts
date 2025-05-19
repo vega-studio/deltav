@@ -1,13 +1,13 @@
-import { Attribute } from "./attribute";
-import { ColorBuffer } from "./color-buffer";
-import { Geometry } from "./geometry";
-import { GLContext, IExtensions } from "./types";
-import { GLState } from "./gl-state";
-import { Material } from "./material";
-import { Model } from "./model";
-import { RenderTarget } from "./render-target";
-import { Texture } from "./texture";
-import type { IndexBuffer } from "./index-buffer";
+import { Attribute } from "./attribute.js";
+import { ColorBuffer } from "./color-buffer.js";
+import { Geometry } from "./geometry.js";
+import { GLState } from "./gl-state.js";
+import type { IndexBuffer } from "./index-buffer.js";
+import { Material } from "./material.js";
+import { Model } from "./model.js";
+import { RenderTarget } from "./render-target.js";
+import { Texture } from "./texture.js";
+import { GLContext, IExtensions } from "./types.js";
 /**
  * This is where all objects go to be processed and updated with webgl calls. Such as textures, geometries, etc
  */

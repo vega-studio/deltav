@@ -1,4 +1,4 @@
-import { Vec2 } from "../../math/vector";
+import { Vec2 } from "../../math/vector.js";
 /**
  * Redraws the contents of the provided canvas as a signed distance field.
  * Signed distance fields are great for many techniques.

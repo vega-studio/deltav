@@ -1,5 +1,5 @@
-import { InstanceIOValue } from "../types";
-import { Vec } from "./vector";
+import { InstanceIOValue } from "../types.js";
+import { Vec } from "./vector.js";
 export declare enum AutoEasingLoopStyle {
     /** Time will go from 0 -> 1 then stop at 1 */
     NONE = 1,

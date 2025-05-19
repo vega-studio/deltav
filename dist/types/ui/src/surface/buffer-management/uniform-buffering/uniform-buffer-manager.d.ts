@@ -1,9 +1,9 @@
 import { Geometry, Material, Model } from "../../../gl";
-import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base";
-import { ILayerProps, Layer } from "../../layer";
-import { IMaterialUniform, MaterialUniformType } from "../../../gl/types";
+import { IMaterialUniform, MaterialUniformType } from "../../../gl/types.js";
 import { Instance } from "../../../instance-provider";
-import { LayerScene } from "../../layer-scene";
+import { ILayerProps, Layer } from "../../layer.js";
+import { LayerScene } from "../../layer-scene.js";
+import { BufferManagerBase, IBufferLocation } from "../buffer-manager-base.js";
 export interface IUniformBufferLocation extends IBufferLocation {
     /** This is the index of the instance as it appears in the buffer */
     instanceIndex: number;

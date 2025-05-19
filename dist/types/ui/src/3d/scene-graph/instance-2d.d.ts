@@ -1,6 +1,6 @@
 import { IInstanceOptions, Instance } from "../../instance-provider";
 import { Vec2Compat, Vec3 } from "../../math";
-import { Transform2D } from "./transform-2d";
+import { Transform2D } from "./transform-2d.js";
 export interface IInstance3DOptions extends IInstanceOptions {
     /** The transform object that will manage this instance */
     transform?: Transform2D;

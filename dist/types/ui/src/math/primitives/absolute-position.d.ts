@@ -1,4 +1,4 @@
-import { Bounds } from "./bounds";
+import { Bounds } from "./bounds.js";
 /**
  * Anytime this is used to express bounds of an object, it is expected
  * to behave like CSS styling with absolute positioning.

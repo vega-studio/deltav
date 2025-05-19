@@ -5,12 +5,12 @@
  * library offers. This includes things such as injecting camera projection
  * uniforms, resource uniforms, animation adjustments etc etc.
  */
-import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { BaseIOSorting } from "./base-io-sorting";
-import { type IIndexBufferInternal, IInstanceAttribute, IShaderInitialization, IUniformInternal, IVertexAttributeInternal } from "../../types";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { ProcessShaderImportResults } from "./shader-processor";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion.js";
+import { type IIndexBufferInternal, IInstanceAttribute, IShaderInitialization, IUniformInternal, IVertexAttributeInternal } from "../../types.js";
+import { BaseIOSorting } from "./base-io-sorting.js";
+import { ProcessShaderImportResults } from "./shader-processor.js";
 /**
  * This is the primary method that analyzes all shader IO and determines which
  * elements needs to be automatically injected into the shader.

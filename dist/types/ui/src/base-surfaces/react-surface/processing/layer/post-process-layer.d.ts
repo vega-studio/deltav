@@ -1,7 +1,7 @@
-import { Color, IShaderInitialization, IUniform } from "../../../../types";
-import { ILayerProps, Layer } from "../../../../surface";
 import { Instance } from "../../../../instance-provider";
 import { IRenderTextureResource } from "../../../../resources";
+import { ILayerProps, Layer } from "../../../../surface";
+import { Color, IShaderInitialization, IUniform } from "../../../../types.js";
 export declare class PostProcessInstance extends Instance {
     tint: Color;
     constructor();

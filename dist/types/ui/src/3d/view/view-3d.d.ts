@@ -1,7 +1,7 @@
-import { Bounds } from "../../math/primitives/bounds";
+import { Bounds } from "../../math/primitives/bounds.js";
 import { IViewProps, View } from "../../surface";
-import { LayerScene } from "../../surface/layer-scene";
-import { Projection3D } from "./projection-3d";
+import { LayerScene } from "../../surface/layer-scene.js";
+import { Projection3D } from "./projection-3d.js";
 /**
  * Defines the input metrics of a view for a scene.
  */

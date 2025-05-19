@@ -1,8 +1,8 @@
-import { Bounds } from "../../math/primitives/bounds";
-import { Camera2D } from "./camera-2d";
+import { Bounds } from "../../math/primitives/bounds.js";
 import { IViewProps, View } from "../../surface";
-import { LayerScene } from "../../surface/layer-scene";
-import { Projection2D } from "./projection-2d";
+import { LayerScene } from "../../surface/layer-scene.js";
+import { Camera2D } from "./camera-2d.js";
+import { Projection2D } from "./projection-2d.js";
 /**
  * Defines the input metrics of a view for a scene.
  */

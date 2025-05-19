@@ -1,9 +1,9 @@
-import { BaseResourceManager } from "../base-resource-manager";
-import { ColorBufferResource, IColorBufferResource } from "./color-buffer-resource";
-import { IColorBufferResourceRequest } from "./color-buffer-resource-request";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { InstanceIOValue, IResourceContext } from "../../types";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { InstanceIOValue, IResourceContext } from "../../types.js";
+import { BaseResourceManager } from "../base-resource-manager.js";
+import { ColorBufferResource, IColorBufferResource } from "./color-buffer-resource.js";
+import { IColorBufferResourceRequest } from "./color-buffer-resource-request.js";
 /**
  * This manager handles creation and destruction of simple Texture Resources.
  * Render Textures are more used on a higher level with the Surface

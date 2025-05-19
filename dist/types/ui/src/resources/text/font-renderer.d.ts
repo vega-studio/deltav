@@ -1,12 +1,7 @@
-/**
- * The purpose of this file is to provide a means to render glyphs to a grid and to provide
- * an approach to estimating kerning values for characters utilizing any custom embedded font
- * in a web page.
- */
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { IResourceType, ResourceType } from "../../types";
 import { Vec2 } from "../../math";
-import type { IFontMapMetrics } from "./font-manager";
+import { IResourceType, ResourceType } from "../../types.js";
+import { IdentifyByKey } from "../../util/identify-by-key.js";
+import type { IFontMapMetrics } from "./font-manager.js";
 type IGlyphRenderMetrics = {
     [key: string]: {
         glyph: ImageData;

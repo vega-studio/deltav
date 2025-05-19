@@ -19,7 +19,7 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ["bin/lib/template/*"],
+    ignores: ["bin/lib/template/*", "src/util/normalize-wheel/*.js"],
   },
   ...compat.extends(
     "eslint:recommended",
@@ -40,6 +40,7 @@ export default [
     },
 
     rules: {
+      "@typescript-eslint/no-unsafe-function-type": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "no-magic-numbers": [0],
 

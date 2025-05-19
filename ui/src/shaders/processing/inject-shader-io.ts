@@ -5,8 +5,9 @@
  * library offers. This includes things such as injecting camera projection
  * uniforms, resource uniforms, animation adjustments etc etc.
  */
-import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { BaseIOSorting } from "./base-io-sorting";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion.js";
 import {
   type IIndexBuffer,
   type IIndexBufferInternal,
@@ -16,12 +17,11 @@ import {
   IUniformInternal,
   IVertexAttribute,
   IVertexAttributeInternal,
-} from "../../types";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
+} from "../../types.js";
 import { isDefined } from "../../util";
-import { packAttributes } from "./pack-attributes";
-import { ProcessShaderImportResults } from "./shader-processor";
+import { BaseIOSorting } from "./base-io-sorting.js";
+import { packAttributes } from "./pack-attributes.js";
+import { ProcessShaderImportResults } from "./shader-processor.js";
 
 /**
  * Instance attribute typeguard

@@ -1,13 +1,13 @@
+import { Instance } from "../../../instance-provider/index.js";
+import { Vec4 } from "../../../math/vector.js";
+import { InstanceDiff } from "../../../types.js";
+import { ILayerProps } from "../../layer.js";
 import { BaseDiffProcessor } from "../base-diff-processor.js";
 import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
-import { ILayerProps } from "../../layer.js";
-import { Instance } from "../../../instance-provider/index.js";
-import { InstanceDiff } from "../../../types.js";
 import {
   isUniformBufferLocation,
   IUniformBufferLocation,
 } from "./uniform-buffer-manager.js";
-import { Vec4 } from "../../../math/vector.js";
 
 // This is a mapping of the vector properties as they relate to an array order
 const EMPTY: number[] = [];

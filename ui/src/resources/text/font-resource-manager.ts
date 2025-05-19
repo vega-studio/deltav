@@ -1,29 +1,33 @@
-import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
+import Debug from "debug";
+
+import { Instance } from "../../instance-provider/instance.js";
+import {
+  SubTexture,
+  subTextureIOValue,
+} from "../../resources/texture/sub-texture.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion.js";
+import {
+  InstanceIOValue,
+  IResourceContext,
+  ResourceType,
+} from "../../types.js";
+import { nextFrame, shallowCompare } from "../../util";
 import {
   BaseResourceManager,
   BaseResourceOptions,
-} from "../base-resource-manager";
+} from "../base-resource-manager.js";
+import { TextureIOExpansion } from "../texture/texture-io-expansion.js";
 import {
   FontManager,
   IFontResourceOptions,
   isFontResource,
-} from "./font-manager";
-import { FontMap } from "./font-map";
+} from "./font-manager.js";
+import { FontMap } from "./font-map.js";
 import {
   FontResourceRequestFetch,
   IFontResourceRequest,
-} from "./font-resource-request";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { InstanceIOValue, IResourceContext, ResourceType } from "../../types";
-import { nextFrame, shallowCompare } from "../../util";
-import {
-  SubTexture,
-  subTextureIOValue,
-} from "../../resources/texture/sub-texture";
-import { TextureIOExpansion } from "../texture/texture-io-expansion";
-
-import Debug from "debug";
+} from "./font-resource-request.js";
 
 const debug = Debug("performance");
 

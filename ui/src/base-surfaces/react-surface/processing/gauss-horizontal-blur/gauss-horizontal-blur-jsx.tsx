@@ -1,10 +1,10 @@
-import GaussHorizontalBlurFS from "./gauss-horizontal-blur-jsx.fs";
 import {
   FragmentOutputType,
   ShaderInjectionTarget,
   UniformSize,
 } from "../../../../types.js";
 import { PostProcessJSX } from "../post-process-jsx.js";
+import GaussHorizontalBlurFS from "./gauss-horizontal-blur-jsx.fs";
 
 export interface IGaussHorizontalBlurJSX {
   /** Specifies the resource taken in that will be blurred for the output */

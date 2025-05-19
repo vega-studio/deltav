@@ -1,16 +1,17 @@
+import { describe, it } from "@jest/globals";
 import assert from "assert";
+
+import { Transform } from "../ui/src/3d/scene-graph/transform.js";
 import {
   compare4x4,
   identity4,
   Mat4x4,
   toString4x4,
   transform4,
-} from "../ui/src/math/matrix";
-import { describe, it } from "@jest/globals";
-import { fail4, fuzzCompare4 } from "./vector.test";
-import { Quaternion } from "../ui/src/math/quaternion";
-import { Transform } from "../ui/src/3d/scene-graph/transform";
-import { Vec4 } from "../ui/src/math/vector";
+} from "../ui/src/math/matrix.js";
+import { Quaternion } from "../ui/src/math/quaternion.js";
+import { Vec4 } from "../ui/src/math/vector.js";
+import { fail4, fuzzCompare4 } from "./vector.test.js";
 
 const { sqrt } = Math;
 

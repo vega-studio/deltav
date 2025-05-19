@@ -1,8 +1,8 @@
 import { BaseProjection } from "../math";
 import { Bounds } from "../math/primitives";
-import { IMouseInteraction, ITouchInteraction } from "./types";
-import { IViewProps, View } from "../surface/view";
-import { UserInputEventManager } from "./user-input-event-manager";
+import { IViewProps, View } from "../surface/view.js";
+import { IMouseInteraction, ITouchInteraction } from "./types.js";
+import { UserInputEventManager } from "./user-input-event-manager.js";
 
 /**
  * Classes can extend this and override the methods to respond to events.

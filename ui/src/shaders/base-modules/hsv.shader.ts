@@ -1,6 +1,6 @@
-import VS from "./shader-fragments/hsv.vs";
-import { ShaderInjectionTarget } from "../../types";
+import { ShaderInjectionTarget } from "../../types.js";
 import { ShaderModule } from "../processing";
+import VS from "./shader-fragments/hsv.vs";
 
 const doc = `
 Provides methods that converts colors to

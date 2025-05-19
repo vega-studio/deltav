@@ -1,17 +1,17 @@
-import RectangleLayerFS from "./rectangle-layer.fs";
-import RectangleLayerVS from "./rectangle-layer.vs";
-import { CommonMaterialOptions } from "../../../util";
+import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
   VertexAttributeSize,
-} from "../../../types";
-import { InstanceProvider } from "../../../instance-provider";
-import { RectangleInstance } from "./rectangle-instance";
+} from "../../../types.js";
+import { CommonMaterialOptions } from "../../../util";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { RectangleInstance } from "./rectangle-instance.js";
+import RectangleLayerFS from "./rectangle-layer.fs";
+import RectangleLayerVS from "./rectangle-layer.vs";
 
 export interface IRectangleLayerProps<T extends RectangleInstance>
   extends ILayer2DProps<T> {

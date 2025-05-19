@@ -1,7 +1,8 @@
-import assert from "assert";
-import { Bounds } from "../ui/src/math/primitives";
 import { describe, it } from "@jest/globals";
-import { getAbsolutePositionBounds } from "../ui/src/math/primitives/absolute-position";
+import assert from "assert";
+
+import { getAbsolutePositionBounds } from "../ui/src/math/primitives/absolute-position.js";
+import { Bounds } from "../ui/src/math/primitives/bounds.js";
 
 describe("Absolute Position", () => {
   it("Should occupy the whole screen by setting size in percent", () => {

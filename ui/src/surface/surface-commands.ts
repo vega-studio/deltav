@@ -1,10 +1,10 @@
-import { divide2, scale2, Vec2, Vec4 } from "../math/vector";
-import { emitOnce } from "../util/emit-once";
-import { FragmentOutputType, IColorPickingData, PickType } from "../types";
-import { IViewProps, View } from "./view";
-import { RenderTarget } from "../gl/render-target";
-import { Surface } from "./surface";
-import { Texture } from "../gl/texture";
+import { RenderTarget } from "../gl/render-target.js";
+import { Texture } from "../gl/texture.js";
+import { divide2, scale2, Vec2, Vec4 } from "../math/vector.js";
+import { FragmentOutputType, IColorPickingData, PickType } from "../types.js";
+import { emitOnce } from "../util/emit-once.js";
+import { Surface } from "./surface.js";
+import { IViewProps, View } from "./view.js";
 
 export interface ISurfaceCommandsOptions {
   surface: Surface;

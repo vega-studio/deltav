@@ -1,6 +1,7 @@
-import { isDefined } from "../types";
-import { PromiseResolver } from "../promise-resolver";
 import { useEffect, useState } from "react";
+
+import { PromiseResolver } from "../promise-resolver.js";
+import { isDefined } from "../types.js";
 
 type WillUnmount = () => void;
 

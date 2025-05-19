@@ -1,10 +1,10 @@
-import { Anchor, AnchorType, ScaleMode } from "../../types";
-import { IAtlasResourceRequest } from "../../../resources";
 import { IInstanceOptions, Instance } from "../../../instance-provider";
-import { ImageInstanceResource } from "./image-layer";
 import { makeObservable, observable } from "../../../instance-provider";
-import { NOOP } from "../../../types";
-import { Vec2 } from "../../../math/vector";
+import { Vec2 } from "../../../math/vector.js";
+import { IAtlasResourceRequest } from "../../../resources";
+import { NOOP } from "../../../types.js";
+import { Anchor, AnchorType, ScaleMode } from "../../types.js";
+import { ImageInstanceResource } from "./image-layer";
 
 const { max } = Math;
 
@@ -193,7 +193,7 @@ export class ImageInstance extends Instance {
     this.onReady = options.onReady;
 
     // Make sure the anchor is set to the appropriate location
-    options.anchor && this.setAnchor(options.anchor);
+    if (options.anchor) this.setAnchor(options.anchor);
   }
 
   get anchor() {

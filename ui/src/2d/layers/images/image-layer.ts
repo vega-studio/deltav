@@ -1,17 +1,21 @@
+import { InstanceProvider } from "../../../instance-provider";
 import {
   atlasRequest,
   AtlasResource,
   IAtlasResourceRequest,
 } from "../../../resources";
+import { InstanceDiffType } from "../../../types.js";
 import { createChildLayer, mapInjectDefault } from "../../../util";
-import { debugVideoEvents } from "./debug-video";
-import { IImageRenderLayerProps, ImageRenderLayer } from "./image-render-layer";
-import { ImageInstance } from "./image-instance";
-import { InstanceDiffType } from "../../../types";
-import { InstanceProvider } from "../../../instance-provider";
-import { Layer2D } from "../../view/layer-2d";
-import { PromiseResolver } from "../../../util/promise-resolver";
+import { PromiseResolver } from "../../../util/promise-resolver.js";
+import { Layer2D } from "../../view/layer-2d.js";
+import { debugVideoEvents } from "./debug-video.js";
+import { ImageInstance } from "./image-instance.js";
+import {
+  IImageRenderLayerProps,
+  ImageRenderLayer,
+} from "./image-render-layer.js";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IImageLayerProps<T extends ImageInstance>
   extends IImageRenderLayerProps<T> {}
 

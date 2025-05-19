@@ -1,12 +1,12 @@
-import { copy4, Vec2, Vec4 } from "../../../math";
 import {
   IInstanceOptions,
   Instance,
-} from "../../../instance-provider/instance";
+} from "../../../instance-provider/instance.js";
 import {
   makeObservable,
   observable,
-} from "../../../instance-provider/observable";
+} from "../../../instance-provider/observable.js";
+import { copy4, Vec2, Vec4 } from "../../../math";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
   /** This is the list of control points  */

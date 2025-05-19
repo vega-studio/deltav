@@ -1,5 +1,5 @@
-import { GenericFunction } from "./types.js";
 import { NOOP } from "./no-op.js";
+import { GenericFunction } from "./types.js";
 
 export interface IPromiseResolver {
   /**
@@ -29,7 +29,7 @@ export class PromiseResolver<T> {
   children?: PromiseResolver<any>[];
   /** Stores the resolution values of each child that gets resolved */
   private childResolutions?: Map<PromiseResolver<any>, any>;
-  private childResolvers?: Map<PromiseResolver<any>, Function>;
+  private childResolvers?: Map<PromiseResolver<any>, (val: any) => void>;
 
   constructor(_options?: IPromiseResolver) {
     this.promise = new Promise(

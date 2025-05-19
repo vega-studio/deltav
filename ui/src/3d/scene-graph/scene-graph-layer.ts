@@ -1,7 +1,7 @@
-import { ILayerProps, Layer } from "../../surface";
 import { Instance } from "../../instance-provider";
-import { IShaderInitialization } from "../../types";
-import { Mat4x4 } from "../../math/matrix";
+import { Mat4x4 } from "../../math/matrix.js";
+import { ILayerProps, Layer } from "../../surface";
+import { IShaderInitialization } from "../../types.js";
 
 export interface ISceneGraphLayerProps<TInstance extends Instance>
   extends ILayerProps<TInstance> {

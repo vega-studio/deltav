@@ -14,10 +14,10 @@ import {
   Vec2Compat,
   Vec3,
 } from "../../math";
-import { Instance2D } from "./instance-2d";
-import { resolveUpdate, scheduleUpdate } from "./transform-base";
-import { TreeNode } from "./tree-node";
-import { UpdateProp } from "../../types";
+import { UpdateProp } from "../../types.js";
+import { Instance2D } from "./instance-2d.js";
+import { resolveUpdate, scheduleUpdate } from "./transform-base.js";
+import { TreeNode } from "./tree-node.js";
 
 /**
  * This is a transform node that specifically only operates on x y positions and

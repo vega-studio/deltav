@@ -1,12 +1,13 @@
 import React from "react";
+
+import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 import {
   createTexture,
   IRenderTextureResource,
 } from "../../../resources/index.js";
 import { CustomTag } from "../custom-tag.js";
-import { IResourceJSX } from "./as-resource.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
-import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
+import { IResourceJSX } from "./as-resource.js";
 
 export interface ITexturePropsJSX extends Partial<IResourceJSX> {
   /**

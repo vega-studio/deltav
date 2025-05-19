@@ -1,6 +1,6 @@
-import packFloat from "./shader-fragments/pack-float.vs";
-import { ShaderInjectionTarget } from "../../types";
+import { ShaderInjectionTarget } from "../../types.js";
 import { ShaderModule } from "../processing";
+import packFloat from "./shader-fragments/pack-float.vs";
 
 const doc = `
 This provides the ability to pack

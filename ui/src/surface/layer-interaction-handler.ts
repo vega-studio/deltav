@@ -1,18 +1,21 @@
 import {
+  IMouseInteraction,
+  ISingleTouchInteraction,
+  ITouchInteraction,
+} from "../event-management/types.js";
+import { Instance } from "../instance-provider/instance.js";
+import {
   IColorPickingData,
   IMousePickInfo,
   ITouchPickInfo,
   PickType,
-} from "../types";
-import { ILayerProps, Layer } from "./layer";
+} from "../types.js";
 import {
-  IMouseInteraction,
-  ISingleTouchInteraction,
-  ITouchInteraction,
-} from "../event-management/types";
-import { Instance } from "../instance-provider/instance";
-import { IViewProps, View } from "./view";
-import { mapGetWithDefault, mapInjectDefault } from "../util/common-operations";
+  mapGetWithDefault,
+  mapInjectDefault,
+} from "../util/common-operations.js";
+import { ILayerProps, Layer } from "./layer.js";
+import { IViewProps, View } from "./view.js";
 
 /**
  * This manages mouse gestures broadcast to the layer and handles appropriate actions such as determining

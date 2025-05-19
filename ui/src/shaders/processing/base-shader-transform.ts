@@ -1,4 +1,4 @@
-import type { OutputFragmentShaderSource } from "../../types";
+import type { OutputFragmentShaderSource } from "../../types.js";
 
 /**
  * This defines a transform that is allowed to analyze the final product of a

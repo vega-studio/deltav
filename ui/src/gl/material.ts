@@ -1,8 +1,8 @@
-import { GLProxy } from "./gl-proxy";
-import { GLSettings } from "./gl-settings";
-import { IMaterialUniform, MaterialUniformType } from "./types";
-import { MapValueType, Omit, OutputFragmentShader, TypeVec } from "../types";
-import { RenderTarget } from "./render-target";
+import { MapValueType, Omit, OutputFragmentShader, TypeVec } from "../types.js";
+import { GLProxy } from "./gl-proxy.js";
+import { GLSettings } from "./gl-settings.js";
+import { RenderTarget } from "./render-target.js";
+import { IMaterialUniform, MaterialUniformType } from "./types.js";
 
 export type MaterialOptions = Omit<
   Partial<Material>,

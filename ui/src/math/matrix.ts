@@ -8,7 +8,7 @@ import {
   Vec3,
   Vec3Compat,
   Vec4,
-} from "./vector";
+} from "./vector.js";
 
 const { cos, sin, tan } = Math;
 const PI_2 = Math.PI / 2;

@@ -1,6 +1,6 @@
-import { Camera } from "../../util";
 import { IMouseInteraction } from "../../event-management";
-import { SimpleEventHandler } from "../../event-management/simple-event-handler";
+import { SimpleEventHandler } from "../../event-management/simple-event-handler.js";
+import { Camera } from "../../util";
 
 export interface IMouseSwivelCameraController {
   /**

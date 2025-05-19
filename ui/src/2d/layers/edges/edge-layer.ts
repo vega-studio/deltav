@@ -1,8 +1,5 @@
-import { CommonMaterialOptions, shaderTemplate } from "../../../util";
-import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types";
-import { EdgeInstance } from "./edge-instance";
+import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
@@ -11,15 +8,17 @@ import {
   IUniform,
   UniformSize,
   VertexAttributeSize,
-} from "../../../types";
-import { InstanceProvider } from "../../../instance-provider";
-
-import baseVS from "./shader/edge-layer.vs";
-import bezier2VS from "./shader/edge-layer-bezier2.vs";
-import bezierVS from "./shader/edge-layer-bezier.vs";
+} from "../../../types.js";
+import { CommonMaterialOptions, shaderTemplate } from "../../../util";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { EdgeInstance } from "./edge-instance.js";
 import edgeFS from "./shader/edge-layer.fs";
+import baseVS from "./shader/edge-layer.vs";
+import bezierVS from "./shader/edge-layer-bezier.vs";
+import bezier2VS from "./shader/edge-layer-bezier2.vs";
 import lineVS from "./shader/edge-layer-line.vs";
 import screenVS from "./shader/edge-layer-screen-curve.vs";
+import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types.js";
 
 export interface IEdgeLayerProps<T extends EdgeInstance>
   extends ILayer2DProps<T> {
@@ -55,6 +54,7 @@ export interface IEdgeLayerProps<T extends EdgeInstance>
   smoothness?: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IEdgeLayerState {}
 
 /** Converts a control list to an IO value */

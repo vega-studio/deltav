@@ -1,16 +1,16 @@
-import { Anchor, AnchorType, ScaleMode } from "../../types";
-import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../math/vector";
-import { createChildLayer, isDefined } from "../../../util";
+import { InstanceProvider } from "../../../instance-provider/instance-provider.js";
+import { IAutoEasingMethod } from "../../../math/auto-easing-method.js";
+import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../math/vector.js";
 import { fontRequest, IFontResourceRequest } from "../../../resources";
-import { GlyphInstance } from "./glyph-instance";
-import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer";
-import { IAutoEasingMethod } from "../../../math/auto-easing-method";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { ILayerConstructionClass } from "../../../surface/layer";
-import { InstanceDiffType, IPickInfo, ResourceType } from "../../../types";
-import { InstanceProvider } from "../../../instance-provider/instance-provider";
-import { KernedLayout } from "../../../resources/text/font-map";
-import { LabelInstance } from "./label-instance";
+import { KernedLayout } from "../../../resources/text/font-map.js";
+import { ILayerConstructionClass } from "../../../surface/layer.js";
+import { InstanceDiffType, IPickInfo, ResourceType } from "../../../types.js";
+import { createChildLayer, isDefined } from "../../../util";
+import { Anchor, AnchorType, ScaleMode } from "../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { GlyphInstance } from "./glyph-instance.js";
+import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer.js";
+import { LabelInstance } from "./label-instance.js";
 
 /**
  * Default characters for truncating a label.

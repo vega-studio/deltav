@@ -21,7 +21,7 @@ function fallbackCopyTextToClipboard(text: string) {
   try {
     const successful = document.execCommand("copy");
     if (!successful) fallbackWindowPrompt(text);
-  } catch (err) {
+  } catch (_err) {
     fallbackWindowPrompt(text);
   }
 

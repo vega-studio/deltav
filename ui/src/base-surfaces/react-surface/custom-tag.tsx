@@ -1,5 +1,6 @@
 import React from "react";
-import { isString } from "../../types";
+
+import { isString } from "../../types.js";
 import { SurfaceContext } from "./surface-jsx";
 
 interface IProps extends Record<string, any> {
@@ -26,7 +27,7 @@ function useStringifiedAttributes<T extends IProps>(props: T) {
           acc[key.toLowerCase() as Exclude<keyof T, "tagName" | "children">] =
             JSON.stringify(restProps[key]);
         }
-      } catch (error) {
+      } catch (_error) {
         // console.error(`Error stringifying prop ${key as string}:`, error);
         // NOOP errors and just exclude them from the DOM.
       }

@@ -1,12 +1,11 @@
+import "./surface-jsx.scss";
+
 import React from "react";
-import { BaseResourceOptions } from "../../resources/index.js";
-import { concatChildren, useChildResolvers } from "./use-child-resolver.js";
-import { CustomTag } from "./custom-tag.js";
+
+import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
 import { EventManager } from "../../event-management/index.js";
-import {
-  groupSurfaceChildren,
-  SurfaceJSXType,
-} from "./group-surface-children.js";
+import { Instance } from "../../instance-provider/instance.js";
+import { BaseResourceOptions } from "../../resources/index.js";
 import {
   ILayerProps,
   ISceneOptions,
@@ -16,7 +15,6 @@ import {
   Surface,
   ViewInitializer,
 } from "../../surface/index.js";
-import { Instance } from "../../instance-provider/instance.js";
 import { isDefined } from "../../util/common-filters.js";
 import {
   onAnimationLoop,
@@ -24,8 +22,12 @@ import {
   stopAnimationLoop,
 } from "../../util/index.js";
 import { PromiseResolver } from "../../util/promise-resolver.js";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
-import "./surface-jsx.scss";
+import { CustomTag } from "./custom-tag.js";
+import {
+  groupSurfaceChildren,
+  SurfaceJSXType,
+} from "./group-surface-children.js";
+import { concatChildren, useChildResolvers } from "./use-child-resolver.js";
 
 export interface ISurfaceJSX {
   /** Accepts children */

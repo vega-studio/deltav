@@ -8,12 +8,12 @@
  * Thus, we pack down the attributes into appropriate block indices and slots.
  */
 
+import { Instance } from "../../instance-provider/instance.js";
 import {
   IInstanceAttribute,
   InstanceAttributeSize,
   InstanceBlockIndex,
-} from "../../types";
-import { Instance } from "../../instance-provider/instance";
+} from "../../types.js";
 
 /**
  * A quick representation of an available block with a convenience method to
@@ -62,7 +62,7 @@ function ensureSizes<T extends Instance>(attributes: IInstanceAttribute<T>[]) {
         if (check.length > 0 && check.length <= InstanceAttributeSize.FOUR) {
           attr.size = check.length;
         }
-      } catch (err) {
+      } catch (_err) {
         console.warn(
           "The system could not determine the size of the provided attribute. Please provide the size of the attribute:",
           attr

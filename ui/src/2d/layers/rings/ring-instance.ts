@@ -1,11 +1,11 @@
 import {
   IInstanceOptions,
   Instance,
-} from "../../../instance-provider/instance";
+} from "../../../instance-provider/instance.js";
 import {
   makeObservable,
   observable,
-} from "../../../instance-provider/observable";
+} from "../../../instance-provider/observable.js";
 import { Vec2 } from "../../../math";
 
 export interface IRingInstanceOptions extends IInstanceOptions {

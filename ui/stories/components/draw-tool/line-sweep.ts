@@ -5,7 +5,7 @@ import {
   subtract2,
   type Vec2,
 } from "../../../src/index.js";
-import { LineSegments } from "./line-segment";
+import { LineSegments } from "./line-segment.js";
 
 /**
  * This takes our intersections a step further and computes the actual

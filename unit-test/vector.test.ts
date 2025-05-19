@@ -1,4 +1,6 @@
+import { describe, it } from "@jest/globals";
 import assert from "assert";
+
 import {
   add1,
   add2,
@@ -80,8 +82,7 @@ import {
   Vec3Compat,
   Vec4,
   Vec4Compat,
-} from "../ui/src/math/vector";
-import { describe, it } from "@jest/globals";
+} from "../ui/src/math/vector.js";
 
 export function fail1(actual: Vec1Compat, expected: Vec1Compat): string {
   return `\n\nACTUAL: ${toString1(actual)}\nEXPECTED: ${toString1(expected)}`;

@@ -1,19 +1,19 @@
-import { FragmentOutputType, PickType } from "../../types";
+import { QueuedEventHandler } from "../../event-management/queued-event-handler.js";
 import {
   IEventInteraction,
   IMouseInteraction,
   ITouchInteraction,
-} from "../../event-management/types";
+} from "../../event-management/types.js";
+import { FragmentOutputType, PickType } from "../../types.js";
 import {
   isDefined,
   mapGetWithDefault,
   mapInjectDefault,
   PromiseResolver,
 } from "../../util";
-import { IViewProps, View } from "../view";
-import { Layer } from "../layer";
-import { LayerScene } from "../layer-scene";
-import { QueuedEventHandler } from "../../event-management/queued-event-handler";
+import { Layer } from "../layer.js";
+import { LayerScene } from "../layer-scene.js";
+import { IViewProps, View } from "../view.js";
 
 /**
  * This class is an injected event manager for the surface, it specifically

@@ -1,9 +1,9 @@
-import world2DXZ from "./shader-fragments/world-2d-xz-projection.vs";
 import { Control2D } from "../../2d";
-import { Layer } from "../../surface/layer";
-import { Layer2D } from "../../2d/view/layer-2d";
-import { ShaderInjectionTarget, UniformSize } from "../../types";
+import { Layer2D } from "../../2d/view/layer-2d.js";
 import { ShaderModule } from "../../shaders";
+import { Layer } from "../../surface/layer.js";
+import { ShaderInjectionTarget, UniformSize } from "../../types.js";
+import world2DXZ from "./shader-fragments/world-2d-xz-projection.vs";
 
 const doc = `
 This is a special helper module used by

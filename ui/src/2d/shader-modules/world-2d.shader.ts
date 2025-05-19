@@ -1,9 +1,9 @@
-import vs from "./shader-fragments/world-2d-projection.vs";
-import { Camera2D } from "../view/camera-2d";
-import { Layer } from "../../surface";
-import { Layer2D } from "../view/layer-2d";
-import { ShaderInjectionTarget, UniformSize } from "../../types";
 import { ShaderModule } from "../../shaders/processing";
+import { Layer } from "../../surface";
+import { ShaderInjectionTarget, UniformSize } from "../../types.js";
+import { Camera2D } from "../view/camera-2d.js";
+import { Layer2D } from "../view/layer-2d.js";
+import vs from "./shader-fragments/world-2d-projection.vs";
 
 const doc = `
 These are projection methods and camera

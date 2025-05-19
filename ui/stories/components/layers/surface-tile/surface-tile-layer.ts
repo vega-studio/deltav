@@ -1,5 +1,3 @@
-import FS from "./surface-tile-layer.fs";
-import VS from "./surface-tile-layer.vs";
 import {
   AutoEasingMethod,
   CommonMaterialOptions,
@@ -14,7 +12,9 @@ import {
   Vec2,
   VertexAttributeSize,
 } from "../../../../src";
-import { SurfaceTileInstance } from "./surface-tile-instance";
+import { SurfaceTileInstance } from "./surface-tile-instance.js";
+import FS from "./surface-tile-layer.fs";
+import VS from "./surface-tile-layer.vs";
 
 export class SurfaceTileLayer extends Layer<
   SurfaceTileInstance,

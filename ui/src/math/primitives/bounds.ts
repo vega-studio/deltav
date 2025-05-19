@@ -1,4 +1,4 @@
-import { Vec2 } from "../vector";
+import { Vec2 } from "../vector.js";
 
 const { min, max } = Math;
 

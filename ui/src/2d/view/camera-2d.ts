@@ -1,5 +1,5 @@
-import { Camera, CameraProjectionType } from "../../util/camera";
-import { Control2D, IControl2DOptions } from "./control-2d";
+import { Camera, CameraProjectionType } from "../../util/camera.js";
+import { Control2D, IControl2DOptions } from "./control-2d.js";
 
 /**
  * This is a complex camera that layers simpler 2D concepts over an actual 3D projection camera. This camera FORCES the

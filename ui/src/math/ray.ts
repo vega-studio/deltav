@@ -6,7 +6,7 @@ import {
   scale3,
   subtract3,
   Vec3,
-} from "../math/vector";
+} from "../math/vector.js";
 
 /**
  * Represents a ray starting from some origin eminating in a direction. [Origin,

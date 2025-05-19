@@ -1,17 +1,17 @@
+import Debug from "debug";
+
 import { Attribute } from "../../gl";
+import { Instance } from "../../instance-provider/instance.js";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { IViewProps, View } from "../../surface/view.js";
 import {
   IInstanceAttribute,
   IInstancingUniform,
   IUniform,
   IVertexAttribute,
   ShaderInjectionTarget,
-} from "../../types";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { IViewProps, View } from "../../surface/view";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
-
-import Debug from "debug";
+} from "../../types.js";
 
 const debug = Debug("performance");
 

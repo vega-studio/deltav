@@ -1,5 +1,5 @@
-import { IInstanceAttribute, IUniform, IVertexAttribute } from "../../types";
-import { Instance } from "../../instance-provider/instance";
+import { Instance } from "../../instance-provider/instance.js";
+import { IInstanceAttribute, IUniform, IVertexAttribute } from "../../types.js";
 
 /**
  * This provides the sorting methods to be applied to

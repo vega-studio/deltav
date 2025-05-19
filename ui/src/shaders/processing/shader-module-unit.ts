@@ -1,12 +1,12 @@
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
 import {
   IInstanceAttribute,
   IUniform,
   IVertexAttribute,
   Omit,
   ShaderInjectionTarget,
-} from "../../types";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
+} from "../../types.js";
 
 /**
  * This is the message used when a module unit is attempted to be modified after

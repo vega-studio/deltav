@@ -1,6 +1,6 @@
-import { IInstanceAttribute, IUniform } from "../../types";
-import { Instance } from "../../instance-provider/instance";
-import { WebGLStat } from "../../gl/webgl-stat";
+import { WebGLStat } from "../../gl/webgl-stat.js";
+import { Instance } from "../../instance-provider/instance.js";
+import { IInstanceAttribute, IUniform } from "../../types.js";
 
 /**
  * This handles processing some metrics that are commonly needed by other processors.

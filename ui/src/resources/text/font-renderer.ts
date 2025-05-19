@@ -3,15 +3,15 @@
  * an approach to estimating kerning values for characters utilizing any custom embedded font
  * in a web page.
  */
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { IResourceType, ResourceType } from "../../types";
-import { renderGlyph } from "./glyph-renderer";
-import { scale2, Vec2 } from "../../math";
-import { svgToData } from "./svg-to-data";
-import { WebGLStat } from "../../gl/webgl-stat";
-
 import Debug from "debug";
-import type { IFontMapMetrics } from "./font-manager";
+
+import { WebGLStat } from "../../gl/webgl-stat.js";
+import { scale2, Vec2 } from "../../math";
+import { IResourceType, ResourceType } from "../../types.js";
+import { IdentifyByKey } from "../../util/identify-by-key.js";
+import type { IFontMapMetrics } from "./font-manager.js";
+import { renderGlyph } from "./glyph-renderer.js";
+import { svgToData } from "./svg-to-data.js";
 
 const debug = Debug("performance");
 const { floor } = Math;

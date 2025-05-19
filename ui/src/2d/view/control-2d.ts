@@ -1,11 +1,11 @@
 import {
   AutoEasingMethod,
   IAutoEasingMethod,
-} from "../../math/auto-easing-method";
-import { Camera2D } from "./camera-2d";
-import { copy3, divide3, scale3, subtract3, Vec3 } from "../../math/vector";
+} from "../../math/auto-easing-method.js";
+import { copy3, divide3, scale3, subtract3, Vec3 } from "../../math/vector.js";
 import { Surface } from "../../surface";
-import { uid } from "../../util/uid";
+import { uid } from "../../util/uid.js";
+import { Camera2D } from "./camera-2d.js";
 
 export interface IControl2DOptions {
   /** The world space offset of elements in the chart */
@@ -67,7 +67,9 @@ export class Control2D {
   broadcast(viewId: string) {
     // First we do a simple get of the animated properties. This will cause the broadcast flag to
     // be set if there are any changes for the current frame.
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.offset;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.scale;
 
     // If the broadcast flag get's set, we should emit the event for the change.

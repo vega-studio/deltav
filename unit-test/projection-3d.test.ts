@@ -1,7 +1,27 @@
 /**
  * These tests are to test the math the view provides to project coordinates from screen to world and vice versa
  */
+import { describe, it } from "@jest/globals";
 import assert from "assert";
+
+import { Projection3D } from "../ui/src/3d/view/projection-3d.js";
+import { TO_RADIANS } from "../ui/src/constants.js";
+import {
+  compare4x4,
+  identity4,
+  Mat4x4,
+  multiply4x4,
+  projectToScreen,
+  rotation4x4,
+  toString4x4,
+  transform4,
+} from "../ui/src/math/matrix.js";
+import { Bounds } from "../ui/src/math/primitives/bounds.js";
+import {
+  fromEulerAxisAngleToQuat,
+  lookAtQuat,
+  matrix4x4FromUnitQuatView,
+} from "../ui/src/math/quaternion.js";
 import {
   add3,
   add4by3,
@@ -17,28 +37,9 @@ import {
   Vec3,
   Vec4,
   vec4,
-} from "../ui/src/math/vector";
-import { Bounds } from "../ui/src/math/primitives/bounds";
-import { Camera, CameraProjectionType } from "../ui/src/util/camera";
-import {
-  compare4x4,
-  identity4,
-  Mat4x4,
-  multiply4x4,
-  projectToScreen,
-  rotation4x4,
-  toString4x4,
-  transform4,
-} from "../ui/src/math/matrix";
-import { describe, it } from "@jest/globals";
-import { fail2, fail4 } from "./vector.test";
-import {
-  fromEulerAxisAngleToQuat,
-  lookAtQuat,
-  matrix4x4FromUnitQuatView,
-} from "../ui/src/math";
-import { Projection3D } from "../ui/src/3d/view/projection-3d";
-import { TO_RADIANS } from "../ui/src/constants";
+} from "../ui/src/math/vector.js";
+import { Camera, CameraProjectionType } from "../ui/src/util/camera.js";
+import { fail2, fail4 } from "./vector.test.js";
 
 const SCREEN = {
   width: 1024,

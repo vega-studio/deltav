@@ -1,4 +1,4 @@
-import { ShaderInjectionTarget, UniformSize } from "../../types";
+import { ShaderInjectionTarget, UniformSize } from "../../types.js";
 import { ShaderModule } from "../processing";
 
 const doc = `

@@ -1,4 +1,4 @@
-import type { IFontMapEmbed, IFontMapMetrics } from "./font-manager";
+import type { IFontMapEmbed, IFontMapMetrics } from "./font-manager.js";
 
 /**
  * This ensures the fonts being embedded have been loaded completely before

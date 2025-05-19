@@ -1,3 +1,22 @@
+import { InstanceProvider } from "../../../instance-provider";
+import { IAutoEasingMethod, Vec, Vec2 } from "../../../math";
+import {
+  fontRequest,
+  FontResourceRequestFetch,
+  IFontResourceRequest,
+} from "../../../resources";
+import {
+  createMaterialOptions,
+  IInstanceAttribute,
+  ILayerMaterialOptions,
+  InstanceAttributeSize,
+  IShaderInitialization,
+  VertexAttributeSize,
+} from "../../../types.js";
+import { CommonMaterialOptions } from "../../../util";
+import { ScaleMode } from "../../types.js";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { GlyphInstance } from "./glyph-instance.js";
 import GlyphLayerAlwaysFS from "./glyph-layer-always.fs";
 import GlyphLayerAlwaysVS from "./glyph-layer-always.vs";
 import GlyphLayerBoundMaxFS from "./glyph-layer-bound-max.fs";
@@ -10,25 +29,6 @@ import TextAreaLayerBoundMaxFS from "./text-area-layer-bound-max.fs";
 import TextAreaLayerBoundMaxVS from "./text-area-layer-bound-max.vs";
 import TextAreaLayerNeverFS from "./text-area-layer-never.fs";
 import TextAreaLayerNeverVS from "./text-area-layer-never.vs";
-import { CommonMaterialOptions } from "../../../util";
-import {
-  createMaterialOptions,
-  IInstanceAttribute,
-  ILayerMaterialOptions,
-  InstanceAttributeSize,
-  IShaderInitialization,
-  VertexAttributeSize,
-} from "../../../types";
-import {
-  fontRequest,
-  FontResourceRequestFetch,
-  IFontResourceRequest,
-} from "../../../resources";
-import { GlyphInstance } from "./glyph-instance";
-import { IAutoEasingMethod, Vec, Vec2 } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
-import { InstanceProvider } from "../../../instance-provider";
-import { ScaleMode } from "../../types";
 
 /**
  * Options available to this layer as props.

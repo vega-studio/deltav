@@ -1,17 +1,17 @@
-import BorderLayerFS from "./border-layer.fs";
-import BorderLayerVS from "./border-layer.vs";
-import { BorderInstance } from "./border-instance";
-import { CommonMaterialOptions } from "../../../util/common-options";
+import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
   VertexAttributeSize,
-} from "../../../types";
-import { InstanceProvider } from "../../../instance-provider";
+} from "../../../types.js";
+import { CommonMaterialOptions } from "../../../util/common-options.js";
+import { ILayer2DProps, Layer2D } from "../../view";
+import { BorderInstance } from "./border-instance.js";
+import BorderLayerFS from "./border-layer.fs";
+import BorderLayerVS from "./border-layer.vs";
 
 export interface IBorderLayerProps<T extends BorderInstance>
   extends ILayer2DProps<T> {

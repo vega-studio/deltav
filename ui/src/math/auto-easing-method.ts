@@ -1,6 +1,6 @@
-import { InstanceIOValue } from "../types";
-import { isVec4, Vec, VecMath } from "./vector";
-import { uid } from "../util/uid";
+import { InstanceIOValue } from "../types.js";
+import { uid } from "../util/uid.js";
+import { isVec4, Vec, VecMath } from "./vector.js";
 
 const { min, max, pow, round, sin, PI } = Math;
 const GPU_PI = round(PI * 1000) / 1000;

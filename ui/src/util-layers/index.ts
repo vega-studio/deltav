@@ -1,1 +1,1 @@
-export * from "./log-changes-layer";
+export * from "./log-changes-layer.js";

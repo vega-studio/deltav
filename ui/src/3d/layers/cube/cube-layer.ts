@@ -1,19 +1,20 @@
-import CubeLayerFS from "./cube-layer.fs";
-import CubeLayerVS from "./cube-layer.vs";
-import { CommonMaterialOptions, createAttribute } from "../../../util";
-import { CubeInstance } from "./cube-instance";
+import { GLSettings } from "../../../gl";
+import { InstanceProvider } from "../../../instance-provider";
+import { Vec2, Vec3 } from "../../../math/vector.js";
+import { ILayerProps, Layer } from "../../../surface/layer.js";
 import {
   FragmentOutputType,
   InstanceAttributeSize,
   IShaderInitialization,
   VertexAttributeSize,
-} from "../../../types";
-import { GLSettings } from "../../../gl";
+} from "../../../types.js";
+import { CommonMaterialOptions, createAttribute } from "../../../util";
 import { IdentityTransform } from "../../scene-graph";
-import { ILayerProps, Layer } from "../../../surface/layer";
-import { InstanceProvider } from "../../../instance-provider";
-import { Vec2, Vec3 } from "../../../math/vector";
+import { CubeInstance } from "./cube-instance.js";
+import CubeLayerFS from "./cube-layer.fs";
+import CubeLayerVS from "./cube-layer.vs";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ICubeLayerProps<TInstance extends CubeInstance>
   extends ILayerProps<TInstance> {}
 

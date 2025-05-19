@@ -1,5 +1,5 @@
-import { Bounds } from "../../math/primitives/bounds";
-import { SubTexture } from "./sub-texture";
+import { Bounds } from "../../math/primitives/bounds.js";
+import { SubTexture } from "./sub-texture.js";
 
 /**
  * Helps us track the bounds of the image being loaded in tied in with the

@@ -1,4 +1,8 @@
 import React from "react";
+
+import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
+import { isString } from "../../../../../util/types.js";
+import { isColorBufferResource } from "../../../resources/color-buffer/color-buffer-resource.js";
 import {
   BaseResourceOptions,
   isRenderTextureResource,
@@ -10,15 +14,12 @@ import {
   ViewDepthBuffer,
   ViewOutputBuffers,
 } from "../../../surface/index.js";
-import { CustomTag } from "../custom-tag.js";
-import { isColorBufferResource } from "../../../resources/color-buffer/color-buffer-resource.js";
 import { isDefined } from "../../../util/index.js";
-import { isString } from "../../../../../util/types.js";
+import { PromiseResolver } from "../../../util/promise-resolver.js";
+import { CustomTag } from "../custom-tag.js";
+import { SurfaceJSXType } from "../group-surface-children.js";
 import { ISurfaceContext, SurfaceContext } from "../surface-jsx.js";
 import { IViewBaseJSX } from "./as-view.js";
-import { PromiseResolver } from "../../../util/promise-resolver.js";
-import { SurfaceJSXType } from "../group-surface-children.js";
-import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 
 export interface IViewJSX<TProps extends IViewProps>
   extends Partial<IViewBaseJSX<TProps>> {

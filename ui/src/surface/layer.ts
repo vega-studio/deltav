@@ -1,10 +1,15 @@
+import Debug from "debug";
+
+import { GLSettings } from "../gl/index.js";
+import { WebGLStat } from "../gl/webgl-stat.js";
+import { Instance, ObservableMonitoring } from "../instance-provider/index.js";
+import { DEFAULT_RESOURCE_ROUTER, ResourceRouter } from "../resources/index.js";
 import PickingFS from "../shaders/base-modules/shader-fragments/picking.fs";
+import { ShaderDeclarationStatementLookup } from "../shaders/index.js";
 import {
-  BufferManagerBase,
-  IBufferLocation,
-} from "./buffer-management/buffer-manager-base";
-import { createAttribute } from "../util/create-attribute";
-import { DEFAULT_RESOURCE_ROUTER, ResourceRouter } from "../resources";
+  IShaderProcessingResults,
+  ShaderProcessor,
+} from "../shaders/processing/shader-processor.js";
 import {
   FragmentOutputType,
   type IIndexBufferInternal,
@@ -30,37 +35,35 @@ import {
   PickType,
   StreamChangeStrategy,
   UniformIOValue,
-} from "../types";
-import { generateLayerGeometry } from "./layer-processing";
-import { GLSettings } from "../gl";
-import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key";
-import { Instance, ObservableMonitoring } from "../instance-provider";
+} from "../types.js";
+import { isBoolean } from "../types.js";
+import { isDefined } from "../util/common-filters.js";
+import { mapInjectDefault } from "../util/common-operations.js";
+import { createAttribute } from "../util/create-attribute.js";
+import { onFrame } from "../util/frame.js";
+import {
+  IdentifyByKey,
+  IdentifyByKeyOptions,
+} from "../util/identify-by-key.js";
+import { PromiseResolver } from "../util/promise-resolver.js";
+import { uid } from "../util/uid.js";
+import {
+  BufferManagerBase,
+  IBufferLocation,
+} from "./buffer-management/buffer-manager-base.js";
 import {
   InstanceAttributeBufferManager,
   InstanceAttributePackingBufferManager,
   UniformBufferManager,
-} from "./buffer-management";
-import { InstanceDiffManager } from "./buffer-management/instance-diff-manager";
-import { isBoolean } from "../types";
-import { isDefined } from "../util/common-filters";
-import {
-  IShaderProcessingResults,
-  ShaderProcessor,
-} from "../shaders/processing/shader-processor";
-import { IViewProps, View } from "./view";
-import { LayerInteractionHandler } from "./layer-interaction-handler";
-import { LayerScene } from "./layer-scene";
-import { mapInjectDefault } from "../util/common-operations";
-import { onFrame } from "../util/frame";
-import { PromiseResolver } from "../util/promise-resolver";
-import { ShaderDeclarationStatementLookup } from "../shaders";
-import { Surface } from "./surface";
-import { uid } from "../util/uid";
-import { WebGLStat } from "../gl/webgl-stat";
-
-import Debug from "debug";
-import { VertexAttributeBufferManager } from "./buffer-management/vertex-attribute-buffering/vertex-attribute-buffer-manager";
-import { VertexAttributePackingBufferManager } from "./buffer-management/vertex-attribute-packing-buffering/vertex-attribute-packing-buffer-manager";
+} from "./buffer-management/index.js";
+import { InstanceDiffManager } from "./buffer-management/instance-diff-manager.js";
+import { VertexAttributeBufferManager } from "./buffer-management/vertex-attribute-buffering/vertex-attribute-buffer-manager.js";
+import { VertexAttributePackingBufferManager } from "./buffer-management/vertex-attribute-packing-buffering/vertex-attribute-packing-buffer-manager.js";
+import { LayerInteractionHandler } from "./layer-interaction-handler.js";
+import { generateLayerGeometry } from "./layer-processing/index.js";
+import { LayerScene } from "./layer-scene.js";
+import { Surface } from "./surface.js";
+import { IViewProps, View } from "./view.js";
 
 const debug = Debug("performance");
 
@@ -1307,6 +1310,7 @@ export class Layer<
       // Activate monitoring of ids, this also resets the monitor's list
       ObservableMonitoring.setObservableMonitor(true);
       // Trigger the getter of the property
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       instance[properties[i]];
       // We now can see if the property triggered an identifier thus indicating
       // it's observable and has an ID

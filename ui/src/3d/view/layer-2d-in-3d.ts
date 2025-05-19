@@ -1,8 +1,8 @@
 import { Control2D, Layer2D } from "../../2d";
-import { createLayer } from "../../util/create-layer";
-import { ILayerConstructable, ILayerProps } from "../../surface/layer";
-import { Instance } from "../../instance-provider/instance";
-import { IShaderInitialization, Omit } from "../../types";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerConstructable, ILayerProps } from "../../surface/layer.js";
+import { IShaderInitialization, Omit } from "../../types.js";
+import { createLayer } from "../../util/create-layer.js";
 
 /**
  * Specifies a 2D axis system within a 3D world.

@@ -1,8 +1,8 @@
-import { BaseResourceOptions } from "../base-resource-manager";
-import { ColorBuffer, ColorBufferOptions } from "../../gl/color-buffer";
 import { GLSettings, WebGLRenderer } from "../../gl";
-import { IdentifyByKey } from "../../util/identify-by-key";
-import { ResourceType, TextureSize } from "../../types";
+import { ColorBuffer, ColorBufferOptions } from "../../gl/color-buffer.js";
+import { ResourceType, TextureSize } from "../../types.js";
+import { IdentifyByKey } from "../../util/identify-by-key.js";
+import { BaseResourceOptions } from "../base-resource-manager.js";
 
 /**
  * Options required for generating a RenderTexture.

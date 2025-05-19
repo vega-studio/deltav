@@ -9,7 +9,9 @@
  * against transposed results as our matrices are column major.
  */
 
+import { describe, it } from "@jest/globals";
 import assert from "assert";
+
 import {
   apply2x2,
   apply3x3,
@@ -53,9 +55,7 @@ import {
   transpose2x2,
   transpose3x3,
   transpose4x4,
-} from "../ui/src/math/matrix";
-import { describe, it } from "@jest/globals";
-import { fail2, fail3, fail4 } from "./vector.test";
+} from "../ui/src/math/matrix.js";
 import {
   fuzzyCompare2,
   fuzzyCompare3,
@@ -63,7 +63,8 @@ import {
   Vec2,
   Vec3,
   Vec4,
-} from "../ui/src/math/vector";
+} from "../ui/src/math/vector.js";
+import { fail2, fail3, fail4 } from "./vector.test.js";
 
 function fail2x2(actual: any, expected: any) {
   return `\n\nACTUAL: ${toString2x2(actual)},\nEXPECTED: ${toString2x2(

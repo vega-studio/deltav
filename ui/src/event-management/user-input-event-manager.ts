@@ -1,8 +1,13 @@
-import { add2, length2, scale2, subtract2, Vec2 } from "../math/vector";
-import { Bounds } from "../math/primitives";
 import { CanvasElement, isOffscreenCanvas } from "../gl";
-import { eventElementPosition, normalizeWheel } from "../util/mouse";
-import { EventManager } from "./event-manager";
+import { Bounds } from "../math/primitives";
+import { add2, length2, scale2, subtract2, Vec2 } from "../math/vector.js";
+import { LayerScene } from "../surface/layer-scene.js";
+import { Surface } from "../surface/surface.js";
+import { IViewProps, NoView, View } from "../surface/view.js";
+import { isDefined } from "../util/common-filters.js";
+import { eventElementPosition, normalizeWheel } from "../util/mouse.js";
+import { QuadTree } from "../util/quad-tree.js";
+import { EventManager } from "./event-manager.js";
 import {
   IEventInteraction,
   IMouseInteraction,
@@ -13,12 +18,7 @@ import {
   ITouchInteraction,
   ITouchMetrics,
   IWheelMetrics,
-} from "./types";
-import { isDefined } from "../util/common-filters";
-import { IViewProps, NoView, View } from "../surface/view";
-import { LayerScene } from "../surface/layer-scene";
-import { QuadTree } from "../util/quad-tree";
-import { Surface } from "../surface/surface";
+} from "./types.js";
 
 // If a mouse up after a mouse down happens before this many milliseconds, a
 // click gesture will happen

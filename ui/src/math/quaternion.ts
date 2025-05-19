@@ -1,21 +1,8 @@
 import {
-  add3,
-  cross3,
-  dot3,
-  dot4,
-  normalize3,
-  type ReadonlyVec3Compat,
-  scale3,
-  V3R,
-  vec3,
-  Vec3,
-  Vec4,
-} from "./vector";
-import {
   EulerOrder,
   EulerRotation,
   type ReadonlyEulerRotation,
-} from "../types";
+} from "../types.js";
 import {
   identity3,
   identity4,
@@ -48,7 +35,20 @@ import {
   Mat4x4,
   type ReadonlyMat3x3,
   type ReadonlyMat4x4,
-} from "./matrix";
+} from "./matrix.js";
+import {
+  add3,
+  cross3,
+  dot3,
+  dot4,
+  normalize3,
+  type ReadonlyVec3Compat,
+  scale3,
+  V3R,
+  Vec3,
+  vec3,
+  Vec4,
+} from "./vector.js";
 
 const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
 

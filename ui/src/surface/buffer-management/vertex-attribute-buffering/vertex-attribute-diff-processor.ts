@@ -1,14 +1,14 @@
-import { BaseDiffProcessor } from "../base-diff-processor.js";
-import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
-import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
-import { ILayerProps } from "../../layer.js";
 import { Instance } from "../../../instance-provider/instance.js";
+import { Mat4x4, Vec } from "../../../math/index.js";
+import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
+import { ILayerProps } from "../../layer.js";
+import { BaseDiffProcessor } from "../base-diff-processor.js";
+import { IInstanceDiffManagerTarget } from "../instance-diff-manager.js";
 import {
   isVertexAttributeBufferLocationGroup,
   IVertexAttributeBufferLocation,
   IVertexAttributeBufferLocationGroup,
 } from "./vertex-attribute-buffer-manager.js";
-import { Mat4x4, Vec } from "../../../math/index.js";
 
 const EMPTY: number[] = [];
 const { min, max } = Math;

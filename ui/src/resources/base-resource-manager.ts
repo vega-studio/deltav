@@ -1,14 +1,14 @@
-import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion";
-import { ILayerProps, Layer } from "../surface/layer";
-import { Instance } from "../instance-provider/instance";
+import { WebGLRenderer } from "../gl";
+import { Instance } from "../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../surface/layer.js";
+import { BaseIOExpansion } from "../surface/layer-processing/base-io-expansion.js";
 import {
   InstanceIOValue,
   IResourceContext,
   IResourceInstanceAttribute,
   IResourceType,
-} from "../types";
-import { ResourceRouter } from "./resource-router";
-import { WebGLRenderer } from "../gl";
+} from "../types.js";
+import { ResourceRouter } from "./resource-router.js";
 
 /**
  * The Base Options for initializing a resource.

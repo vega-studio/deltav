@@ -1,6 +1,13 @@
-import assert from "assert";
 import { describe, it } from "@jest/globals";
+import assert from "assert";
 
+import {
+  compare4x4,
+  Mat4x4,
+  rotation4x4,
+  toString4x4,
+  transform4,
+} from "../ui/src/math/matrix.js";
 import {
   addQuat,
   angleQuat,
@@ -32,7 +39,7 @@ import {
   toEulerFromQuat,
   toEulerXYZfromOrderedEuler,
   zeroQuat,
-} from "../ui/src/math/quaternion";
+} from "../ui/src/math/quaternion.js";
 import {
   compare1,
   compare3,
@@ -41,16 +48,9 @@ import {
   Vec1,
   Vec3,
   Vec4,
-} from "../ui/src/math/vector";
-import {
-  compare4x4,
-  Mat4x4,
-  rotation4x4,
-  toString4x4,
-  transform4,
-} from "../ui/src/math/matrix";
-import { EulerOrder } from "../ui/src/types";
-import { fail1, fail3, fail4, fuzzCompare4 } from "./vector.test";
+} from "../ui/src/math/vector.js";
+import { EulerOrder } from "../ui/src/types.js";
+import { fail1, fail3, fail4, fuzzCompare4 } from "./vector.test.js";
 
 const { exp, cos, sin, sqrt } = Math;
 

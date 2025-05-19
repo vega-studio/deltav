@@ -1,13 +1,13 @@
-import { Anchor, AnchorType } from "../../types";
-import { GlyphInstance } from "./glyph-instance";
+import { makeObservable, observable } from "../../../instance-provider";
 import {
   IInstanceOptions,
   Instance,
-} from "../../../instance-provider/instance";
-import { isWhiteSpace, Size } from "../../../types";
-import { makeObservable, observable } from "../../../instance-provider";
-import { TextAreaInstance } from "./text-area-instance";
+} from "../../../instance-provider/instance.js";
 import { Vec2 } from "../../../math";
+import { isWhiteSpace, Size } from "../../../types.js";
+import { Anchor, AnchorType } from "../../types.js";
+import { GlyphInstance } from "./glyph-instance.js";
+import { TextAreaInstance } from "./text-area-instance.js";
 
 export interface ILabelInstanceOptions extends IInstanceOptions {
   /**
@@ -133,7 +133,7 @@ export class LabelInstance extends Instance {
     this.letterSpacing = options.letterSpacing || this.letterSpacing;
 
     // Make sure the anchor is set to the appropriate location
-    options.anchor && this.setAnchor(options.anchor);
+    if (options.anchor) this.setAnchor(options.anchor);
   }
 
   getWidth(): number {

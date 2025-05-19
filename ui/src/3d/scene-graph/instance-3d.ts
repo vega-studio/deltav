@@ -5,7 +5,7 @@ import {
   observable,
 } from "../../instance-provider";
 import { Mat4x4, Quaternion, Vec3 } from "../../math";
-import { Transform } from "./transform";
+import { Transform } from "./transform.js";
 
 export interface IInstance3DOptions extends IInstanceOptions {
   /** The transform object that will manage this instance */

@@ -1,19 +1,19 @@
-import ArcLayerFS from "./arc-layer.fs";
-import ArcLayerScreenSpaceVS from "./arc-layer-screen-space.vs";
-import ArcLayerVS from "./arc-layer.vs";
-import { ArcInstance } from "./arc-instance";
-import { CommonMaterialOptions } from "../../../util";
 import { GLSettings } from "../../../gl";
+import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { ILayer2DProps, Layer2D } from "../../view/layer-2d";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,
   IShaderInitialization,
   UniformSize,
   VertexAttributeSize,
-} from "../../../types";
-import { InstanceProvider } from "../../../instance-provider";
+} from "../../../types.js";
+import { CommonMaterialOptions } from "../../../util";
+import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
+import { ArcInstance } from "./arc-instance.js";
+import ArcLayerFS from "./arc-layer.fs";
+import ArcLayerVS from "./arc-layer.vs";
+import ArcLayerScreenSpaceVS from "./arc-layer-screen-space.vs";
 
 export enum ArcScaleType {
   /** All dimensions are within world space */

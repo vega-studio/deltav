@@ -1,7 +1,7 @@
+import { ShaderInjectionTarget } from "../../types.js";
+import { ShaderModule } from "../processing";
 import noopFS from "./shader-fragments/no-op.fs";
 import noopVS from "./shader-fragments/no-op.vs";
-import { ShaderInjectionTarget } from "../../types";
-import { ShaderModule } from "../processing";
 
 const doc = `
 Makes a no-op shader where gl_Position

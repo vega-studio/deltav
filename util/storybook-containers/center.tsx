@@ -1,6 +1,7 @@
 import React from "react";
-import { FillPage } from "./fill-page.js";
+
 import { when } from "../when.js";
+import { FillPage } from "./fill-page.js";
 
 export const Center = ({ children, width, height, row }: any) => (
   <FillPage>

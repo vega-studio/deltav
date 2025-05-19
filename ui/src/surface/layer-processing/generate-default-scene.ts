@@ -1,5 +1,5 @@
-import { AbsolutePosition } from "../../math/primitives/absolute-position";
-import { Camera, CameraProjectionType } from "../../util/camera";
+import { AbsolutePosition } from "../../math/primitives/absolute-position.js";
+import { Camera, CameraProjectionType } from "../../util/camera.js";
 
 export interface IDefaultElements {
   /** Default chartting camera */

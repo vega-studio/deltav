@@ -1,4 +1,7 @@
+import { StoryFn } from "@storybook/react";
 import React from "react";
+
+import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
 import {
   AnchorType,
   Camera2D,
@@ -12,9 +15,7 @@ import {
   SurfaceJSX,
   View2D,
   ViewJSX,
-} from "../../../src";
-import { StoryFn } from "@storybook/react";
-import { useLifecycle } from "../../../../util/hooks/use-life-cycle";
+} from "../../../src/index.js";
 
 export default {
   title: "Deltav/2D/Rectangle",

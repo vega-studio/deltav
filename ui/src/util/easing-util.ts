@@ -1,6 +1,6 @@
-import { IEasingControl, NOOP } from "../types";
-import { Instance } from "../instance-provider";
-import { onFrame } from "./frame";
+import { Instance } from "../instance-provider/index.js";
+import { IEasingControl, NOOP } from "../types.js";
+import { onFrame } from "./frame.js";
 
 /** Handler type for discovered easing controls using the all() method */
 export type EasingUtilAllHandler<T extends Instance> = (
@@ -48,7 +48,7 @@ export class EasingUtil {
     layerAttributes: string[],
     adjust?: EasingUtilAllHandler<T>
   ) {
-    let resolver: Function = NOOP;
+    let resolver: (value?: unknown) => void = NOOP;
     const promise = new Promise((resolve) => (resolver = resolve));
     let finishedTime = 0;
 

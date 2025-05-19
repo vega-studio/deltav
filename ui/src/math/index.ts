@@ -1,15 +1,15 @@
-export * from "./auto-easing-method";
-export * from "./base-projection";
-export * from "./matrix";
-export * from "./quaternion";
-export * from "./vector";
+export * from "./auto-easing-method.js";
+export * from "./base-projection.js";
+export * from "./matrix.js";
+export * from "./quaternion.js";
+export * from "./vector.js";
 export * from "./primitives";
-export * from "./ray";
+export * from "./ray.js";
 
-import * as matrix from "./matrix";
-import * as quaternion from "./quaternion";
-import * as ray from "./ray";
-import * as vector from "./vector";
+import * as matrix from "./matrix.js";
+import * as quaternion from "./quaternion.js";
+import * as ray from "./ray.js";
+import * as vector from "./vector.js";
 
 /**
  * This is a convenience lookup to see all of the math methods available for

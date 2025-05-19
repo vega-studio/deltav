@@ -1,4 +1,7 @@
+import { StoryFn } from "@storybook/react";
 import React from "react";
+
+import { useLifecycle } from "../../../util/hooks/use-life-cycle.js";
 import {
   add2,
   AutoEasingMethod,
@@ -44,11 +47,9 @@ import {
   View3D,
   ViewJSX,
 } from "../../src";
-import { CubeInstance } from "./layers/cube/cube-instance";
-import { CubeLayer } from "./layers/cube/cube-layer";
-import { InstanceProviderWithList } from "../../src/instance-provider/instance-provider-with-list";
-import { StoryFn } from "@storybook/react";
-import { useLifecycle } from "../../../util/hooks/use-life-cycle";
+import { InstanceProviderWithList } from "../../src/instance-provider/instance-provider-with-list.js";
+import { CubeInstance } from "./layers/cube/cube-instance.js";
+import { CubeLayer } from "./layers/cube/cube-layer.js";
 
 export default {
   title: "Deltav/MultiRenderTarget",

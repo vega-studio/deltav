@@ -4,4 +4,5 @@ import { IResolverProvider } from "../use-child-resolver.js";
 /**
  * Base props required for the component to implement to be a EventManagerJSX
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IEventManagerJSX extends IResolverProvider<EventManager> {}

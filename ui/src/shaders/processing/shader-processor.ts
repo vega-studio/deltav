@@ -1,6 +1,7 @@
-import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion";
-import { BaseIOSorting } from "./base-io-sorting";
-import { BaseShaderTransform } from "./base-shader-transform";
+import { WebGLStat } from "../../gl";
+import { Instance } from "../../instance-provider/instance.js";
+import { ILayerProps, Layer } from "../../surface/layer.js";
+import { BaseIOExpansion } from "../../surface/layer-processing/base-io-expansion.js";
 import {
   FragmentOutputType,
   type IIndexBufferInternal,
@@ -15,22 +16,21 @@ import {
   OutputFragmentShaderSource,
   OutputFragmentShaderTarget,
   ShaderInjectionTarget,
-} from "../../types";
-import { ILayerProps, Layer } from "../../surface/layer";
-import { injectShaderIO } from "./inject-shader-io";
-import { Instance } from "../../instance-provider/instance";
-import { MetricsProcessing } from "./metrics-processing";
-import { removeComments } from "../../util/remove-comments";
+} from "../../types.js";
+import { removeComments } from "../../util/remove-comments.js";
+import { shaderTemplate } from "../../util/shader-templating.js";
+import { templateVars } from "../template-vars.js";
+import { BaseIOSorting } from "./base-io-sorting.js";
 import {
   ShaderDeclarationStatementLookup,
   ShaderDeclarationStatements,
   ShaderIOHeaderInjectionResult,
-} from "./base-shader-io-injection";
-import { ShaderModule } from "./shader-module";
-import { ShaderModuleUnit } from "./shader-module-unit";
-import { shaderTemplate } from "../../util/shader-templating";
-import { templateVars } from "../template-vars";
-import { WebGLStat } from "../../gl";
+} from "./base-shader-io-injection.js";
+import { BaseShaderTransform } from "./base-shader-transform.js";
+import { injectShaderIO } from "./inject-shader-io.js";
+import { MetricsProcessing } from "./metrics-processing.js";
+import { ShaderModule } from "./shader-module.js";
+import { ShaderModuleUnit } from "./shader-module-unit.js";
 
 /**
  * This is the expected results from processing the shader and it's layer's attributes.

@@ -1,4 +1,4 @@
-function isFunction(val: any): val is Function {
+function isFunction(val: any): val is (...args: any[]) => any {
   return typeof val === "function";
 }
 

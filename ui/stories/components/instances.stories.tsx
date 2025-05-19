@@ -1,4 +1,7 @@
+import { StoryFn } from "@storybook/react";
 import React from "react";
+
+import { useLifecycle } from "../../../util/hooks/use-life-cycle.js";
 import {
   AutoEasingMethod,
   BasicCamera2DControllerJSX,
@@ -18,10 +21,8 @@ import {
   View2D,
   ViewJSX,
 } from "../../src";
-import { StoryFn } from "@storybook/react";
-import { useLifecycle } from "../../../util/hooks/use-life-cycle";
-import { VertexPackingCircleInstance } from "./layers/vertex-packing-circle/vertex-packing-circle-instance";
-import { VertexPackingCircleLayer } from "./layers/vertex-packing-circle/vertex-packing-circle-layer";
+import { VertexPackingCircleInstance } from "./layers/vertex-packing-circle/vertex-packing-circle-instance.js";
+import { VertexPackingCircleLayer } from "./layers/vertex-packing-circle/vertex-packing-circle-layer.js";
 
 export default {
   title: "Deltav/Instances",

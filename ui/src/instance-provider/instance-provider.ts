@@ -1,6 +1,6 @@
-import { IInstanceProvider, InstanceDiff, InstanceDiffType } from "../types";
-import { Instance } from "./instance";
-import { uid } from "../util/uid";
+import { IInstanceProvider, InstanceDiff, InstanceDiffType } from "../types.js";
+import { uid } from "../util/uid.js";
+import { Instance } from "./instance.js";
 
 type InstanceDisposer<T extends Instance> = [T, Function];
 

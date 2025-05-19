@@ -1,17 +1,17 @@
+import { Instance } from "../../instance-provider/instance.js";
 import {
   BaseShaderIOInjection,
   ShaderIOHeaderInjectionResult,
-} from "../../shaders/processing/base-shader-io-injection";
-import { ILayerProps, Layer } from "../layer";
-import { Instance } from "../../instance-provider/instance";
-import { MetricsProcessing } from "../../shaders/processing/metrics-processing";
+} from "../../shaders/processing/base-shader-io-injection.js";
+import { MetricsProcessing } from "../../shaders/processing/metrics-processing.js";
 import type {
   IIndexBuffer,
   IInstanceAttribute,
   IUniform,
   IVertexAttribute,
   ShaderInjectionTarget,
-} from "../../types";
+} from "../../types.js";
+import { ILayerProps, Layer } from "../layer.js";
 
 export type ShaderIOExpansion<T extends Instance> = {
   /** The additional instance attributes to add to the layer's Shader IO */

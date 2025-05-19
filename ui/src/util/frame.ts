@@ -67,7 +67,10 @@ const loop = (time: number) => {
       // time and flag it for removal from the loop
       if (time - durationStartTime >= duration) {
         stopAnimationLoops.push(id);
-        commandFn(time, durationStartTime + duration);
+        commandFn(
+          time - (zeroTime ? durationStartTime : 0),
+          durationStartTime + duration - (zeroTime ? durationStartTime : 0)
+        );
         return;
       }
     }

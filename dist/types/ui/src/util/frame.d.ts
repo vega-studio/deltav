@@ -27,7 +27,7 @@ export declare function onFrame(command?: Command, interval?: number): Promise<n
  * since last time this command executed.
  *
  * You can also specify a duration so the commands will only execute so long as
- * the duration specified has not been exceeeded. Once the duration is met or
+ * the duration specified has not been exceeded. Once the duration is met or
  * exceeded, the command will be removed from the loop queue and no longer fire.
  * There will ALWAYS be a final frame that is executed for the command that will
  * provide the time the command SHOULD HAVE finished (not necessarily the actual
@@ -37,8 +37,11 @@ export declare function onFrame(command?: Command, interval?: number): Promise<n
  * the animation loop. If NO duration is specified, then the promise resolves
  * the first time the command is executed. If a duration IS specified, then the
  * promise resolves after the duration has completed.
+ *
+ * Set the zeroTime flag to true to make the reported time parameter start from
+ * zero.
  */
-export declare function onAnimationLoop(command: Command, interval?: number, duration?: number): Promise<number>;
+export declare function onAnimationLoop(command: Command, interval?: number, duration?: number, zeroTime?: boolean): Promise<number>;
 /**
  * Halts the animation loop for a command associated with an id.
  */

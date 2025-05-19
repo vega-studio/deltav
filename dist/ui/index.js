@@ -8342,17 +8342,27 @@ const Fn = /* @__PURE__ */ new Map(), Vn = (i) => {
   const t = [];
   Fn.forEach((s, r) => {
     e = !0;
-    let [o, a, c, l, h] = s;
-    if (l !== -1 && (h === -1 && (h = i, s[4] = i), i - h >= l)) {
-      t.push(r), o(i, h + l);
-      return;
-    }
+    let {
+      0: o,
+      1: a,
+      2: c,
+      3: l,
+      4: h,
+      5: u
+    } = s;
+    if (l !== -1) {
+      if (h === -1 && (h = i, s[4] = i), i - h >= l) {
+        t.push(r), o(i, h + l);
+        return;
+      }
+    } else h === -1 && (h = i, s[4] = i);
+    const d = u ? h : 0;
     if (a !== -1) {
       if (c === -1 && (s[2] = i, c = i), i - c >= a)
-        for (o(i); i - c >= a; )
+        for (o(i - d); i - c >= a; )
           s[2] += a, c += a;
     } else
-      o(i);
+      o(i - d);
   });
   for (let s = 0, r = t.length; s < r; ++s) {
     const o = t[s];
@@ -8361,7 +8371,7 @@ const Fn = /* @__PURE__ */ new Map(), Vn = (i) => {
   const n = is.slice();
   is = [];
   for (let s = 0, r = n.length; s < r; ++s) {
-    const [o, a, c] = n[s];
+    const { 0: o, 1: a, 2: c } = n[s];
     a <= 0 ? o && o(i) : i - c > a ? o(i) : (e = !0, is.push(n[s]));
   }
   for (let s = 0, r = Yn.length; s < r; ++s) {
@@ -8383,17 +8393,18 @@ function Ui(i, e) {
   };
   return is.push([n, e || -1, Ks]), gt === -1 && (gt = requestAnimationFrame(Vn)), t.promise;
 }
-function ql(i, e, t) {
-  const n = new He(), s = (r, o) => {
-    i(r), t !== void 0 && t > 0 ? o !== void 0 && n.resolve(o) : n.resolve(r);
+function ql(i, e, t, n = !1) {
+  const s = new He(), r = (o, a) => {
+    i(o), t !== void 0 && t > 0 ? a !== void 0 && s.resolve(a) : s.resolve(o);
   };
-  return Fn.set(n.promise, [
-    s,
+  return Fn.set(s.promise, [
+    r,
     e || -1,
     -1,
     t || -1,
-    -1
-  ]), gt === -1 && (gt = requestAnimationFrame(Vn)), n.promise;
+    -1,
+    n
+  ]), gt === -1 && (gt = requestAnimationFrame(Vn)), s.promise;
 }
 function Jf(i) {
   Fn.delete(i), gt === -1 && (gt = requestAnimationFrame(Vn));
@@ -26119,7 +26130,7 @@ const fs = ee.createContext(void 0), wv = (i) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "4.3.0",
+      "data-deltav-version": "4.3.1",
       className: `SurfaceJSX ${i.className || ""}`,
       ...i.containerProps,
       children: /* @__PURE__ */ Me.jsx("canvas", { ref: t, children: /* @__PURE__ */ Me.jsx(

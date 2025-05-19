@@ -8352,7 +8352,10 @@ const Fn = /* @__PURE__ */ new Map(), Vn = (i) => {
     } = s;
     if (l !== -1) {
       if (h === -1 && (h = i, s[4] = i), i - h >= l) {
-        t.push(r), o(i, h + l);
+        t.push(r), o(
+          i - (u ? h : 0),
+          h + l - (u ? h : 0)
+        );
         return;
       }
     } else h === -1 && (h = i, s[4] = i);
@@ -26130,7 +26133,7 @@ const fs = ee.createContext(void 0), wv = (i) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "4.3.1",
+      "data-deltav-version": "4.4.0",
       className: `SurfaceJSX ${i.className || ""}`,
       ...i.containerProps,
       children: /* @__PURE__ */ Me.jsx("canvas", { ref: t, children: /* @__PURE__ */ Me.jsx(

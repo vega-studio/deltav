@@ -1,3 +1,9 @@
+## 4.4.1
+
+## Fixed
+
+- [`FIXED`]: Making adjustments to onAnimationLoop to address timing errors
+
 ## 4.4.0
 
 ## Added

@@ -47,7 +47,7 @@ export declare class GLProxy {
      * Takes an Attribute object and ensures it's buffer is created and
      * initialized.
      */
-    compileAttribute(attribute: Attribute): true | undefined;
+    compileAttribute(attribute: Attribute): boolean;
     /**
      * Takes an IndexBuffer object and ensures it's buffer is created and
      * initialized.
@@ -159,7 +159,7 @@ export declare class GLProxy {
     /**
      * This updates an attribute's buffer data
      */
-    updateAttribute(attribute: Attribute): true | undefined;
+    updateAttribute(attribute: Attribute): boolean;
     /**
      * This updates an index buffer's buffer data
      */

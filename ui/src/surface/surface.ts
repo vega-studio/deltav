@@ -20,12 +20,7 @@ import { RenderTextureResourceManager } from "../resources/texture/render-textur
 import { BaseIOSorting } from "../shaders/processing/base-io-sorting.js";
 import { BaseShaderTransform } from "../shaders/processing/base-shader-transform.js";
 import { ActiveIOExpansion } from "../surface/layer-processing/base-io-expanders/active-io-expansion.js";
-import {
-  FragmentOutputType,
-  FrameMetrics,
-  ResourceType,
-  SurfaceErrorType,
-} from "../types.js";
+import { FrameMetrics, ResourceType, SurfaceErrorType } from "../types.js";
 import {
   IdentifiableById,
   IInstanceAttribute,
@@ -259,7 +254,7 @@ export class Surface {
    * These are the registered output targets that get disabled by default. They
    * must be explicitly enabled with the method enableOptimizedOutput.
    */
-  private optimizedOutputs = new Set<number>([FragmentOutputType.PICKING]);
+  private optimizedOutputs = new Set<number>();
   /**
    * This is the sorting controller for sorting attributes/uniforms of a layer
    * after all the attributes have been generated that are needed
@@ -693,6 +688,7 @@ export class Surface {
 
     // Update all event managers with the current cycle event.
     this.broadcastEventManagerCycle(EventManagerBroadcastCycle.DID_RENDER);
+
     // Clear out the flag requesting a pick pass so we don't perform a pick
     // render pass unless we have another requested from mouse interactions
     this.enabledOptimizedOutputs.clear();

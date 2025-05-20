@@ -1,3 +1,9 @@
+## 4.4.2
+
+## Fixed
+
+- [`FIXED`]: Color picking is working once again. Also made the picking target output opt in instead of inherent. The optmization was confusing without knowing what was happening
+
 ## 4.4.1
 
 ## Fixed

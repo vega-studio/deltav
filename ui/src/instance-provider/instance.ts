@@ -48,7 +48,7 @@ export class Instance {
    * A numerical look up for the instance. Numerical identifiers run faster than
    * objects or strings
    */
-  private _uid = Instance.newUID;
+  @observable private _uid = Instance.newUID;
   /**
    * This is the flag indicating this instance was reactivated. When true, this
    * performs a full update of all properties on the instance

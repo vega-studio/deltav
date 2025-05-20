@@ -183,6 +183,9 @@ export const Color_Picking: StoryFn = (() => {
         alpha: true,
         antialias: true,
       }}
+      // This is added in to make picking not render unless mouse interactions
+      // happen. When excluded, picking will render every frame
+      // optimizedOutputTargets={[FragmentOutputType.PICKING]}
     >
       <BasicCamera2DControllerJSX
         config={{
@@ -199,8 +202,18 @@ export const Color_Picking: StoryFn = (() => {
       })}
       <TextureJSX
         name="pick"
-        width={TextureSize.SCREEN_QUARTER}
-        height={TextureSize.SCREEN_QUARTER}
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
+        textureSettings={{
+          generateMipMaps: false,
+          format: GLSettings.Texture.TexelDataType.RGBA,
+          internalFormat: GLSettings.Texture.TexelDataType.RGBA,
+        }}
+      />
+      <TextureJSX
+        name="color"
+        width={TextureSize.SCREEN}
+        height={TextureSize.SCREEN}
         textureSettings={{
           generateMipMaps: false,
           format: GLSettings.Texture.TexelDataType.RGBA,
@@ -212,6 +225,7 @@ export const Color_Picking: StoryFn = (() => {
           name="main"
           type={View2D}
           config={{
+            screenScale: [1, 1],
             camera: camera.current,
             background: [0, 0, 0, 1],
             clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
@@ -221,8 +235,6 @@ export const Color_Picking: StoryFn = (() => {
           name="pick-view"
           type={View2D}
           config={{
-            screenScale: [4, 4],
-            pixelRatio: 0.5,
             camera: camera.current,
             clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
           }}
@@ -235,9 +247,9 @@ export const Color_Picking: StoryFn = (() => {
           type={CircleLayer}
           providerRef={circleProvider}
           config={{
+            printShader: true,
             picking: PickType.SINGLE,
             animate: {
-              center: AutoEasingMethod.easeInOutCubic(2000),
               radius: AutoEasingMethod.easeOutCubic(200),
             },
             onMouseOver: (info) => {
@@ -258,6 +270,10 @@ export const Color_Picking: StoryFn = (() => {
             background: [0.1, 0.1, 0.1, 1],
             clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
             viewport: { right: 10, bottom: 10, width: "30%", height: "30%" },
+            output: {
+              buffers: { [FragmentOutputType.COLOR]: void 0 },
+              depth: false,
+            },
           },
         },
       })}

@@ -78,6 +78,12 @@ export interface ISurfaceJSX {
    * delivered from layers and the instance diff changes.
    */
   resourceManagers?: ISurfaceOptions["resourceManagers"];
+
+  /**
+   * If this is defined, this causes the specified targets to NOT render UNLESS
+   * expressly told to render utilizing enableOutput
+   */
+  optimizedOutputTargets?: number[];
 }
 
 export interface ISurfaceContext {
@@ -310,6 +316,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
         ioExpansion: props.ioExpansion,
         shaderTransforms: props.shaderTransforms,
         resourceManagers: props.resourceManagers,
+        optimizedOutputTargets: props.optimizedOutputTargets,
         rendererOptions: Object.assign(
           // Default render options
           {

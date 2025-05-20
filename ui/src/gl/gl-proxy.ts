@@ -196,7 +196,7 @@ export class GLProxy {
    * initialized.
    */
   compileAttribute(attribute: Attribute) {
-    if (attribute.gl) return;
+    if (attribute.gl) return true;
 
     const gl = this.gl;
     const buffer = gl.createBuffer();
@@ -208,7 +208,7 @@ export class GLProxy {
       );
       this.printError();
 
-      return;
+      return false;
     }
 
     // State change
@@ -316,7 +316,7 @@ export class GLProxy {
           }
         });
 
-        // Bind and incclude the index buffer
+        // Bind and include the index buffer
         if (geometry.indexBuffer) {
           if (this.updateIndexBuffer(geometry.indexBuffer)) {
             this.useIndexBuffer(geometry.indexBuffer);
@@ -330,12 +330,12 @@ export class GLProxy {
           "WARNING: Could not make VAO for Geometry. This is fine, but this could cause a hit on performance."
         );
       }
+    } else {
+      // Loop through each attribute of the geometry
+      geometry.attributes.forEach((attribute) => {
+        success = Boolean(this.compileAttribute(attribute) && success);
+      });
     }
-
-    // Loop through each attribute of the geometry
-    geometry.attributes.forEach((attribute) => {
-      success = Boolean(this.compileAttribute(attribute) && success);
-    });
 
     return success;
   }
@@ -1126,8 +1126,8 @@ export class GLProxy {
       instancing = this.extensions.instancing;
     }
 
-    // Optimization: No draw valid draw buffers when a render target is
-    // established and MRT is enabled: then don't don't
+    // Optimization: Don't draw valid draw buffers when a render target is
+    // established and MRT is enabled
     if (WebGLStat.MRT || WebGLStat.MRT_EXTENSION) {
       if (this.state.renderTarget) {
         if (!this.state.drawBuffers.find((target) => target !== this.gl.NONE)) {
@@ -1867,7 +1867,7 @@ export class GLProxy {
         Math.floor(texture.anisotropy || 0)
       );
 
-      if (!isNaN(anisotropy) && !texture.isFloatTexture) {
+      if (!isNaN(anisotropy) && !texture.isFloatTexture && anisotropy >= 1) {
         gl.texParameterf(
           gl.TEXTURE_2D,
           ext.TEXTURE_MAX_ANISOTROPY_EXT,
@@ -2010,12 +2010,14 @@ export class GLProxy {
     // Must have it's gl context established
     if (!attribute.gl) return false;
 
-    // Ensure the attribute has established location information for this program
+    // Ensure the attribute has established location information for this
+    // program
     attribute.gl.locations = attribute.gl.locations || new Map();
     // Find existing attribute location for the current program
     let location = attribute.gl.locations.get(this.state.currentProgram);
 
-    // If no location is found for this attribute for this program we must query for it
+    // If no location is found for this attribute for this program we must query
+    // for it
     if (location === undefined) {
       location = this.gl.getAttribLocation(this.state.currentProgram, name);
 
@@ -2030,14 +2032,16 @@ export class GLProxy {
       attribute.gl.locations.set(this.state.currentProgram, location);
     }
 
-    // Exit if our location is invalid for this attribute. It won't be used in next draw call.
+    // Exit if our location is invalid for this attribute. It won't be used in
+    // next draw call.
     if (location === -1) return;
 
     // At this point we're ready to establish the attribute's state and stride
     this.state.bindVBO(attribute.gl.bufferId);
 
     switch (attribute.size) {
-      // For sizes that fit within a single vertex block, this is the simplest way to establish the pointer
+      // For sizes that fit within a single vertex block, this is the simplest
+      // way to establish the pointer
       case 1:
       case 2:
       case 3:
@@ -2066,8 +2070,8 @@ export class GLProxy {
         }
         break;
 
-      // For sizes that exceed a single 'block' for a vertex attribute, one must break up the attribute pointers as the
-      // max allowed size is 4 at a time.
+      // For sizes that exceed a single 'block' for a vertex attribute, one must
+      // break up the attribute pointers as the max allowed size is 4 at a time.
       default: {
         const totalBlocks = Math.ceil(attribute.size / 4);
 

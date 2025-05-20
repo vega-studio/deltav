@@ -35,6 +35,9 @@ export declare class LayerMouseEvents extends QueuedEventHandler {
     private willRenderResolver?;
     private didRenderResolver?;
     constructor();
+    /**
+     * This enables picking for the surface.
+     */
     private enablePicking;
     /**
      * We want to dequeue the events after a render has taken place.

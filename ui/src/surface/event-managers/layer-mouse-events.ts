@@ -277,6 +277,9 @@ export class LayerMouseEvents extends QueuedEventHandler {
     });
   }
 
+  /**
+   * This enables picking for the surface.
+   */
   private enablePicking() {
     if (this.surface) {
       this.surface.enableOptimizedOutput(FragmentOutputType.PICKING);

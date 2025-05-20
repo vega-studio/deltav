@@ -116,8 +116,14 @@ export class SurfaceCommands {
 
     // Read the pixels out
     this.surface.renderer.readPixels(
-      Math.floor(position[0] - pickWidth / 2),
-      Math.floor(position[1] - pickHeight / 2),
+      Math.min(
+        Math.max(0, Math.floor(position[0] - pickWidth / 2)),
+        view.getRenderTargets()[0].width
+      ),
+      Math.min(
+        Math.max(0, Math.floor(position[1] - pickHeight / 2)),
+        view.getRenderTargets()[0].height
+      ),
       pickWidth,
       pickHeight,
       out

@@ -408,8 +408,10 @@ export class WebGLRenderer {
         if (geometry.gl?.vao) {
           this.glState.bindVAO(geometry.gl.vao);
         } else {
-          // Now all of our attributes are established, we must make sure our vertex
-          // arrays are cleaned up
+          // If a VAO is bound, let's unbind it.
+          if (this.glState.boundVAO) this.glState.bindVAO(null);
+          // Now all of our attributes are established, we must make sure our
+          // vertex arrays are cleaned up
           this.glState.applyVertexAttributeArrays();
         }
 
@@ -432,8 +434,8 @@ export class WebGLRenderer {
           toRemove.push(model);
         }
 
-        // As good practice, stop using the VAO when it's done being used
         this.glState.bindVAO(null);
+
         break;
       }
 
@@ -532,8 +534,9 @@ export class WebGLRenderer {
       return;
     }
 
-    x = Math.max(0, x);
-    y = Math.max(0, y);
+    // Bound the read to within the render target
+    x = Math.max(0, Math.min(x, (target?.width || 0) - width));
+    y = Math.max(0, Math.min(y, (target?.height || 0) - height));
 
     if (target) {
       if (x + width > target.width) width = target.width - x;

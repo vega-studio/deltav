@@ -257,6 +257,7 @@ export class GLState {
    * Sets the provided vertex array as the current bound item.
    */
   bindVAO(id: WebGLVertexArrayObject | null) {
+    // If the VAO is changing, we need to bind it, otherwise skip this step.
     if (this._boundVAO !== id) {
       this._boundVAO = id;
 
@@ -651,7 +652,7 @@ export class GLState {
           // The output type exists so we use the index as the attachment
           // location
           else {
-            attachments.push(renderOutput?.attachment || this.gl.NONE);
+            attachments.push(renderOutput?.attachment ?? this.gl.NONE);
           }
         }
 

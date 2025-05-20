@@ -5,7 +5,6 @@ import { IAutoEasingMethod } from "../../../math/auto-easing-method.js";
 import {
   FragmentOutputType,
   ILayerMaterialOptions,
-  IndexBufferSize,
   InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
@@ -83,9 +82,8 @@ export class CircleLayer<
     } = animate;
 
     // TL, TR, BL, BR
-    const vertexToNormal: number[] = [1, 1, -1, -1];
-    const vertexToSide: number[] = [-1, 1, -1, 1];
-    const indices: number[] = [0, 1, 2, 1, 3, 2];
+    const vertexToNormal: number[] = [1, 1, -1, -1, 1, -1];
+    const vertexToSide: number[] = [-1, 1, -1, 1, 1, -1];
 
     const vertexAttributes: IVertexAttribute[] = [
       {
@@ -175,11 +173,6 @@ export class CircleLayer<
       ],
       vertexAttributes: vertexAttributes,
       vertexCount: usePoints ? 1 : vertexCount,
-      indexBuffer: {
-        size: IndexBufferSize.UINT8,
-        indexCount: 6,
-        update: (i) => indices[i],
-      },
     };
   }
 

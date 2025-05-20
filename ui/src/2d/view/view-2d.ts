@@ -45,9 +45,10 @@ export class View2D<TViewProps extends IView2DProps> extends View<TViewProps> {
   }
 
   /**
-   * This operation makes sure we have the view camera adjusted to the new viewport's needs.
-   * For default behavior this ensures that the coordinate system has no distortion or perspective, orthographic,
-   * top left as 0,0 with +y axis pointing down.
+   * This operation makes sure we have the view camera adjusted to the new
+   * viewport's needs. For default behavior this ensures that the coordinate
+   * system has no distortion or perspective, orthographic, top left as 0,0 with
+   * +y axis pointing down.
    */
   fitViewtoViewport(
     _surfaceDimensions: Bounds<never>,

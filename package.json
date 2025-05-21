@@ -36,8 +36,8 @@
     "@types/seedrandom": "3.0.8",
     "assert": "2.0.0",
     "debug": "3.1.0",
-    "rand-seed": "1.0.2",
-    "fallback-dependencies": "git+ssh://github.com/vega-studio/fallback-dependencies.git#1.0.25"
+    "devops": "git+ssh://github.com/vega-studio/node-devops-public.git#6.0.8",
+    "rand-seed": "1.0.2"
   },
   "fallbackDependencies": {
     "devops": [

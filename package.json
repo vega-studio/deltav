@@ -25,8 +25,7 @@
     "ts": "devops ts",
     "url": "devops url",
     "template": "devops template",
-    "package": "devops package",
-    "postinstall": "node ./node_modules/fallback-dependencies/post-install.cjs"
+    "package": "devops package"
   },
   "devDependencies": {
     "@types/assert": "1.4.2",

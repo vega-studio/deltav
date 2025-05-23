@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git@github.com:vega-studio/deltav.git"
   },
-  "version": "4.4.2",
+  "version": "4.4.3",
   "main": "./dist/ui/index.js",
   "types": "./dist/types/ui/index.d.ts",
   "license": "MIT",
@@ -25,8 +25,7 @@
     "ts": "devops ts",
     "url": "devops url",
     "template": "devops template",
-    "package": "devops package",
-    "postinstall": "node ./node_modules/fallback-dependencies/post-install.cjs"
+    "package": "devops package"
   },
   "devDependencies": {
     "@types/assert": "1.4.2",
@@ -36,8 +35,8 @@
     "@types/seedrandom": "3.0.8",
     "assert": "2.0.0",
     "debug": "3.1.0",
-    "rand-seed": "1.0.2",
-    "fallback-dependencies": "git+ssh://github.com/vega-studio/fallback-dependencies.git#1.0.25"
+    "devops": "git+ssh://github.com/vega-studio/node-devops-public.git#6.0.8",
+    "rand-seed": "1.0.2"
   },
   "fallbackDependencies": {
     "devops": [

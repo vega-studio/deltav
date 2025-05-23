@@ -2,8 +2,8 @@ import { StoryFn } from "@storybook/react";
 import React from "react";
 
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
-import { AtlasJSX } from "../../../src/base-surfaces/react-surface/resource/atlas-jsx.js";
 import {
+  AtlasJSX,
   BasicCamera2DControllerJSX,
   Camera2D,
   ClearFlags,

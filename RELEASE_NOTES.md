@@ -1,3 +1,10 @@
+## 4.4.3
+
+## Fixed
+
+- [`FIXED`]: Properly exported AtlasJSX to make it available to our system
+- [`FIXED`]: Removed fallback dependencies to prevent errors in specialized environments
+
 ## 4.4.2
 
 ## Fixed

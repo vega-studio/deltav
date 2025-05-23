@@ -7,6 +7,7 @@ export * from "./event-managers/simple-event-handler-jsx.jsx";
 export * from "./event-managers/basic-camera-2d-controller-jsx.jsx";
 export * from "./resource/texture-jsx.jsx";
 export * from "./resource/font-jsx.jsx";
+export * from "./resource/atlas-jsx.jsx";
 export * from "./resource/as-resource.js";
 export * from "./scene/layer-jsx.jsx";
 export * from "./scene/view-jsx.jsx";

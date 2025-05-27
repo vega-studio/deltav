@@ -202,18 +202,8 @@ export const Color_Picking: StoryFn = (() => {
       })}
       <TextureJSX
         name="pick"
-        width={TextureSize.SCREEN}
-        height={TextureSize.SCREEN}
-        textureSettings={{
-          generateMipMaps: false,
-          format: GLSettings.Texture.TexelDataType.RGBA,
-          internalFormat: GLSettings.Texture.TexelDataType.RGBA,
-        }}
-      />
-      <TextureJSX
-        name="color"
-        width={TextureSize.SCREEN}
-        height={TextureSize.SCREEN}
+        width={TextureSize.SCREEN_HALF}
+        height={TextureSize.SCREEN_HALF}
         textureSettings={{
           generateMipMaps: false,
           format: GLSettings.Texture.TexelDataType.RGBA,
@@ -235,6 +225,8 @@ export const Color_Picking: StoryFn = (() => {
           name="pick-view"
           type={View2D}
           config={{
+            screenScale: [2, 2],
+            pixelRatio: 1,
             camera: camera.current,
             clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
           }}
@@ -565,8 +557,8 @@ export const Complex_Color_Picking_Scene: StoryFn = () => {
     >
       <TextureJSX
         name="pick"
-        width={TextureSize.SCREEN}
-        height={TextureSize.SCREEN}
+        width={TextureSize.SCREEN_HALF}
+        height={TextureSize.SCREEN_HALF}
         textureSettings={{
           generateMipMaps: false,
           format: GLSettings.Texture.TexelDataType.RGBA,
@@ -592,8 +584,8 @@ export const Complex_Color_Picking_Scene: StoryFn = () => {
         name="pick-view"
         type={View3D}
         config={{
-          // screenScale: [4, 4],
-          // pixelRatio: 0.5,
+          screenScale: [2, 2],
+          pixelRatio: 0.5,
           camera: camera.current,
           clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
         }}

@@ -1,3 +1,9 @@
+## 4.4.5
+
+## Fixed
+
+- [`FIXED`]: Addressed an issue where shell layers (layer with rendering children but no valid rendering for itself) caused an error when constructing render targets for views.
+
 ## 4.4.4
 
 ## Fixed

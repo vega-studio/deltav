@@ -15,6 +15,8 @@ import {
   DrawJSX,
   FragmentOutputType,
   GLSettings,
+  type ImageInstance,
+  ImageLayer,
   IMouseInteraction,
   InstanceProvider,
   LayerJSX,
@@ -666,6 +668,7 @@ export const Complex_Color_Picking_Scene: StoryFn = () => {
  * flagged for picking and others excluded allowing for complex MRT behaviors.
  */
 export const Color_Picking_Seperate_Views_And_Layers: StoryFn = (() => {
+  const imageProvider = React.useRef<InstanceProvider<ImageInstance>>(null);
   const circleProviderRed =
     React.useRef<InstanceProvider<CircleInstance>>(null);
   const circleProviderGreen =
@@ -784,6 +787,12 @@ export const Color_Picking_Seperate_Views_And_Layers: StoryFn = (() => {
             buffers: { [FragmentOutputType.PICKING]: "pick" },
             depth: true,
           }}
+        />
+        <LayerJSX
+          name="no-picking-images"
+          type={ImageLayer}
+          providerRef={imageProvider}
+          config={{}}
         />
         <LayerJSX
           name="no-picking"

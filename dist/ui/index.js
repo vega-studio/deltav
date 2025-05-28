@@ -17160,73 +17160,74 @@ const rr = class rr extends hn {
    * This is called by the system and should never need to be called externally.
    */
   createRenderTarget() {
-    this.renderTarget && (Array.isArray(this.renderTarget) ? this.renderTarget.forEach((u) => u.dispose()) : this.renderTarget.dispose());
+    var u;
+    this.renderTarget && (Array.isArray(this.renderTarget) ? this.renderTarget.forEach((d) => d.dispose()) : this.renderTarget.dispose());
     const { output: e } = this.props, t = this.scene.surface;
     if (!e || !t) return;
     const n = /* @__PURE__ */ new Set();
-    for (let u = 0, d = this.scene.layers.length; u < d; ++u) {
-      const p = this.scene.layers[u].shaderIOInfo.fs.get(this);
-      p && p.outputTypes.forEach(
-        (g) => n.add(g)
+    for (let d = 0, f = this.scene.layers.length; d < f; ++d) {
+      const g = (u = this.scene.layers[d].shaderIOInfo.fs) == null ? void 0 : u.get(this);
+      g && g.outputTypes.forEach(
+        (m) => n.add(m)
       );
     }
     const s = /* @__PURE__ */ new Map(), r = new Bt(t, this.scene, {
       key: "",
       data: new oe()
     }), o = new nt({}), a = this.getOutputTargets() || [];
-    for (let u = 0, d = a.length; u < d; ++u) {
-      const f = a[u], p = f.resource;
-      if (n.has(f.outputType))
-        if (Nn(p)) {
-          const g = Hs({
-            key: f.resource.key
+    for (let d = 0, f = a.length; d < f; ++d) {
+      const p = a[d], g = p.resource;
+      if (n.has(p.outputType))
+        if (Nn(g)) {
+          const m = Hs({
+            key: p.resource.key
           });
-          if (this.resource.request(r, o, g), !g.texture)
+          if (this.resource.request(r, o, m), !m.texture)
             throw console.warn(
               "A view has a RenderTexture output target with key:",
-              f.resource.key,
+              p.resource.key,
               "however, no RenderTexture was found for the key.",
               "Please ensure you have a 'resource' specified for the Surface with the proper key",
               "Also ensure the resource is made via createTexture()"
             ), new Error(
               `Output target unable to be constructed for view ${this.id}`
             );
-          s.set(f.outputType, g.texture);
+          s.set(p.outputType, m.texture);
         } else {
-          const g = zr({
-            key: f.resource.key
+          const m = zr({
+            key: p.resource.key
           });
-          if (this.resource.request(r, o, g), !g.colorBuffer)
+          if (this.resource.request(r, o, m), !m.colorBuffer)
             throw console.warn(
               "A view has a ColorBuffer output target with key:",
-              f.resource.key,
+              p.resource.key,
               "however, no ColorBuffer was found for the key.",
               "Please ensure you have a 'resource' specified for the Surface with the proper key",
               "Also ensure the resource is made via createColorBuffer()"
             ), new Error(
               `Output target unable to be constructed for view ${this.id}`
             );
-          s.set(f.outputType, g.colorBuffer);
+          s.set(p.outputType, m.colorBuffer);
         }
     }
     let c, l;
-    s.forEach((u) => {
-      var d, f, p;
-      if (u instanceof J) {
-        if ((c === void 0 || l === void 0) && (c = ((d = u.data) == null ? void 0 : d.width) || 0, l = ((f = u.data) == null ? void 0 : f.height) || 0), c === 0 || l === 0)
+    s.forEach((d) => {
+      var f, p, g;
+      if (d instanceof J) {
+        if ((c === void 0 || l === void 0) && (c = ((f = d.data) == null ? void 0 : f.width) || 0, l = ((p = d.data) == null ? void 0 : p.height) || 0), c === 0 || l === 0)
           throw new Error(
             "RenderTexture for View can NOT have a width or height of zero."
           );
-        if (((p = u.data) == null ? void 0 : p.width) !== c || u.data.height !== l)
+        if (((g = d.data) == null ? void 0 : g.width) !== c || d.data.height !== l)
           throw new Error(
             "When a view has multiple output targets: ALL RenderTextures and ColorBuffers that a view references MUST have the same dimensions"
           );
       } else {
-        if ((c === void 0 || l === void 0) && (c = u.size[0] || 0, l = u.size[1] || 0), c === 0 || l === 0)
+        if ((c === void 0 || l === void 0) && (c = d.size[0] || 0, l = d.size[1] || 0), c === 0 || l === 0)
           throw new Error(
             "RenderTexture for View can NOT have a width or height of zero."
           );
-        if (u.size[0] !== c || u.size[1] !== l)
+        if (d.size[0] !== c || d.size[1] !== l)
           throw new Error(
             "When a view has multiple output targets: ALL RenderTextures and ColorBuffers that a view references MUST have the same dimensions"
           );
@@ -17235,10 +17236,10 @@ const rr = class rr extends hn {
     let h;
     if (e.depth)
       if (Nn(e.depth)) {
-        const u = Hs({
+        const d = Hs({
           key: e.depth.key
         });
-        if (this.resource.request(r, o, u), !u.texture)
+        if (this.resource.request(r, o, d), !d.texture)
           throw console.warn(
             "A view has a depth buffer output target with key:",
             e.depth,
@@ -17248,12 +17249,12 @@ const rr = class rr extends hn {
           ), new Error(
             `Output target unable to be constructed for view ${this.id}`
           );
-        h = u.texture;
+        h = d.texture;
       } else if (js(e.depth)) {
-        const u = zr({
+        const d = zr({
           key: e.depth.key
         });
-        if (this.resource.request(r, o, u), !u.colorBuffer)
+        if (this.resource.request(r, o, d), !d.colorBuffer)
           throw console.warn(
             "A view has a depth buffer output target with key:",
             e.depth.key,
@@ -17263,19 +17264,19 @@ const rr = class rr extends hn {
           ), new Error(
             `Output target unable to be constructed for view ${this.id}`
           );
-        h = u.colorBuffer;
+        h = d.colorBuffer;
       } else
         h = x.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT16;
     if (O.MRT) {
-      const u = [];
+      const d = [];
       s.forEach(
-        (d, f) => u.push({
-          buffer: d,
-          outputType: f
+        (f, p) => d.push({
+          buffer: f,
+          outputType: p
         })
       ), this.renderTarget = new Zi({
         buffers: {
-          color: u,
+          color: d,
           depth: h
         },
         // Render target texture retention is governed by the resource set up
@@ -26144,7 +26145,7 @@ const ds = ee.createContext(void 0), Tv = (i) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "4.4.3",
+      "data-deltav-version": "4.4.4",
       className: `SurfaceJSX ${i.className || ""}`,
       ...i.containerProps,
       children: /* @__PURE__ */ Ae.jsx("canvas", { ref: t, children: /* @__PURE__ */ Ae.jsx(

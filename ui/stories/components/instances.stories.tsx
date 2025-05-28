@@ -372,17 +372,15 @@ export const Auto_Vertex_Packing: StoryFn = (() => {
       <LayerJSX
         type={VertexPackingCircleLayer}
         providerRef={circleProvider}
-        config={{
-          printShader: true,
-        }}
+        config={{}}
       />
     </SurfaceJSX>
   );
 }).bind({});
 
-export const Large_Interaction_Count: StoryFn = (() => {
-  const total = 500000;
-  const pauses = 10;
+export const Large_Instance_Count: StoryFn = (() => {
+  const total = 500_000;
+  const pauses = 5;
   const circleProvider = new Array(1)
     .fill(0)
     .map(() => React.useRef<InstanceProvider<CircleInstance>>(null));
@@ -461,18 +459,16 @@ export const Large_Interaction_Count: StoryFn = (() => {
           type={CircleLayer}
           providerRef={provider}
           config={{
-            // bufferManagement: {
-            //   instancing: false,
-            //   baseBufferGrowthRate: 0,
-            // },
+            bufferManagement: {
+              instancing: false,
+              baseBufferGrowthRate: total / 2,
+              optimize: {
+                expectedInstanceCount: Math.ceil(total / circleProvider.length),
+              },
+            },
             animate: {
               center: AutoEasingMethod.easeInOutCubic(2000),
             },
-            // bufferManagement: {
-            //   optimize: {
-            //     expectedInstanceCount: Math.ceil(total / circleProvider.length),
-            //   },
-            // },
           }}
         />
       ))}

@@ -24,6 +24,7 @@ void main() {
     vertexColor,
     step_factor
   );
+  // ${out: color} = vec4(1., 0., 0., 1.);
 
   if (color.a == 0.0) discard;
 }

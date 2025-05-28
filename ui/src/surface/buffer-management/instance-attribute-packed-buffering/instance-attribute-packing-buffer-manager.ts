@@ -207,7 +207,8 @@ export class InstanceAttributePackingBufferManager<
       if (this.model) {
         this.model.vertexDrawRange = [
           0,
-          this.layer.shaderIOInfo.instanceVertexCount,
+          this.layer.shaderIOInfo.indexBuffer?.indexCount ||
+            this.layer.shaderIOInfo.instanceVertexCount,
         ];
         this.model.drawInstances = this.currentInstancedCount;
 

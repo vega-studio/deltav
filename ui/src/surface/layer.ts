@@ -796,14 +796,18 @@ export class Layer<
       );
 
       if (!outputFragmentShader) {
-        console.warn(
-          "Could not generate output fragment shaders for the view specified."
-        );
-        return false;
+        continue;
       }
 
       // Store the output fragment shaders for the given view
       outputFragmentShaders.set(view, outputFragmentShader);
+    }
+
+    if (outputFragmentShaders.size === 0) {
+      console.warn(
+        "Could not generate output fragment shaders for the view specified."
+      );
+      return false;
     }
 
     return { outputFragmentShaders, declarations };

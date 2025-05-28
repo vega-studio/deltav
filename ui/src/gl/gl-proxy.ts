@@ -1907,8 +1907,6 @@ export class GLProxy {
         attribute.data,
         attribute.isDynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW
       );
-
-      console.log("BUFFERED DATA", attribute, 0, attribute.updateRange.count);
     }
 
     // Otherwise, we work to upload only a partial update to the buffer

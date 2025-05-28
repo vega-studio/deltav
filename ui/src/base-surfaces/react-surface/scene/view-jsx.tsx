@@ -42,7 +42,7 @@ export interface IViewJSX<TProps extends IViewProps>
      * Specify output targets for the render/color buffers this view wants to write to.
      * Use the name of the Resource that will be used to be written to.
      */
-    buffers: Record<number, string>;
+    buffers: Record<number, string | undefined>;
     /**
      * Set to true to include a depth buffer the system will generate for you.
      * Use the name of the Resource to use it if you wish to target an output
@@ -108,7 +108,7 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
           const resolver = getResourceResolverForName(
             props.name,
             surfaceContext,
-            name
+            name || ""
           );
 
           if (!resolver) {

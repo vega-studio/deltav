@@ -52,6 +52,10 @@ export class Geometry {
     this.isInstanced = false;
     let didChange: number | undefined;
 
+    // This is not required for the gl layer attribute, but it is helpful for
+    // debugging purposes to have the name of the attribute
+    attribute.name = name;
+
     // Check to see if the attributes are uniform or not in instancing
     Object.values(this._attributes).forEach((attr) => {
       const check = attr.isInstanced ? 1 : 0;

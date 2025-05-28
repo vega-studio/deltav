@@ -238,7 +238,7 @@ export class VertexAttributeBufferManager<
       this.availableLocations.length <= 0 ||
       this.currentAvailableLocation >= this.availableLocations.length - 1
     ) {
-      // Resice the buffer to accommodate more instances
+      // Resize the buffer to accommodate more instances
       const locationInfo = this.resizeBuffer();
       // Break down the newly generated buffers into property groupings for the
       // instances

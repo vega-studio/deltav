@@ -39,8 +39,8 @@ export interface IViewJSX<TProps extends IViewProps>
    */
   output?: {
     /**
-     * Specify output targets for the color buffers this view wants to write to.
-     * Use the name of the Resource to use it.
+     * Specify output targets for the render/color buffers this view wants to write to.
+     * Use the name of the Resource that will be used to be written to.
      */
     buffers: Record<number, string>;
     /**

@@ -6,6 +6,9 @@ import { GLProxy } from "./gl-proxy.js";
  * program.
  */
 export class Attribute {
+  /** Optional name for making the atribute easier to identify */
+  name?: string;
+
   /**
    * The data buffer that is applied to the GPU. See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
@@ -175,7 +178,8 @@ export class Attribute {
   /**
    * This repeats data in this buffer to simulate putting multiple instances of
    * the data in this same buffer. This uses the first instance of data (data
-   * starting at index 0) as the template for what to copy to the new instances.
+   * starting at index 0 : instanceVertexCount) as the template for what to copy
+   * to the new instances.
    *
    * If this operation would exceed the length of the buffer, it will simply
    * copy as far as it can then quit. You should use the resize operation to
@@ -194,6 +198,11 @@ export class Attribute {
     instanceVertexCount: number,
     startInstance: number = 1
   ) {
+    // Requesting no instances to repeat means we do nothing
+    if (instanceCount === 0) {
+      return;
+    }
+
     if (startInstance < 1) {
       throw new Error(
         "Can not use repeatInstance on attribute with a startInstance of less than 1"
@@ -203,7 +212,7 @@ export class Attribute {
     // Calculate how many data elements a single instance takes up
     const instanceSize = instanceVertexCount * this.size;
 
-    // If the instance copy would exceed the buffer size, quit
+    // If there is not enough room to perform a single copy, quit
     if (startInstance * instanceSize + instanceSize > this.data.length) {
       return;
     }
@@ -241,13 +250,13 @@ export class Attribute {
     // needed.
     while (toCopy > 0 && --limit > 0) {
       this.data.copyWithin(
-        startInstance + copiedInstances * instanceSize,
+        startIndex + copiedInstances * instanceSize,
         startIndex,
         // We recopy the copied instances to our new destination, but we limit
         // this to the number of instances we have left to copy in this batch.
         // This effectively causes us to double the number of instances we copy
         // each iteration, thus making this operation siginificantly faster.
-        Math.min(toCopy, copiedInstances) * instanceSize
+        startIndex + Math.min(toCopy, copiedInstances) * instanceSize
       );
       toCopy -= copiedInstances;
       copiedInstances += copiedInstances;

@@ -377,7 +377,7 @@ export abstract class View<
 
     for (let i = 0, iMax = this.scene.layers.length; i < iMax; ++i) {
       const layer = this.scene.layers[i];
-      const fragmentOutputs = layer.shaderIOInfo.fs.get(this);
+      const fragmentOutputs = layer.shaderIOInfo.fs?.get(this);
 
       if (!fragmentOutputs) {
         continue;

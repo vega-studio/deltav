@@ -5,6 +5,8 @@ import { GLProxy } from "./gl-proxy.js";
  * program.
  */
 export declare class Attribute {
+    /** Optional name for making the atribute easier to identify */
+    name?: string;
     /**
      * The data buffer that is applied to the GPU. See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
@@ -103,7 +105,8 @@ export declare class Attribute {
     /**
      * This repeats data in this buffer to simulate putting multiple instances of
      * the data in this same buffer. This uses the first instance of data (data
-     * starting at index 0) as the template for what to copy to the new instances.
+     * starting at index 0 : instanceVertexCount) as the template for what to copy
+     * to the new instances.
      *
      * If this operation would exceed the length of the buffer, it will simply
      * copy as far as it can then quit. You should use the resize operation to

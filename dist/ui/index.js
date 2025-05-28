@@ -191,7 +191,8 @@ class ii {
   /**
    * This repeats data in this buffer to simulate putting multiple instances of
    * the data in this same buffer. This uses the first instance of data (data
-   * starting at index 0) as the template for what to copy to the new instances.
+   * starting at index 0 : instanceVertexCount) as the template for what to copy
+   * to the new instances.
    *
    * If this operation would exceed the length of the buffer, it will simply
    * copy as far as it can then quit. You should use the resize operation to
@@ -206,6 +207,8 @@ class ii {
    *                      it would override the source template instance data.
    */
   repeatInstances(e, t, n = 1) {
+    if (e === 0)
+      return;
     if (n < 1)
       throw new Error(
         "Can not use repeatInstance on attribute with a startInstance of less than 1"
@@ -218,13 +221,13 @@ class ii {
     let c = 1, l = o - n - 1, h = 36;
     for (; l > 0 && --h > 0; )
       this.data.copyWithin(
-        n + c * s,
+        a + c * s,
         a,
         // We recopy the copied instances to our new destination, but we limit
         // this to the number of instances we have left to copy in this batch.
         // This effectively causes us to double the number of instances we copy
         // each iteration, thus making this operation siginificantly faster.
-        Math.min(l, c) * s
+        a + Math.min(l, c) * s
       ), l -= c, c += c;
   }
   /**
@@ -254,7 +257,7 @@ class Di {
   addAttribute(e, t) {
     delete this._attributeMap, this._attributes[e] = t, this.isInstanced = !1;
     let n;
-    Object.values(this._attributes).forEach((s) => {
+    t.name = e, Object.values(this._attributes).forEach((s) => {
       const r = s.isInstanced ? 1 : 0;
       n === void 0 && (n = r), (n ^ r) === 1 && (this.isInstanced = !0);
     });
@@ -14319,11 +14322,12 @@ class Lg extends ls {
    * with their appropriate buffer location.
    */
   doAdd(e) {
+    var n;
     if (this.availableLocations.length <= 0 || this.currentAvailableLocation >= this.availableLocations.length - 1) {
-      const n = this.resizeBuffer();
+      const s = this.resizeBuffer();
       this.gatherLocationsIntoGroups(
-        n.newLocations,
-        n.growth
+        s.newLocations,
+        s.growth
       );
     }
     const t = this.availableLocations[++this.currentAvailableLocation];
@@ -14333,7 +14337,7 @@ class Lg extends ls {
       t.instanceIndex + 1
     ), this.model && (this.model.vertexDrawRange = [
       0,
-      this.layer.shaderIOInfo.instanceVertexCount
+      ((n = this.layer.shaderIOInfo.indexBuffer) == null ? void 0 : n.indexCount) || this.layer.shaderIOInfo.instanceVertexCount
     ], this.model.drawInstances = this.currentInstancedCount, this.layer.shaderIOInfo.instanceVertexCount === 0 && (this.model.vertexDrawRange[1] = this.model.drawInstances))) : console.error(
       "Add Error: Instance Attribute Buffer Manager failed to pair an instance with a buffer location"
     ), t;
@@ -16459,13 +16463,11 @@ const Pr = xe("performance"), sr = class sr extends hn {
         h,
         e.fs
       );
-      if (!f)
-        return console.warn(
-          "Could not generate output fragment shaders for the view specified."
-        ), !1;
-      r.set(l, f);
+      f && r.set(l, f);
     }
-    return { outputFragmentShaders: r, declarations: o };
+    return r.size === 0 ? (console.warn(
+      "Could not generate output fragment shaders for the view specified."
+    ), !1) : { outputFragmentShaders: r, declarations: o };
   }
   /**
    * This performs the actual generation of the vertex and fragment shaders this
@@ -20171,6 +20173,7 @@ void main() {
     vertexColor,
     step_factor
   );
+  // \${out: color} = vec4(1., 0., 0., 1.);
 
   if (color.a == 0.0) discard;
 }
@@ -26141,7 +26144,7 @@ const ds = ee.createContext(void 0), Tv = (i) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "4.4.2",
+      "data-deltav-version": "4.4.3",
       className: `SurfaceJSX ${i.className || ""}`,
       ...i.containerProps,
       children: /* @__PURE__ */ Ae.jsx("canvas", { ref: t, children: /* @__PURE__ */ Ae.jsx(
@@ -26292,7 +26295,7 @@ const Yo = (i) => {
         const f = bc(
           i.name,
           e,
-          d
+          d || ""
         );
         return f ? [Number.parseInt(u), f, d] : (console.warn("View props", i), null);
       }).filter(se), s = {};

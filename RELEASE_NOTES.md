@@ -1,3 +1,11 @@
+## 4.4.4
+
+## Fixed
+
+- [`FIXED`]: Mixing layers into views that have complete mismatches on output buffer types (ie a layer has no outputs that match one of many views provided, but matches other views) will now be allowed and not completely exclude the layer for failing to match a buffer on just a single view.
+- [`FIXED`]: Indexing works properly for instancing buffer management (normal and packing). Non-instanced vertex buffer management works properly now as well. (normal tested, packing is not tested yet)
+- [`FIXED`]: Corrected the issue with the Instance Attribute Packing Buffer Manager when the layer specifies indices for the model being rendered.
+
 ## 4.4.3
 
 ## Fixed

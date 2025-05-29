@@ -1308,7 +1308,7 @@ function Dx(i) {
 function Hi(i) {
   return i === !0 || i === !1;
 }
-var $ = /* @__PURE__ */ ((i) => (i[i.NONE = 0] = "NONE", i[i.BLANK = 1] = "BLANK", i[i.COLOR = 2] = "COLOR", i[i.DEPTH = 3] = "DEPTH", i[i.NORMAL = 4] = "NORMAL", i[i.PICKING = 5] = "PICKING", i[i.POSITION = 6] = "POSITION", i[i.POSITION_X = 7] = "POSITION_X", i[i.POSITION_Y = 8] = "POSITION_Y", i[i.POSITION_Z = 9] = "POSITION_Z", i[i.LIGHTS = 10] = "LIGHTS", i[i.LIGHTS2 = 11] = "LIGHTS2", i[i.LIGHTS3 = 12] = "LIGHTS3", i[i.ALPHA = 13] = "ALPHA", i[i.BETA = 14] = "BETA", i[i.GAMMA = 15] = "GAMMA", i[i.DELTA = 16] = "DELTA", i[i.ACCUMULATION1 = 17] = "ACCUMULATION1", i[i.ACCUMULATION2 = 18] = "ACCUMULATION2", i[i.ACCUMULATION3 = 19] = "ACCUMULATION3", i[i.ACCUMULATION4 = 20] = "ACCUMULATION4", i[i.COEFFICIENT1 = 21] = "COEFFICIENT1", i[i.COEFFICIENT2 = 22] = "COEFFICIENT2", i[i.COEFFICIENT3 = 23] = "COEFFICIENT3", i[i.COEFFICIENT4 = 24] = "COEFFICIENT4", i[i.ANGLE1 = 25] = "ANGLE1", i[i.ANGLE2 = 26] = "ANGLE2", i[i.ANGLE3 = 27] = "ANGLE3", i[i.ANGLE4 = 28] = "ANGLE4", i[i.COLOR2 = 29] = "COLOR2", i[i.COLOR3 = 30] = "COLOR3", i[i.COLOR4 = 31] = "COLOR4", i[i.GLOW = 32] = "GLOW", i[i.BLUR = 33] = "BLUR", i))($ || {});
+var V = /* @__PURE__ */ ((i) => (i[i.NONE = 0] = "NONE", i[i.BLANK = 1] = "BLANK", i[i.COLOR = 2] = "COLOR", i[i.DEPTH = 3] = "DEPTH", i[i.NORMAL = 4] = "NORMAL", i[i.PICKING = 5] = "PICKING", i[i.POSITION = 6] = "POSITION", i[i.POSITION_X = 7] = "POSITION_X", i[i.POSITION_Y = 8] = "POSITION_Y", i[i.POSITION_Z = 9] = "POSITION_Z", i[i.LIGHTS = 10] = "LIGHTS", i[i.LIGHTS2 = 11] = "LIGHTS2", i[i.LIGHTS3 = 12] = "LIGHTS3", i[i.ALPHA = 13] = "ALPHA", i[i.BETA = 14] = "BETA", i[i.GAMMA = 15] = "GAMMA", i[i.DELTA = 16] = "DELTA", i[i.ACCUMULATION1 = 17] = "ACCUMULATION1", i[i.ACCUMULATION2 = 18] = "ACCUMULATION2", i[i.ACCUMULATION3 = 19] = "ACCUMULATION3", i[i.ACCUMULATION4 = 20] = "ACCUMULATION4", i[i.COEFFICIENT1 = 21] = "COEFFICIENT1", i[i.COEFFICIENT2 = 22] = "COEFFICIENT2", i[i.COEFFICIENT3 = 23] = "COEFFICIENT3", i[i.COEFFICIENT4 = 24] = "COEFFICIENT4", i[i.ANGLE1 = 25] = "ANGLE1", i[i.ANGLE2 = 26] = "ANGLE2", i[i.ANGLE3 = 27] = "ANGLE3", i[i.ANGLE4 = 28] = "ANGLE4", i[i.COLOR2 = 29] = "COLOR2", i[i.COLOR3 = 30] = "COLOR3", i[i.COLOR4 = 31] = "COLOR4", i[i.GLOW = 32] = "GLOW", i[i.BLUR = 33] = "BLUR", i))(V || {});
 class _c {
   /**
    * Default ctor
@@ -3589,9 +3589,9 @@ class Zi {
     var e;
     if (Array.isArray(this.buffers.color)) {
       if (this.buffers.color.length === 1)
-        return this.buffers.color[0].outputType === $.COLOR;
+        return this.buffers.color[0].outputType === V.COLOR;
     } else
-      return ((e = this.buffers.color) == null ? void 0 : e.outputType) === $.COLOR;
+      return ((e = this.buffers.color) == null ? void 0 : e.outputType) === V.COLOR;
     return !1;
   }
   /**
@@ -4006,7 +4006,7 @@ class Nu {
       let c = Number.MAX_SAFE_INTEGER;
       for (let l = 0, h = e.gl.programId.length; l < h; ++l) {
         const u = e.gl.programId[l];
-        u.outputTypes.length < c && u.outputTypes.indexOf($.COLOR) >= 0 && (a = u.id, c = u.outputTypes.length);
+        u.outputTypes.length < c && u.outputTypes.indexOf(V.COLOR) >= 0 && (a = u.id, c = u.outputTypes.length);
       }
       return a || (a = e.gl.programId[e.gl.programId.length - 1]), a;
     }
@@ -10489,9 +10489,9 @@ async function Ap(i, e, t, n, s) {
     for (g = 0; g < l && p < t.all.length; g++) {
       const W = document.createElementNS(r, "text");
       W.setAttribute("x", `${g * a}`), W.setAttribute("dy", "1em");
-      const V = t.all[p];
+      const $ = t.all[p];
       p++;
-      const K = V[0], Q = V[1], Y = document.createElementNS(r, "tspan"), j = document.createElementNS(r, "tspan");
+      const K = $[0], Q = $[1], Y = document.createElementNS(r, "tspan"), j = document.createElementNS(r, "tspan");
       Y.setAttribute("fill", "#ff0000"), j.setAttribute("fill", "#0000ff"), Y.textContent = K, j.textContent = Q, W.appendChild(Y), W.appendChild(j), N.appendChild(W), B -= a;
     }
     if (B >= 0) {
@@ -10516,8 +10516,8 @@ async function Ap(i, e, t, n, s) {
     const W = await fh(N, 128, 128, i);
     if (W) {
       y = W.size[0];
-      const V = document.createElementNS(r, "tspan"), K = document.createElementNS(r, "tspan"), Q = document.createElementNS(r, "tspan");
-      if (V.setAttribute("fill", "#ff0000"), Q.setAttribute("fill", "#0000ff"), V.textContent = N, Q.textContent = N, K.textContent = " ", B.appendChild(V), B.appendChild(K), B.appendChild(Q), g < l && m)
+      const $ = document.createElementNS(r, "tspan"), K = document.createElementNS(r, "tspan"), Q = document.createElementNS(r, "tspan");
+      if ($.setAttribute("fill", "#ff0000"), Q.setAttribute("fill", "#0000ff"), $.textContent = N, Q.textContent = N, K.textContent = " ", B.appendChild($), B.appendChild(K), B.appendChild(Q), g < l && m)
         m.appendChild(B), b -= a, v && (v.remove(), b > 0 && (m.style.width = `${b}px`, m.appendChild(v)));
       else {
         const Y = document.createElement("g");
@@ -10544,27 +10544,27 @@ async function Ap(i, e, t, n, s) {
   for (let N = 0; N < _; ++N) {
     const B = u.splice(0, d), W = B.length * c;
     for (h.setAttribute("height", `${W}px`); h.lastElementChild; ) h.lastElementChild.remove();
-    for (let V = 0, K = B.length; V < K; ++V) {
-      const Q = B[V];
+    for (let $ = 0, K = B.length; $ < K; ++$) {
+      const Q = B[$];
       h.appendChild(Q);
     }
     if (!R)
       R = await Da(h, r, s);
     else {
-      const V = await Da(h, r, s);
-      if (!V) {
+      const $ = await Da(h, r, s);
+      if (!$) {
         console.warn(
           "Font Renderer: Could not generate image data for analyzing font kerning"
         );
         continue;
       }
       const K = new Uint8ClampedArray(
-        R.data.length + V.data.length
+        R.data.length + $.data.length
       );
-      K.set(R.data), K.set(V.data, R.data.length), R = new ImageData(
+      K.set(R.data), K.set($.data, R.data.length), R = new ImageData(
         K,
         o * window.devicePixelRatio,
-        R.height + V.height
+        R.height + $.height
       );
     }
   }
@@ -10572,10 +10572,10 @@ async function Ap(i, e, t, n, s) {
   const G = a * window.devicePixelRatio, z = c * window.devicePixelRatio;
   if (R) {
     const N = R.data;
-    let B, W, V, K, Q, Y;
+    let B, W, $, K, Q, Y;
     for (let j = 0, ve = R.height; j < ve; j++)
       for (let T = 0, U = R.width; T < U; T++)
-        B = (U * j + T) * 4, W = N[B + 0], V = N[B + 1], K = N[B + 2], Y = Ir(j / z) * l + Ir(T / G), Y < w.length && (Q = w[Y], W > 0 && V === 0 && K === 0 && (T < Q[0] && (Q[0] = T), j < Q[1] && (Q[1] = j)), W === 0 && V === 0 && K > 0 && (T < Q[2] && (Q[2] = T), j < Q[3] && (Q[3] = j)));
+        B = (U * j + T) * 4, W = N[B + 0], $ = N[B + 1], K = N[B + 2], Y = Ir(j / z) * l + Ir(T / G), Y < w.length && (Q = w[Y], W > 0 && $ === 0 && K === 0 && (T < Q[0] && (Q[0] = T), j < Q[1] && (Q[1] = j)), W === 0 && $ === 0 && K > 0 && (T < Q[2] && (Q[2] = T), j < Q[3] && (Q[3] = j)));
     if (E) {
       const j = w.pop();
       if (j) {
@@ -12639,7 +12639,7 @@ class qa {
           ), b = b.replace(
             /gl_FragColor\s+=/g,
             `_FragColor = gl_FragData[${v}] =`
-          ), b = b.replace(/gl_FragColor/g, "_FragColor"))), h.add("_FragColor")) : u.push($.NONE)), a += `
+          ), b = b.replace(/gl_FragColor/g, "_FragColor"))), h.add("_FragColor")) : u.push(V.NONE)), a += `
 ${(w || "").trim()}`, c += `
   ${(b || "").trim()}`, (b || "").trim();
         }
@@ -12662,22 +12662,22 @@ ${c}
    * out declarartion for it.
    */
   static mergeOutputFragmentShaderForColor(e, t) {
-    if (t.length > 1 || t[0] !== $.COLOR)
+    if (t.length > 1 || t[0] !== V.COLOR)
       throw new Error(
         "Merging fragment shaders for only COLOR output is only valid when the view has a single COLOR output target."
       );
     Li(e) && (e = [
       {
-        outputType: $.COLOR,
+        outputType: V.COLOR,
         source: e
       }
     ]);
     let n = "", s = "";
     const r = /* @__PURE__ */ new Set(), o = [];
     return e.some((a) => {
-      const c = a.outputType === $.COLOR;
+      const c = a.outputType === V.COLOR;
       let l = !1;
-      return c && o.push($.COLOR), sn({
+      return c && o.push(V.COLOR), sn({
         shader: er(a.source),
         /**
          * Analyze each token for "out" tokens indicating output
@@ -12750,30 +12750,30 @@ ${n}
           [
             {
               source: s,
-              outputType: $.COLOR
+              outputType: V.COLOR
             }
           ],
-          [$.COLOR]
+          [V.COLOR]
         );
         return {
           source: r.output,
-          outputTypes: [$.COLOR],
+          outputTypes: [V.COLOR],
           outputNames: r.outputNames
         };
       } else if (Array.isArray(s)) {
         const r = s.find(
-          (c) => c.outputType === $.COLOR
+          (c) => c.outputType === V.COLOR
         );
         let o = -1;
         r ? o = s.indexOf(r) : o = s.length - 1;
         const a = this.mergeOutputFragmentShaderForColor(
           s.slice(0, o + 1),
-          [$.COLOR]
+          [V.COLOR]
         );
         return {
           source: a.output,
           outputNames: a.outputNames,
-          outputTypes: [$.COLOR]
+          outputTypes: [V.COLOR]
         };
       } else
         return null;
@@ -12816,7 +12816,7 @@ ${n}
             "Fragment shader generation not supported for MRT systems on non MRT hardware...yet"
           );
       } else if (n.find(
-        (a) => a.outputType === $.COLOR
+        (a) => a.outputType === V.COLOR
       ) && s) {
         const a = this.mergeFragmentOutputsForMRT(
           e,
@@ -12824,7 +12824,7 @@ ${n}
           [
             {
               source: s,
-              outputType: $.COLOR
+              outputType: V.COLOR
             }
           ],
           r
@@ -12872,7 +12872,7 @@ ${n}
         uniforms: []
       }, v = s.vs || /* @__PURE__ */ new Map(), b = s.fs || /* @__PURE__ */ new Map(), w = s.destructure || /* @__PURE__ */ new Map();
       for (let B = 0, W = r.length; B < W; ++B) {
-        const V = r[B], K = V.processHeaderInjection(
+        const $ = r[B], K = $.processHeaderInjection(
           I.VERTEX,
           v,
           e,
@@ -12883,7 +12883,7 @@ ${n}
         );
         f += K.injection, K.material && (m.uniforms = m.uniforms.concat(
           K.material.uniforms || []
-        )), g += V.processAttributeDestructuring(
+        )), g += $.processAttributeDestructuring(
           e,
           w,
           this.metricsProcessing,
@@ -12918,11 +12918,11 @@ ${B}`;
       });
       return c.fs.forEach((B, W) => {
         R = {}, p = "", y = "";
-        const V = b.get(W) || /* @__PURE__ */ new Map();
+        const $ = b.get(W) || /* @__PURE__ */ new Map();
         for (let Y = 0, j = r.length; Y < j; ++Y) {
           const T = r[Y].processHeaderInjection(
             I.FRAGMENT,
-            V,
+            $,
             e,
             this.metricsProcessing,
             l,
@@ -12938,7 +12938,7 @@ ${B}`;
             });
           }
         }
-        V.forEach((Y) => {
+        $.forEach((Y) => {
           y += Y;
         }), p = y + p;
         const K = E + C + p + B.source, Q = sn({
@@ -13090,14 +13090,14 @@ class lg extends br {
       const w = {
         values: ag
       };
-      let y, E, C, _, R, G, z, N, B, W, V, K, Q;
+      let y, E, C, _, R, G, z, N, B, W, $, K, Q;
       u.update = (T) => {
-        if (B = e.surface.frameMetrics, E = u.easing.delay, C = u.easing.duration, z = v(T), N = B.currentTime, T.easing = K = T.easing || /* @__PURE__ */ new Map(), W = K.get(b), !V || !W ? (V = D(z), W = new Sl({
+        if (B = e.surface.frameMetrics, E = u.easing.delay, C = u.easing.duration, z = v(T), N = B.currentTime, T.easing = K = T.easing || /* @__PURE__ */ new Map(), W = K.get(b), !$ || !W ? ($ = D(z), W = new Sl({
           duration: C,
-          end: V.copy(z),
-          start: V.copy(z),
+          end: $.copy(z),
+          start: $.copy(z),
           startTime: N
-        }), K.set(b, W)) : T.reactivate && (V.copy(z, W.end), V.copy(z, W.end), W.startTime = N), R = W, _ = C, y = E, R.isTimeSet && (_ = R.duration || C, y = R.delay || 0), !R.isManualStart) {
+        }), K.set(b, W)) : T.reactivate && ($.copy(z, W.end), $.copy(z, W.end), W.startTime = N), R = W, _ = C, y = E, R.isTimeSet && (_ = R.duration || C, y = R.delay || 0), !R.isManualStart) {
           switch (G = 1, f) {
             // Continuous means we start at 0 and let the time go to infinity
             case Ht.CONTINUOUS:
@@ -13126,7 +13126,7 @@ class lg extends br {
             R.start
           );
         }
-        return R.startTime = N + y, V.copy(z, R.end), w.values = R, e.animationEndTime = og(
+        return R.startTime = N + y, $.copy(z, R.end), w.values = R, e.animationEndTime = og(
           e.animationEndTime,
           R.startTime + _ + B.frameDuration
         ), e.alwaysDraw = Q, z;
@@ -16396,7 +16396,7 @@ const Pr = xe("performance"), sr = class sr extends hn {
     let { mapOutput: t } = this.props;
     Li(e.fs) && (e.fs = [
       {
-        outputType: $.COLOR,
+        outputType: V.COLOR,
         source: e.fs
       }
     ]), t = t || {};
@@ -16408,7 +16408,7 @@ const Pr = xe("performance"), sr = class sr extends hn {
         n.has(c.outputType) && (s = !0), n.add(c.outputType);
         continue;
       }
-      l === $.NONE ? c.outputType = r++ : c.outputType = l, n.has(c.outputType) && (s = !0), n.add(c.outputType);
+      l === V.NONE ? c.outputType = r++ : c.outputType = l, n.has(c.outputType) && (s = !0), n.add(c.outputType);
     }
     if (s)
       return console.warn("Layer has duplicate fragment shader output types"), !1;
@@ -16421,19 +16421,19 @@ const Pr = xe("performance"), sr = class sr extends hn {
   processFragmentShadersForEachView(e, t) {
     Li(e.fs) && (e.fs = [
       {
-        outputType: $.COLOR,
+        outputType: V.COLOR,
         source: e.fs
       }
     ]);
     const n = this.picking.type === H.SINGLE && !e.fs.find(
-      (a) => a.outputType === $.PICKING
+      (a) => a.outputType === V.PICKING
     );
     if (this.picking.type === H.SINGLE && !n)
       throw new Error(
         "Do NOT specify picking prop on a layer when you have your own Picking output declared."
       );
     const s = {
-      outputType: $.PICKING,
+      outputType: V.PICKING,
       source: Qp
     }, r = /* @__PURE__ */ new Map(), o = {
       fs: /* @__PURE__ */ new Map(),
@@ -16444,7 +16444,7 @@ const Pr = xe("performance"), sr = class sr extends hn {
       const l = t[a];
       if (n) {
         const p = e.fs.findIndex(
-          (g) => g.outputType === $.PICKING
+          (g) => g.outputType === V.PICKING
         );
         p > -1 && e.fs.splice(p, 1);
       }
@@ -17134,7 +17134,7 @@ const rr = class rr extends hn {
     let t = [];
     return e ? (Nn(e.buffers) || js(e.buffers) ? t = [
       {
-        outputType: $.COLOR,
+        outputType: V.COLOR,
         resource: e.buffers
       }
     ] : Object.keys(e.buffers).forEach((n) => {
@@ -18437,7 +18437,7 @@ class Zg extends wh {
    * This enables picking for the surface.
    */
   enablePicking() {
-    this.surface && this.surface.enableOptimizedOutput($.PICKING);
+    this.surface && this.surface.enableOptimizedOutput(V.PICKING);
   }
   /**
    * We want to dequeue the events after a render has taken place.
@@ -18629,7 +18629,7 @@ class im {
       let o = this.pickingRenderTargets.get(r);
       if (o || r.getRenderTargets().forEach((l) => {
         l.gl && l.getBuffers().forEach((h) => {
-          if (h.outputType === $.PICKING) {
+          if (h.outputType === V.PICKING) {
             if (h.buffer instanceof J && h.buffer.generateMipMaps && Me("decode-picking-error", () => {
               console.warn(
                 "The Texture you provided as the target for color picking has generateMipMaps enabled. This can cause accuracy issues and may make your picking experience poor."
@@ -20283,11 +20283,11 @@ void main() {
       vs: t ? ym : wm,
       fs: t ? [
         {
-          outputType: $.COLOR,
+          outputType: V.COLOR,
           source: Tm
         },
         {
-          outputType: $.GLOW,
+          outputType: V.GLOW,
           source: `
               void main() {
                 \${out: glow} = color;
@@ -20296,11 +20296,11 @@ void main() {
         }
       ] : [
         {
-          outputType: $.COLOR,
+          outputType: V.COLOR,
           source: bm
         },
         {
-          outputType: $.GLOW,
+          outputType: V.GLOW,
           source: `
               void main() {
                 \${out: glow} = color;
@@ -20393,7 +20393,7 @@ const Rm = `precision highp float;
 varying vec4 vertexColor;
 
 void main() {
-  gl_FragColor = vertexColor;
+  \${out: color} = vertexColor;
 }
 `, Am = `
 
@@ -20599,7 +20599,12 @@ const Om = {
       onToken: (b, w) => b in m ? w : `\${${b}}`
     });
     return {
-      fs: Rm,
+      fs: [
+        {
+          outputType: V.COLOR,
+          source: Rm
+        }
+      ],
       instanceAttributes: [
         {
           easing: c,
@@ -25532,7 +25537,7 @@ void main() {
       drawMode: x.Model.DrawMode.TRIANGLES,
       fs: [
         {
-          outputType: $.COLOR,
+          outputType: V.COLOR,
           source: ax
         }
       ],
@@ -25835,7 +25840,7 @@ React keys must be passed directly to JSX without using spread:
     function u(T) {
       typeof T == "object" && T !== null && T.$$typeof === f && T._store && (T._store.validated = 1);
     }
-    var d = ee, f = Symbol.for("react.transitional.element"), p = Symbol.for("react.portal"), g = Symbol.for("react.fragment"), m = Symbol.for("react.strict_mode"), v = Symbol.for("react.profiler"), b = Symbol.for("react.consumer"), w = Symbol.for("react.context"), y = Symbol.for("react.forward_ref"), E = Symbol.for("react.suspense"), C = Symbol.for("react.suspense_list"), _ = Symbol.for("react.memo"), R = Symbol.for("react.lazy"), G = Symbol.for("react.activity"), z = Symbol.for("react.client.reference"), N = d.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, B = Object.prototype.hasOwnProperty, W = Array.isArray, V = console.createTask ? console.createTask : function() {
+    var d = ee, f = Symbol.for("react.transitional.element"), p = Symbol.for("react.portal"), g = Symbol.for("react.fragment"), m = Symbol.for("react.strict_mode"), v = Symbol.for("react.profiler"), b = Symbol.for("react.consumer"), w = Symbol.for("react.context"), y = Symbol.for("react.forward_ref"), E = Symbol.for("react.suspense"), C = Symbol.for("react.suspense_list"), _ = Symbol.for("react.memo"), R = Symbol.for("react.lazy"), G = Symbol.for("react.activity"), z = Symbol.for("react.client.reference"), N = d.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE, B = Object.prototype.hasOwnProperty, W = Array.isArray, $ = console.createTask ? console.createTask : function() {
       return null;
     };
     d = {
@@ -25846,7 +25851,7 @@ React keys must be passed directly to JSX without using spread:
     var K, Q = {}, Y = d["react-stack-bottom-frame"].bind(
       d,
       r
-    )(), j = V(n(r)), ve = {};
+    )(), j = $(n(r)), ve = {};
     Qn.Fragment = g, Qn.jsx = function(T, U, q, le, Pe) {
       var ye = 1e4 > N.recentlyCreatedOwnerStacks++;
       return h(
@@ -25857,7 +25862,7 @@ React keys must be passed directly to JSX without using spread:
         le,
         Pe,
         ye ? Error("react-stack-top-frame") : Y,
-        ye ? V(n(T)) : j
+        ye ? $(n(T)) : j
       );
     }, Qn.jsxs = function(T, U, q, le, Pe) {
       var ye = 1e4 > N.recentlyCreatedOwnerStacks++;
@@ -25869,7 +25874,7 @@ React keys must be passed directly to JSX without using spread:
         le,
         Pe,
         ye ? Error("react-stack-top-frame") : Y,
-        ye ? V(n(T)) : j
+        ye ? $(n(T)) : j
       );
     };
   }()), Qn;
@@ -26075,7 +26080,7 @@ const ds = ee.createContext(void 0), Tv = (i) => {
   }
   const W = async (Q) => {
     s.current && (n.current = Q, s.current.draw(Q));
-  }, V = (Q) => {
+  }, $ = (Q) => {
     var Y, j, ve, T, U;
     (Y = t.current) == null || Y.remove(), (T = s.current) == null || T.resize(
       ((j = e.current) == null ? void 0 : j.offsetWidth) || 0,
@@ -26083,7 +26088,7 @@ const ds = ee.createContext(void 0), Tv = (i) => {
     ), t.current && ((U = e.current) == null || U.appendChild(t.current));
   }, K = () => {
     window.clearTimeout(o.current), o.current = window.setTimeout(() => {
-      V();
+      $();
     });
   };
   return zt({
@@ -26136,7 +26141,7 @@ const ds = ee.createContext(void 0), Tv = (i) => {
       return r.current = Kl(W), Vt.pipeline({
         resources: le,
         scenes: U
-      }), s.current = Vt, await Ui(), V(), (fn = i.ready) == null || fn.resolve(s.current), window.addEventListener("resize", K), () => {
+      }), s.current = Vt, await Ui(), $(), (fn = i.ready) == null || fn.resolve(s.current), window.addEventListener("resize", K), () => {
         var Ee;
         window.removeEventListener("resize", K), ep(r.current), (Ee = s.current) == null || Ee.destroy();
       };
@@ -26145,7 +26150,7 @@ const ds = ee.createContext(void 0), Tv = (i) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "4.4.4",
+      "data-deltav-version": "4.4.5",
       className: `SurfaceJSX ${i.className || ""}`,
       ...i.containerProps,
       children: /* @__PURE__ */ Ae.jsx("canvas", { ref: t, children: /* @__PURE__ */ Ae.jsx(
@@ -26574,7 +26579,7 @@ function Tc(i) {
     view: Object.assign(
       e ? {
         output: {
-          buffers: { [$.COLOR]: e },
+          buffers: { [V.COLOR]: e },
           depth: !1
         }
       } : {},
@@ -26640,7 +26645,7 @@ function Ev(i) {
       view: {
         ...t ? {
           output: {
-            buffers: { [$.COLOR]: t },
+            buffers: { [V.COLOR]: t },
             depth: !1
           }
         } : void 0,
@@ -26691,7 +26696,7 @@ const Rv = (i) => {
       view: {
         output: {
           buffers: {
-            [$.COLOR]: i.output
+            [V.COLOR]: i.output
           },
           depth: !1
         }
@@ -26726,7 +26731,7 @@ const Rv = (i) => {
       view: {
         output: {
           buffers: {
-            [$.COLOR]: i.output
+            [V.COLOR]: i.output
           },
           depth: !1
         }
@@ -26761,7 +26766,7 @@ const Rv = (i) => {
       view: {
         output: {
           buffers: {
-            [$.COLOR]: i.output
+            [V.COLOR]: i.output
           },
           depth: !1
         }
@@ -26792,7 +26797,7 @@ function Av(i) {
     view: {
       output: e ? {
         buffers: {
-          [$.COLOR]: e || ""
+          [V.COLOR]: e || ""
         },
         depth: !1
       } : void 0,
@@ -26859,7 +26864,7 @@ function _v(i) {
           clearFlags: [is.COLOR]
         },
         output: {
-          buffers: { [$.COLOR]: e },
+          buffers: { [V.COLOR]: e },
           depth: !1
         },
         ...n
@@ -26902,7 +26907,7 @@ function _v(i) {
       // little.
       view: {
         output: {
-          buffers: { [$.COLOR]: t.trail },
+          buffers: { [V.COLOR]: t.trail },
           depth: !1
         },
         ...n
@@ -26945,7 +26950,7 @@ function _v(i) {
       // little.
       view: {
         output: {
-          buffers: { [$.COLOR]: t.trail },
+          buffers: { [V.COLOR]: t.trail },
           depth: !1
         },
         ...n
@@ -27101,7 +27106,7 @@ export {
   Ip as FontRenderer,
   Dp as FontResourceManager,
   kn as FontResourceRequestFetch,
-  $ as FragmentOutputType,
+  V as FragmentOutputType,
   Gs as GLProxy,
   x as GLSettings,
   Nu as GLState,

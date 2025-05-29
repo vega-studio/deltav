@@ -1,3 +1,9 @@
+## 4.4.6
+
+## Fixed
+
+- [`FIXED`]: Updated edge layer to have better compatibility with MRT
+
 ## 4.4.5
 
 ## Fixed

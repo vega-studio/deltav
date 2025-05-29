@@ -1,6 +1,7 @@
 import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
 import {
+  FragmentOutputType,
   ILayerMaterialOptions,
   InstanceAttributeSize,
   InstanceIOValue,
@@ -160,7 +161,12 @@ export class EdgeLayer<
     });
 
     return {
-      fs: edgeFS,
+      fs: [
+        {
+          outputType: FragmentOutputType.COLOR,
+          source: edgeFS,
+        },
+      ],
       instanceAttributes: [
         {
           easing: animateColorStart,

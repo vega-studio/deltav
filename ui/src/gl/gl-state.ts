@@ -15,6 +15,8 @@ import {
   MaterialUniformValue,
   UseMaterialStatus,
 } from "./types.js";
+import type { UniformBuffer } from "./uniform-buffer.js";
+import { WebGLStat } from "./webgl-stat.js";
 
 const debug = Debug("performance");
 
@@ -34,10 +36,16 @@ export class GLState {
   private gl!: WebGLRenderingContext;
   /** This is a proxy to execute commands that do not change global gl state */
   private glProxy!: GLProxy;
+
   /** Lookup a texture unit to it's current assigned texture. */
   private _textureUnitToTexture = new Map<number, Texture | null>();
   /** This holds which texture units are free for use and have no Texture assigned to them */
-  private _freeUnits: number[] = [];
+  private _freeTextureUnits: number[] = [];
+
+  /** Lookup a uniform buffer to it's current assigned binding point. */
+  private _uniformBufferToBinding = new Map<number, UniformBuffer | null>();
+  /** This holds which uniform buffer binding points are free for use and have no UniformBuffer assigned to them */
+  private _freeUniformBufferBindings: number[] = [];
 
   /** Indicates if blending is enabled */
   get blendingEnabled() {
@@ -235,18 +243,29 @@ export class GLState {
   private _vertexAttributeArrayDivisor = new Map<number, number>();
 
   /**
-   * Generate a new state manager and establish some initial state settings by querying the context.
+   * Generate a new state manager and establish some initial state settings by
+   * querying the context.
    */
   constructor(gl: WebGLRenderingContext, extensions: IExtensions) {
     this.gl = gl;
     this.extensions = extensions;
-    // Retrieve how many units are allowed at the same time to be assiged so we can initialize our free units array
+
+    // Retrieve how many units are allowed at the same time to be assiged so we
+    // can initialize our free units array
     const totalUnits = this.gl.getParameter(
       gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS
     );
 
     for (let i = 0; i < totalUnits; ++i) {
-      this._freeUnits.push(indexToTextureUnit(gl, i));
+      this._freeTextureUnits.push(indexToTextureUnit(gl, i));
+    }
+
+    // Retrieve how many uniform buffers are allowed to be bound at the same
+    // time. We will create a pool of binding points that are free for use.
+    const totalUniformBuffers = WebGLStat.MAX_UNIFORM_BUFFER_BINDINGS;
+
+    for (let i = 0; i < totalUniformBuffers; ++i) {
+      this._freeUniformBufferBindings.push(i);
     }
 
     // Initialize state to valid value
@@ -313,8 +332,9 @@ export class GLState {
   }
 
   /**
-   * Sets the provided buffer identifier as the current bound item. This automatically
-   * updates all stateful information to track that a texture is now utilizing a texture unit.
+   * Sets the provided buffer identifier as the current bound item. This
+   * automatically updates all stateful information to track that a texture is
+   * now utilizing a texture unit.
    */
   bindTexture(
     texture: Texture,
@@ -342,9 +362,9 @@ export class GLState {
           break;
       }
 
-      // Since the binding happened, we HAVE to track that this texture is now the texture
-      // for the current active unit. We must also remove the unit from any texture previously
-      // utilizing the unit
+      // Since the binding happened, we HAVE to track that this texture is now
+      // the texture for the current active unit. We must also remove the unit
+      // from any texture previously utilizing the unit
       const previous = this._textureUnitToTexture.get(this._activeTextureUnit);
 
       if (previous) {
@@ -376,7 +396,8 @@ export class GLState {
 
   /**
    * Flags an attribute array as going to be used. Any attribute array location
-   * no longer in use will be disabled when applyVertexAttributeArrays is called.
+   * no longer in use will be disabled when applyVertexAttributeArrays is
+   * called.
    */
   willUseVertexAttributeArray(index: number) {
     // Flag the index as will be used
@@ -414,8 +435,8 @@ export class GLState {
   }
 
   /**
-   * Applies (if necessary) the divisor for a given array. This only works if the array location
-   * is enabled.
+   * Applies (if necessary) the divisor for a given array. This only works if
+   * the array location is enabled.
    */
   setVertexAttributeArrayDivisor(index: number, divisor: number) {
     if (!this.extensions.instancing) return;
@@ -434,12 +455,13 @@ export class GLState {
   }
 
   /**
-   * This takes a texture and flags it's texture unit as freed if the texture has a used unit
+   * This takes a texture and flags it's texture unit as freed if the texture
+   * has a used unit
    */
   freeTextureUnit(texture: Texture) {
     if (texture.gl) {
       if (texture.gl.textureUnit > -1) {
-        this._freeUnits.unshift(texture.gl.textureUnit);
+        this._freeTextureUnits.unshift(texture.gl.textureUnit);
         texture.gl.textureUnit = -1;
       }
     }
@@ -506,8 +528,8 @@ export class GLState {
   }
 
   /**
-   * Sets the GPU proxy to be used to handle commands that call to the GPU but don't alter
-   * global GL state.
+   * Sets the GPU proxy to be used to handle commands that call to the GPU but
+   * don't alter global GL state.
    */
   setProxy(proxy: GLProxy) {
     this.glProxy = proxy;
@@ -814,8 +836,10 @@ export class GLState {
       return false;
     }
 
-    // Now we can update and retrieve the locations for each uniform in the program
-    Object.entries(material.uniforms).forEach(([name, uniform]) => {
+    // Now we can update and retrieve the locations for each uniform in the
+    // program
+    Object.entries(material.uniforms).forEach((entry) => {
+      const { 0: name, 1: uniform } = entry;
       if (!this._currentProgram) return;
       if (!uniform.gl) uniform.gl = new Map();
       let glSettings = uniform.gl.get(this._currentProgram);
@@ -851,12 +875,34 @@ export class GLState {
       if (glSettings.location) this.uploadUniform(glSettings.location, uniform);
     });
 
+    // Uniform buffers. This procedure is more complex than uniforms as they
+    // will contain steps similar to attribute buffers for updates, then there
+    // will be a step binding the program to the uniform buffer binding point.
+    Object.entries(material.uniformBuffers).forEach((entry) => {
+      const { 0: _name, 1: uniformBuffer } = entry;
+      if (!this._currentProgram) return;
+      this.useUniformBuffer(uniformBuffer);
+    });
+
     // Textures
     if (this._textureWillBeUsed.size > 0) {
       if (!this.applyUsedTextures()) {
         return false;
       }
     }
+
+    return true;
+  }
+
+  /**
+   * Ensures the uniform buffer is bound to a binding point and ensures the
+   * program in use links it's declared uniform structures to the binding point
+   * as well.
+   */
+  useUniformBuffer(uniformBuffer: UniformBuffer) {
+    if (!uniformBuffer.gl) return false;
+
+    // this.bindUniformBuffer(uniformBuffer.gl.bufferId);
 
     return true;
   }
@@ -1031,10 +1077,10 @@ export class GLState {
   }
 
   /**
-   * This will consume the values aggregated within willUseTextureUnit. All Texture objects
-   * consumed will be assigned an active texture unit (if one was not already applied), then
-   * the Texture will be compiled / updated as necessary and applied to all uniforms requiring
-   * a Sampler unit.
+   * This will consume the values aggregated within willUseTextureUnit. All
+   * Texture objects consumed will be assigned an active texture unit (if one
+   * was not already applied), then the Texture will be compiled / updated as
+   * necessary and applied to all uniforms requiring a Sampler unit.
    */
   applyUsedTextures() {
     // Assign texture units to the textures that will be used
@@ -1042,9 +1088,9 @@ export class GLState {
       Array.from(this._textureWillBeUsed.keys())
     );
 
-    // We apply the default unit to each texture that failed. Output will be made from the
-    // previous method, so at this point, let's just try to make lemonade out of lemons (set
-    // sane defaults)
+    // We apply the default unit to each texture that failed. Output will be
+    // made from the previous method, so at this point, let's just try to make
+    // lemonade out of lemons (set sane defaults)
     failedTextures.forEach((texture) => {
       if (texture.gl) {
         texture.gl.textureUnit = this.gl.TEXTURE0;
@@ -1057,7 +1103,8 @@ export class GLState {
       }
     });
 
-    // Let's sort out which textures are affiliated with a RenderTarget or with a uniform set.
+    // Let's sort out which textures are affiliated with a RenderTarget or with
+    // a uniform set.
     const textureToUniforms = new Map<Texture, Set<WebGLUniformLocation>>();
     const renderTargets = new Set<RenderTarget>();
 
@@ -1069,8 +1116,9 @@ export class GLState {
       }
     });
 
-    // Now our list of render targets is guaranteed to have their textures set with an active texture unit,
-    // so we can now officially ensure the render target is compiled.
+    // Now our list of render targets is guaranteed to have their textures set
+    // with an active texture unit, so we can now officially ensure the render
+    // target is compiled.
     renderTargets.forEach((target) => {
       const textures = target.getTextures();
       const failed = textures.some((texture) => {
@@ -1092,8 +1140,9 @@ export class GLState {
       }
     });
 
-    // Now that all of our textures have units, we loop through each texture and have them
-    // compiled and/or updated then upload the unit to the appropriate uniforms indicated.
+    // Now that all of our textures have units, we loop through each texture and
+    // have them compiled and/or updated then upload the unit to the appropriate
+    // uniforms indicated.
     textureToUniforms.forEach((uniforms, texture) => {
       // Only compile and process successful texture units
       if (failedTextures.indexOf(texture) < 0) {
@@ -1104,7 +1153,8 @@ export class GLState {
         });
       }
 
-      // Failed textures get their uniforms filled with the default 0 texture unit
+      // Failed textures get their uniforms filled with the default 0 texture
+      // unit
       else {
         uniforms.forEach((uniform) => {
           this.gl.uniform1i(uniform, textureUnitToIndex(this.gl, 0));
@@ -1119,8 +1169,8 @@ export class GLState {
   }
 
   /**
-   * Attempts to assign free or freed texture units to the provided texture objects.
-   * This will return a list of textures
+   * Attempts to assign free or freed texture units to the provided texture
+   * objects. This will return a list of textures
    */
   private assignTextureUnits(textures: Texture[]) {
     const needsUnit: Texture[] = [];
@@ -1136,11 +1186,11 @@ export class GLState {
     });
 
     // We now first see if we have free units to statisfy the needs
-    while (this._freeUnits.length > 0 && needsUnit.length > 0) {
+    while (this._freeTextureUnits.length > 0 && needsUnit.length > 0) {
       const texture = needsUnit.shift();
       if (!texture) continue;
 
-      const freeUnit = this._freeUnits.shift();
+      const freeUnit = this._freeTextureUnits.shift();
 
       if (freeUnit === undefined) {
         needsUnit.unshift(texture);

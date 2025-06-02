@@ -24,6 +24,7 @@ import { Model } from "./model.js";
 import { RenderTarget } from "./render-target.js";
 import { Texture } from "./texture.js";
 import { GLContext, IExtensions } from "./types.js";
+import type { UniformBuffer } from "./uniform-buffer.js";
 import { WebGLStat } from "./webgl-stat.js";
 
 const debug = Debug("performance");
@@ -597,6 +598,16 @@ export class GLProxy {
     }
 
     return true;
+  }
+
+  /**
+   * Generates and uploads a uniform buffer to the GPU
+   */
+  compileUniformBuffer(uniformBuffer: UniformBuffer) {
+    if (uniformBuffer.gl) return true;
+
+    const gl = this.gl;
+    const buffer = gl.createBuffer();
   }
 
   /**
@@ -1209,6 +1220,16 @@ export class GLProxy {
     if (indexBuffer.gl) {
       this.gl.deleteBuffer(indexBuffer.gl?.bufferId);
       delete indexBuffer.gl;
+    }
+  }
+
+  /**
+   * Destroys a uniform buffer's resources from the GL Context.
+   */
+  disposeUniformBuffer(uniform: UniformBuffer) {
+    if (uniform.gl) {
+      this.gl.deleteBuffer(uniform.gl.bufferId);
+      delete uniform.gl;
     }
   }
 

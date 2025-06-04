@@ -6,13 +6,18 @@ import {
   observable,
 } from "../../../../instance-provider";
 import { Vec2 } from "../../../../math";
-import { IRenderTextureResource, textureRequest } from "../../../../resources";
+import {
+  IRenderTextureResource,
+  type IRenderTextureResourceRequest,
+  textureRequest,
+} from "../../../../resources";
 import { ILayerProps, Layer } from "../../../../surface";
 import {
   Color,
   InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
+  type OutputFragmentShaderSource,
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize,
@@ -30,13 +35,23 @@ export class PostProcessInstance extends Instance {
 }
 
 export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
-  /** List of resource names and their respective keys to apply  */
-  buffers: Record<string, IRenderTextureResource | undefined>;
+  /**
+   * The name of the texture coordinate variable used in the shader.
+   */
+  textureCoordinateName?: string;
+  /**
+   * List of resource names and their respective keys to apply. Use an array of
+   * resources if you want that resource to be swapped every render.
+   */
+  buffers: Record<
+    string,
+    IRenderTextureResource | IRenderTextureResource[] | undefined
+  >;
   /**
    * This is the fragment shader that will handle the operation to perform
    * computations against all of the input shaders.
    */
-  fs: string;
+  fs: OutputFragmentShaderSource;
   /**
    * Additional uniforms to inject into the program.
    */
@@ -76,7 +91,7 @@ export class PostProcessLayer extends Layer<
   };
 
   initShader(): IShaderInitialization<PostProcessInstance> {
-    const { buffers, fs, data } = this.props;
+    let { buffers, fs, data } = this.props;
     const dummyInstance = new PostProcessInstance();
     if (data instanceof InstanceProvider) data.add(dummyInstance);
     this.alwaysDraw = true;
@@ -100,13 +115,22 @@ export class PostProcessLayer extends Layer<
     const resourceUniforms: IUniform[] = flatten2D<IUniform>(
       Object.keys(buffers)
         .map((uniformName) => {
-          const buffer = buffers[uniformName];
-          if (!buffer) return void 0;
-          const resourceKey = buffer.key;
+          let resources = buffers[uniformName];
+          if (!resources) return void 0;
+          if (!Array.isArray(resources)) resources = [resources];
 
-          const request = textureRequest({
-            key: resourceKey,
-          });
+          const requests: IRenderTextureResourceRequest[] = [];
+
+          for (let i = 0; i < resources.length; i++) {
+            const resource = resources[i];
+            const resourceKey = resource.key;
+
+            requests.push(
+              textureRequest({
+                key: resourceKey,
+              })
+            );
+          }
 
           return [
             {
@@ -114,6 +138,12 @@ export class PostProcessLayer extends Layer<
               shaderInjection: ShaderInjectionTarget.FRAGMENT,
               size: UniformSize.TEXTURE,
               update: () => {
+                const request =
+                  requests.length < 2
+                    ? requests[0]
+                    : requests[
+                        this.surface.frameMetrics.currentFrame % requests.length
+                      ];
                 this.resource.request(this, dummyInstance, request);
                 return request.texture || emptyTexture;
               },
@@ -125,6 +155,12 @@ export class PostProcessLayer extends Layer<
               update: () => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 this.props;
+                const request =
+                  requests.length < 2
+                    ? requests[0]
+                    : requests[
+                        this.surface.frameMetrics.currentFrame % requests.length
+                      ];
                 this.resource.request(this, dummyInstance, request);
                 const data = (request.texture || emptyTexture).data;
                 return [data?.width || 1, data?.height || 1];
@@ -141,14 +177,25 @@ export class PostProcessLayer extends Layer<
       addUniforms = addUniforms(this);
     }
 
+    if (Array.isArray(fs)) {
+      fs = fs.slice(0);
+      fs[0].source = `varying vec2 ${
+        this.props.textureCoordinateName || "texCoord"
+      };
+      ${fs[0].source}`;
+    } else {
+      fs = `varying vec2 ${this.props.textureCoordinateName || "texCoord"};
+      ${fs}`;
+    }
+
     return {
       drawMode: GLSettings.Model.DrawMode.TRIANGLE_STRIP,
       vs: `
-        varying vec2 texCoord;
+        varying vec2 ${this.props.textureCoordinateName || "texCoord"};
 
         void main() {
           gl_Position = vec4(vertex, 0.0, 1.0);
-          texCoord = tex;
+          ${this.props.textureCoordinateName || "texCoord"} = tex;
         }
       `,
       fs,

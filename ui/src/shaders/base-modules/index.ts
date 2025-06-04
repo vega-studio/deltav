@@ -8,3 +8,4 @@ import "./noise.shader.js";
 import "./pack-float.js";
 import "./picking.shader.js";
 import "./util.shader.js";
+import "./random.shader.js";

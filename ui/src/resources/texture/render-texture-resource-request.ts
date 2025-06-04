@@ -21,7 +21,7 @@ export interface IRenderTextureResourceRequest extends BaseResourceRequest {
 }
 
 /**
- * Simple wrapper to make autocomplete easier for making an RenderTexture
+ * Simple wrapper to make autocomplete easier for making a RenderTexture
  * request.
  */
 export function textureRequest(

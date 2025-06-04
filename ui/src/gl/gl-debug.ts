@@ -5,7 +5,7 @@
  */
 export function glDebug<
   T extends WebGLRenderingContext | WebGL2RenderingContext,
->(gl: T): T {
+>(gl: T, stopOnError = false): T {
   return new Proxy(gl, {
     get(target, prop: string | symbol) {
       // Get the property directly
@@ -16,6 +16,11 @@ export function glDebug<
           const result = orig.apply(target, args);
           const error = target.getError();
           if (error !== target.NO_ERROR) {
+            if (stopOnError) {
+              // eslint-disable-next-line no-debugger
+              debugger;
+            }
+
             console.warn(`WebGL error after call: ${String(prop)}`, {
               args,
               error,

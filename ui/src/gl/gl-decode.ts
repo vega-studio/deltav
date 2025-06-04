@@ -588,9 +588,9 @@ export function indexToColorAttachment(
  * Maps an index to a texture units Enum key to use on a WebGLRenderingContext object
  */
 export function indexToTextureUnit(gl: GLContext, index: number) {
-  // This is the proper conversion instead of unsing the built in enums. The indices
-  // are controlled via gl.max_texture_image_units. This number can be higher than
-  // the enums indicate.
+  // This is the proper conversion instead of unsing the built in enums. The
+  // indices are controlled via gl.max_texture_image_units. This number can be
+  // higher than the enums indicate.
   return gl.TEXTURE0 + index;
 }
 
@@ -598,8 +598,8 @@ export function indexToTextureUnit(gl: GLContext, index: number) {
  * Maps a texture unit to an index that can be used for a uniform.
  */
 export function textureUnitToIndex(gl: GLContext, unit: number) {
-  // This is the proper conversion instead of unsing the built in enums. The indices
-  // are controlled via gl.max_texture_image_units. This number can be higher than
-  // the enums indicate.
+  // This is the proper conversion instead of unsing the built in enums. The
+  // indices are controlled via gl.max_texture_image_units. This number can be
+  // higher than the enums indicate.
   return unit - gl.TEXTURE0;
 }

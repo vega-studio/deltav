@@ -11,8 +11,7 @@ import { IResourceJSX } from "./as-resource.js";
 
 export interface ITexturePropsJSX extends Partial<IResourceJSX> {
   /**
-   * Resource name for debugging mostly. Maps to resource "key" in the deltav
-   * resource.
+   * The identifier for the resource.
    */
   name?: string;
 }
@@ -24,7 +23,7 @@ type ITextureJSX = ITexturePropsJSX &
   Omit<IRenderTextureResource, "type" | "key">;
 
 /**
- * Provides a simple event handler to be used by the surface
+ * Generates a texture Resource that can be used by the name provided.
  */
 export const TextureJSX = (props: ITextureJSX) => {
   useLifecycle({

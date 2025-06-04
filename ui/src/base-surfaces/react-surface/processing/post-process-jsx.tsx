@@ -2,7 +2,11 @@ import React from "react";
 
 import { Camera2D, IView2DProps, View2D } from "../../../2d";
 import { IRenderTextureResource } from "../../../resources";
-import { ILayerMaterialOptions, IUniform } from "../../../types.js";
+import {
+  ILayerMaterialOptions,
+  IUniform,
+  type OutputFragmentShaderSource,
+} from "../../../types.js";
 import { LayerJSX } from "../scene/layer-jsx.js";
 import { SceneJSX } from "../scene/scene-jsx.js";
 import { IPartialViewJSX, ViewJSX } from "../scene/view-jsx.js";
@@ -20,14 +24,44 @@ export interface IPostProcessJSX {
    * will make the uniform sampler "color" be available in your shader and will
    * provide the resource with the key "colorTextureKey".
    */
-  buffers: Record<string, string>;
+  buffers: Record<string, string | string[]>;
+  /**
+   * Specify a target output buffer or buffer chain for this process.
+   */
+  output?:
+    | {
+        /**
+         * Specify output targets for the render/color buffers this view wants to write to.
+         * Use the name of the Resource that will be used to be written to.
+         */
+        buffers: Record<number, string | undefined>;
+        /**
+         * Set to true to include a depth buffer the system will generate for you.
+         * Use the name of the Resource to use it if you wish to target an output
+         * target texture.
+         */
+        depth: string | boolean;
+      }
+    | {
+        /**
+         * Specify output targets for the render/color buffers this view wants to write to.
+         * Use the name of the Resource that will be used to be written to.
+         */
+        buffers: Record<number, string | undefined>;
+        /**
+         * Set to true to include a depth buffer the system will generate for you.
+         * Use the name of the Resource to use it if you wish to target an output
+         * target texture.
+         */
+        depth: string | boolean;
+      }[];
   /**
    * Custom material options to apply to the layer to aid in controlling
    * blending etc.
    */
   material?: ILayerMaterialOptions;
   /** This is the shader program you will be using when you  */
-  shader: string;
+  shader: OutputFragmentShaderSource;
   /**
    * Use this to specify some additional uniforms your shader may use.
    * NOTE: Remember to use ShaderInjectionTarget Fragment only! You are not
@@ -39,7 +73,7 @@ export interface IPostProcessJSX {
    * these options to redirect the output of this step to another resource if
    * desired.
    */
-  view?: IPartialViewJSX<IView2DProps>;
+  view?: Omit<IPartialViewJSX<IView2DProps>, "output" | "chain">;
   /**
    * For debugging purposes only. Prints the shader generated to the console.
    */
@@ -57,6 +91,10 @@ export interface IPostProcessJSX {
   onResources?: (resources: Record<string, IRenderTextureResource>) => void;
 }
 
+/**
+ * Offers a convenient means to process a full Quad output with texture buffer
+ * data inputs.
+ */
 export const PostProcessJSX = (props: IPostProcessJSX) => {
   return (
     <SceneJSX key={props.name} name={props.name}>
@@ -64,6 +102,7 @@ export const PostProcessJSX = (props: IPostProcessJSX) => {
         name={"fullscreen"}
         type={View2D}
         {...props.view}
+        output={props.output}
         config={{
           camera: new Camera2D(),
           viewport: { left: 0, top: 0, width: "100%", height: "100%" },
@@ -74,11 +113,17 @@ export const PostProcessJSX = (props: IPostProcessJSX) => {
         name="postprocess"
         type={PostProcessLayer}
         uses={{
-          names: Object.values(props.buffers),
+          names: Object.values(props.buffers).flat(),
           apply: (resources, config) => {
             config.buffers = {};
             Object.keys(props.buffers).map((key) => {
-              config.buffers[key] = resources[props.buffers[key]];
+              if (Array.isArray(props.buffers[key])) {
+                config.buffers[key] = props.buffers[key].map((buffer) => {
+                  return resources[buffer];
+                });
+              } else {
+                config.buffers[key] = resources[props.buffers[key]];
+              }
             });
             props.onResources?.(resources);
             return config;

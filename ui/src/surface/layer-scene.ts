@@ -43,34 +43,91 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
 }
 
 /**
- * This defines a scene to which layers are added to. It also tracks the views that this scene
- * is rendered with.
+ * This defines a scene to which layers are added to. It also tracks the views
+ * that this scene is rendered with.
  */
 export class LayerScene extends IdentifyByKey {
   static DEFAULT_SCENE_ID = "__default__";
 
   /** This is the GL scene which actually sets up the rendering objects */
   container: Scene | undefined = new Scene();
-  /** This is the diff tracker for the layers for the scene which allows us to make the pipeline easier to manage */
+  /**
+   * This is the diff tracker for the layers for the scene which allows us to
+   * make the pipeline easier to manage
+   */
   layerDiffs!: ReactiveDiff<
     Layer<Instance, ILayerProps<Instance>>,
     LayerInitializer<Instance, ILayerProps<Instance>>
   >;
-  /** Helps assert a guaranteed render order for scenes. Lower numbers render first. */
+  /**
+   * Helps assert a guaranteed render order for scenes. Lower numbers render
+   * first.
+   */
   order?: number;
   /** The presiding surface over this scene */
   surface?: Surface;
-  /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
+  /**
+   * This is the diff tracker for the views for the scene which allows us to
+   * make the pip0eline easier to manage
+   */
   viewDiffs!: ReactiveDiff<View<IViewProps>, ViewInitializer<IViewProps>>;
+  /** Memoizes the renderView result until next view diff update */
+  private _renderViewCache: View<IViewProps>[] | null = null;
 
   /** This is all of the layers attached to the scene */
   get layers(): Layer<any, any>[] {
     return this.layerDiffs.items;
   }
 
-  /** This is all of the views attached to the scene */
+  /**
+   * This is all of the views attached to the scene
+   */
   get views(): View<IViewProps>[] {
     return this.viewDiffs.items;
+  }
+
+  /**
+   * This returns all of the views that are actually going to be rendered in the
+   * current frame. This will properly strip any views that are in a chain but
+   * not the current item viewed in the chain.
+   */
+  get renderViews(): View<IViewProps>[] {
+    if (this._renderViewCache) return this._renderViewCache;
+
+    // Organize all of the views into groups with their chains. A chained view
+    // is a view with a parent (as of this writing a view with a "child" is not
+    // a thing. If children come into play, this will need to be updated.)
+    const viewChains = new Map<View<any>, View<any>[]>();
+
+    this.viewDiffs.items.forEach((view) => {
+      const initializer = this.viewDiffs.getInitializerByKey(view.id)?.init[1];
+
+      if (initializer?.parent) {
+        const chain = viewChains.get(initializer.parent) || [];
+
+        if (chain) {
+          chain.push(view);
+        } else {
+          viewChains.set(initializer.parent, [initializer.parent, view]);
+        }
+      } else {
+        const chain = viewChains.get(view);
+
+        if (!chain) {
+          viewChains.set(view, [view]);
+        }
+      }
+    });
+
+    const out: View<IViewProps>[] = [];
+    const frame = this.surface?.frameMetrics.currentFrame ?? 0;
+
+    viewChains.forEach((chain) => {
+      out.push(chain[frame % chain.length]);
+    });
+
+    this._renderViewCache = out;
+    return out;
   }
 
   constructor(surface: Surface | undefined, options: ISceneOptions) {
@@ -103,10 +160,11 @@ export class LayerScene extends IdentifyByKey {
           this,
           Object.assign({}, layerClass.defaultProps, props)
         );
-        // Keep the initializer object that generated the layer for reference and debugging
+        // Keep the initializer object that generated the layer for reference
+        // and debugging
         layer.initializer = initializer;
-        // Sync the data provider applied to the layer in case the provider has existing data
-        // before being applied to the layer
+        // Sync the data provider applied to the layer in case the provider has
+        // existing data before being applied to the layer
         layer.props.data.sync();
         // Look in the props of the layer for the parent of the layer
         layer.parent = props.parent;
@@ -153,14 +211,16 @@ export class LayerScene extends IdentifyByKey {
         // Execute lifecycle method
         layer.willUpdateProps(props);
 
-        // If we have a provider that is about to be newly set to the layer, then the provider
-        // needs to do a full sync in order to have existing elements in the provider
+        // If we have a provider that is about to be newly set to the layer,
+        // then the provider needs to do a full sync in order to have existing
+        // elements in the provider
         if (props.data !== layer.props.data) {
           props.data.sync();
         }
 
-        // Check to see if the layer is going to require it's view to be redrawn based on the props for the Layer changing,
-        // or by custom logic of the layer.
+        // Check to see if the layer is going to require it's view to be redrawn
+        // based on the props for the Layer changing, or by custom logic of the
+        // layer.
         if (layer.shouldDrawView(layer.props, props)) {
           layer.needsViewDrawn = true;
         }
@@ -172,12 +232,12 @@ export class LayerScene extends IdentifyByKey {
         // Lifecycle hook
         layer.didUpdateProps();
 
-        // If we are having a parent swap, we need to make sure the previous parent does not
-        // register this layer as a child anymore
+        // If we are having a parent swap, we need to make sure the previous
+        // parent does not register this layer as a child anymore
         if (props.parent) {
           if (layer.parent && layer.parent !== props.parent) {
-            // RESUME: We're making sure deleted layers or regenerated layers properly have parent child relationships
-            // updated properly.
+            // RESUME: We're making sure deleted layers or regenerated layers
+            // properly have parent child relationships updated properly.
             const children = layer.parent.children || [];
             const index = children.indexOf(layer) || -1;
 
@@ -190,14 +250,16 @@ export class LayerScene extends IdentifyByKey {
         // Always make sure the layer's parent is set properly by the props
         layer.parent = props.parent;
 
-        // A layer may flag itself as needing to be rebuilt. This is handled here and is completed by deleting
-        // the layer completely then generating the layer anew.
+        // A layer may flag itself as needing to be rebuilt. This is handled
+        // here and is completed by deleting the layer completely then
+        // generating the layer anew.
         if (layer.willRebuildLayer) {
           this.layerDiffs.rebuild();
           layer.willRebuildLayer = false;
         }
 
-        // If the layer is not regenerated, then during this render phase we add in the child layers of this layer.
+        // If the layer is not regenerated, then during this render phase we add
+        // in the child layers of this layer.
         else {
           this.layerDiffs.inline(layer.childLayers());
         }
@@ -207,12 +269,39 @@ export class LayerScene extends IdentifyByKey {
     // Create the diff manager to handle the views coming in.
     this.viewDiffs = new ReactiveDiff({
       buildItem: async (initializer: ViewInitializer<IViewProps>) => {
+        // Invalidate caches
+        this._renderViewCache = null;
         if (!this.surface) return null;
-        const newView = new initializer.init[0](this, initializer.init[1]);
+        const baseViewProps = initializer.init[1];
+        const baseViewType = initializer.init[0];
+        baseViewProps.key = initializer.key;
+        const newView = new baseViewType(this, baseViewProps);
         newView.props.camera = newView.props.camera || defaultElements.camera;
         newView.pixelRatio = this.surface.pixelRatio;
         newView.resource = this.surface.resourceManager;
         this.surface.userInputManager.waitingForRender = true;
+
+        // If we have chaining for this view, then we inline new views
+        const chain = initializer.init[1].chain;
+        if (chain) {
+          const childViews = chain.map((chainViewProps, index) => {
+            return {
+              key: `${baseViewProps.key}-chain-${index}`,
+              init: [
+                baseViewType,
+                {
+                  ...baseViewProps,
+                  ...chainViewProps,
+                  parent: newView,
+                  // Prevent chain recursion
+                  chain: void 0,
+                  key: "",
+                },
+              ],
+            } as ViewInitializer<IViewProps>;
+          });
+          this.viewDiffs.inline(childViews);
+        }
 
         return newView;
       },
@@ -228,18 +317,43 @@ export class LayerScene extends IdentifyByKey {
         initializer: ViewInitializer<IViewProps>,
         view: View<IViewProps>
       ) => {
-        const props = initializer.init[1];
-        view.willUpdateProps(props);
+        // Invalidate caches
+        this._renderViewCache = null;
+        const baseViewProps = initializer.init[1];
+        const baseViewType = initializer.init[0];
+        view.willUpdateProps(baseViewProps);
 
-        if (view.shouldDrawView(view.props, props)) {
+        if (view.shouldDrawView(view.props, baseViewProps)) {
           view.needsDraw = true;
         }
 
-        Object.assign(view.props, props);
+        Object.assign(view.props, baseViewProps);
         view.didUpdateProps();
 
         if (this.surface) {
           this.surface.userInputManager.waitingForRender = true;
+        }
+
+        // If we have chaining for this view, then we inline new views
+        const chain = initializer.init[1].chain;
+        if (chain) {
+          const childViews = chain.map((chainViewProps, index) => {
+            return {
+              key: `${baseViewProps.key}-chain-${index}`,
+              init: [
+                baseViewType,
+                {
+                  ...baseViewProps,
+                  ...chainViewProps,
+                  parent: view,
+                  // Prevent chain recursion
+                  chain: void 0,
+                  key: "",
+                },
+              ],
+            } as ViewInitializer<IViewProps>;
+          });
+          this.viewDiffs.inline(childViews);
         }
       },
     });
@@ -281,6 +395,13 @@ export class LayerScene extends IdentifyByKey {
     // After the views and layers have been updated and created, we can now tell
     // the views to establish their render targets as creating the render
     // targets is dependent on how the layer's analyzed the output of the views
-    this.views.forEach((view) => view.createRenderTarget());
+    this.viewDiffs.items.forEach((view) => view.createRenderTarget());
+  }
+
+  /**
+   * Clear caches to ensure the view is up to date.
+   */
+  clearCaches() {
+    this._renderViewCache = null;
   }
 }

@@ -43,7 +43,7 @@ export class GLState {
   private _freeTextureUnits: number[] = [];
 
   /** Lookup a uniform buffer to it's current assigned binding point. */
-  private _uniformBufferToBinding = new Map<number, UniformBuffer | null>();
+  // private _uniformBufferToBinding = new Map<number, UniformBuffer | null>();
   /** This holds which uniform buffer binding points are free for use and have no UniformBuffer assigned to them */
   private _freeUniformBufferBindings: number[] = [];
 
@@ -461,6 +461,13 @@ export class GLState {
   freeTextureUnit(texture: Texture) {
     if (texture.gl) {
       if (texture.gl.textureUnit > -1) {
+        // Detach the texture from the unit before going forward
+        this.setActiveTextureUnit(texture.gl.textureUnit);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+        this._boundTexture.id = null;
+        this._boundTexture.unit = -1;
+        this._textureUnitToTexture.set(texture.gl.textureUnit, null);
+        // Add the unit back to the free units
         this._freeTextureUnits.unshift(texture.gl.textureUnit);
         texture.gl.textureUnit = -1;
       }
@@ -796,6 +803,15 @@ export class GLState {
       this.bindFBO(null);
       this._renderTarget = null;
       return true;
+    }
+
+    // We must examine the render target to see if it has any textures that will
+    // be utilized as a target. Those textures MUST be unbound fram any texture
+    // units to prevent webgl feedback loop errors
+    const textures = target.getTextures();
+    for (let i = 0, iMax = textures.length; i < iMax; ++i) {
+      const texture = textures[i];
+      if (texture) this.freeTextureUnit(texture);
     }
 
     // The gl context must be specified for the target in order to use it
@@ -1145,7 +1161,7 @@ export class GLState {
     // uniforms indicated.
     textureToUniforms.forEach((uniforms, texture) => {
       // Only compile and process successful texture units
-      if (failedTextures.indexOf(texture) < 0) {
+      if (failedTextures.length === 0 || failedTextures.indexOf(texture) < 0) {
         this.glProxy.updateTexture(texture);
 
         uniforms.forEach((uniform) => {
@@ -1170,7 +1186,12 @@ export class GLState {
 
   /**
    * Attempts to assign free or freed texture units to the provided texture
-   * objects. This will return a list of textures
+   * objects. This will return a list of textures that could not be assigned an
+   * available unit.
+   *
+   * NOTE: This DOES NOT CHANGE THE Active unit texture state NOR does it bind
+   * the textures yet. This is merely for figuring out which texture units the
+   * texture SHOULD be assigned to.
    */
   private assignTextureUnits(textures: Texture[]) {
     const needsUnit: Texture[] = [];
@@ -1215,15 +1236,16 @@ export class GLState {
       return needsUnit;
     }
 
-    // We now get any remaining texture that still needs a unit. We will claim the unit
-    // of a texture using a unit but is NOT going to be used for the next call.
-    // If there are no units available in this manner, then we are officially using too many
-    // textures for the next draw call.
+    // We now get any remaining texture that still needs a unit. We will claim
+    // the unit of a texture using a unit but is NOT going to be used for the
+    // next call. If there are no units available in this manner, then we are
+    // officially using too many textures for the next draw call.
     debug(
       "WARNING: Too many textures in use are causing texture units to be swapped. Doing this occasionally is fine, but handling this on a frame loop can have serious performance concerns."
     );
 
-    // Get a list of texture units in use but are not required for next draw call
+    // Get a list of texture units in use but are not required for next draw
+    // call
     const inUse = new Map<Texture, boolean>();
 
     this._textureUnitToTexture.forEach((texture) => {
@@ -1242,7 +1264,8 @@ export class GLState {
       if (!isUsed) canGiveUpUnit.push(texture);
     });
 
-    // We should now have all textures able to give up their unit for the next draw call
+    // We should now have all textures able to give up their unit for the next
+    // draw call
     if (canGiveUpUnit.length === 0) {
       console.warn(
         this.debugContext,
@@ -1281,7 +1304,8 @@ export class GLState {
       hasUnit.push(texture);
     }
 
-    // If by some voodoo we still have not provided a unit for a texture needing it, then we have a problem
+    // If by some voodoo we still have not provided a unit for a texture needing
+    // it, then we have a problem
     if (needsUnit.length > 0) {
       console.error(
         this.debugContext,
@@ -1295,13 +1319,23 @@ export class GLState {
   }
 
   /**
-   * Applies the necessary value for a texture to be applied to a sampler uniform.
+   * Applies the necessary value for a texture to be applied to a sampler
+   * uniform.
    */
   private uploadTextureToUniform(
     location: WebGLUniformLocation,
     texture: Texture
   ) {
-    if (texture.gl && texture.gl.textureUnit >= 0) {
+    if (texture.gl && texture.gl.textureUnit >= -1) {
+      // Ensure the texture unit has this particular texture assigned to it
+      if (this._textureUnitToTexture.get(texture.gl.textureUnit) !== texture) {
+        this.setActiveTextureUnit(texture.gl.textureUnit);
+        this.bindTexture(
+          texture,
+          GLSettings.Texture.TextureBindingTarget.TEXTURE_2D
+        );
+      }
+
       this.gl.uniform1i(
         location,
         textureUnitToIndex(this.gl, texture.gl.textureUnit)
@@ -1322,13 +1356,13 @@ export class GLState {
     texture: Texture,
     target: WebGLUniformLocation | RenderTarget
   ) {
-    const uniforms = this._textureWillBeUsed.get(texture);
+    const textureTargets = this._textureWillBeUsed.get(texture);
 
     if (target instanceof RenderTarget) {
-      if (!uniforms) {
+      if (!textureTargets) {
         this._textureWillBeUsed.set(texture, target);
-      } else if (uniforms instanceof RenderTarget) {
-        if (uniforms !== target) {
+      } else if (textureTargets instanceof RenderTarget) {
+        if (textureTargets !== target) {
           console.warn(
             this.debugContext,
             "A Texture is attempting to be used by two different render targets in a single draw."
@@ -1336,16 +1370,16 @@ export class GLState {
         }
       }
     } else {
-      if (!uniforms) {
+      if (!textureTargets) {
         this._textureWillBeUsed.set(texture, new Set([target]));
       } else {
-        if (uniforms instanceof RenderTarget) {
+        if (textureTargets instanceof RenderTarget) {
           console.warn(
             this.debugContext,
             "A texture in a single draw is attempting to attach to a uniform AND a render target which is invalid."
           );
         } else {
-          uniforms.add(target);
+          textureTargets.add(target);
         }
       }
     }

@@ -50,13 +50,11 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
     return PostProcessJSX({
       name: props.name,
       buffers: {},
-      view: {
-        output: {
-          buffers: {
-            [FragmentOutputType.COLOR]: props.output,
-          },
-          depth: false,
+      output: {
+        buffers: {
+          [FragmentOutputType.COLOR]: props.output,
         },
+        depth: false,
       },
       uniforms: [
         createUniform({
@@ -88,13 +86,11 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
     return PostProcessJSX({
       name: props.name,
       buffers: {},
-      view: {
-        output: {
-          buffers: {
-            [FragmentOutputType.COLOR]: props.output,
-          },
-          depth: false,
+      output: {
+        buffers: {
+          [FragmentOutputType.COLOR]: props.output,
         },
+        depth: false,
       },
       uniforms: [
         createUniform({
@@ -124,13 +120,11 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
     return PostProcessJSX({
       name: props.name,
       buffers: {},
-      view: {
-        output: {
-          buffers: {
-            [FragmentOutputType.COLOR]: props.output,
-          },
-          depth: false,
+      output: {
+        buffers: {
+          [FragmentOutputType.COLOR]: props.output,
         },
+        depth: false,
       },
       shader: `
         $\{import: simplexNoise2D}

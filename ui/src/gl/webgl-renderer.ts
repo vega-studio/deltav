@@ -674,7 +674,7 @@ export class WebGLRenderer {
     // Don't need to do anything for same render targets
     if (this.state.currentRenderTarget === target) return;
 
-    // If we have multiple targets for MRT then make sure
+    // If we have multiple targets for MRT then make sure all targets are ready
     if (Array.isArray(target)) {
       // If our render target approach is multiple render targets, then we only
       // need to ensure the targets have their FBO generated appropriately
@@ -710,8 +710,9 @@ export class WebGLRenderer {
   /**
    * Sets the viewport we render into.
    *
-   * By default the viewport is set based on the canvas being rendered into. Include a render target
-   * to make the viewport be applied with the target considered rather than needing pixel density considerations.
+   * By default the viewport is set based on the canvas being rendered into.
+   * Include a render target to make the viewport be applied with the target
+   * considered rather than needing pixel density considerations.
    */
   setViewport(bounds: { x: number; y: number; width: number; height: number }) {
     const target = this.state.currentRenderTarget;

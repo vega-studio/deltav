@@ -606,8 +606,8 @@ export class GLProxy {
   compileUniformBuffer(uniformBuffer: UniformBuffer) {
     if (uniformBuffer.gl) return true;
 
-    const gl = this.gl;
-    const buffer = gl.createBuffer();
+    // const gl = this.gl;
+    // const buffer = gl.createBuffer();
   }
 
   /**
@@ -1428,6 +1428,9 @@ export class GLProxy {
         break;
       }
     }
+
+    // ENABLE DEBUG:
+    // if (context) glDebug(context, true);
 
     return {
       context,

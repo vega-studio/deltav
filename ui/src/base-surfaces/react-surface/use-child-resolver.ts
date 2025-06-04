@@ -69,7 +69,7 @@ export function useChildResolvers<
   React.ReactNode[] | undefined | null,
   Promise<(Awaited<TResolve> | null)[]>,
   {
-    resolvers: React.MutableRefObject<PromiseResolver<TResolve | null>[]>;
+    resolvers: React.RefObject<PromiseResolver<TResolve | null>[]>;
     nameConflict: Set<string | number | null | undefined>;
   },
 ] {

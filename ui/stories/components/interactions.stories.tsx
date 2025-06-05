@@ -827,10 +827,10 @@ export const Color_Picking_Seperate_Views_And_Layers: StoryFn = (() => {
             background: [0.1, 0.1, 0.1, 1],
             clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
             viewport: { right: 10, bottom: 10, width: "30%", height: "30%" },
-            output: {
-              buffers: { [FragmentOutputType.COLOR]: void 0 },
-              depth: false,
-            },
+          },
+          output: {
+            buffers: { [FragmentOutputType.COLOR]: void 0 },
+            depth: false,
           },
         },
       })}

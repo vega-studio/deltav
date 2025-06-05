@@ -23,7 +23,12 @@ import {
   isRenderTextureResource,
 } from "../resources/texture/render-texture.js";
 import { textureRequest } from "../resources/texture/render-texture-resource-request.js";
-import { Color, FragmentOutputType, Omit } from "../types.js";
+import {
+  Color,
+  FragmentOutputType,
+  type FrameMetrics,
+  Omit,
+} from "../types.js";
 import { Camera } from "../util/camera.js";
 import {
   IdentifyByKey,
@@ -32,10 +37,68 @@ import {
 import { Layer } from "./layer.js";
 import { LayerScene } from "./layer-scene.js";
 
+/**
+ * Specify which buffer should be cleared before the view is drawn.
+ */
 export enum ClearFlags {
   COLOR = 0b0001,
   DEPTH = 0b0010,
   STENCIL = 0b0100,
+}
+
+/**
+ * Specifies when the view should be redrawn. This allows for hard limiting the
+ * number of redraws the view will perform or hard trigger forced redraws when
+ * the system seems to not be optimizing correctly.
+ *
+ * This is paired with a general value property to indicate parameters
+ * associated with the optimization.
+ */
+export enum ViewDrawMode {
+  /**
+   * Redraw a specific number of frames.
+   *
+   * value is the number of frames that will be redrawn.
+   */
+  FRAME_COUNT,
+  /**
+   * Draw, but skip the specified number of frames.
+   *
+   * value is the number of frames that will be skipped.
+   */
+  FRAME_SKIP,
+  /**
+   * Redraw up to a specific timestamp then stops.
+   *
+   * value is the timestamp that will stop the redraws, there will ALWAYS be a
+   * final redraw indicating the final timestamp if the previous frame was
+   * slightly before the timestamp.
+   */
+  UP_TO_TIMESTAMP_INCLUSIVE,
+  /**
+   * Redraw up to a specific timestamp then stops.
+   *
+   * value is the timestamp that will stop the redraws, this will only have the
+   * final rendering that was able to complete before the timestamp occurred. If
+   * there is a hiccup that causes a significant gap from previous rendering and
+   * the indicated timestamp, this will still not render and just leave the view
+   * at the final rendering it was able to complete.
+   */
+  UP_TO_TIMESTAMP_EXCLUSIVE,
+  /**
+   * Only draw when the props change
+   */
+  ON_PROPS_CHANGE,
+  /**
+   * Only draw when the trigger function returns true
+   */
+  ON_TRIGGER,
+  /**
+   * DEFAULT: Always redraw the view.
+   */
+  ALWAYS,
+  /** Never redraw the view. */
+  NEVER,
 }
 
 /**
@@ -220,6 +283,17 @@ export interface IViewProps extends IdentifyByKeyOptions {
   chain?: Partial<Omit<IViewProps, "chain">>[];
 
   /**
+   * If true, the view will be redrawn every frame. If a number, the view will
+   * be redrawn every n frames. If a Date, the view will be redrawn up to the
+   * specified time.
+   */
+  drawMode?: {
+    mode: ViewDrawMode;
+    value?: number;
+    trigger?: (frameMetrics: FrameMetrics) => boolean;
+  };
+
+  /**
    * This is a hook to allow gl state changes JUST BEFORE drawing a layer. This
    * allows for view specific tweaks to how a lyer gets drawn which is a common
    * occurrence in many rendering pipelines.
@@ -277,6 +351,8 @@ export abstract class View<
   projection!: BaseProjection<View<TViewProps>>;
   /** The props applied to this view */
   props: TViewProps;
+  /** The previous frames props for this view */
+  previousProps?: TViewProps;
   /**
    * This is the router that makes it possible to request resources. Our view
    * needs this to be available to aid in creating render targets to output
@@ -316,6 +392,16 @@ export abstract class View<
   get order() {
     return this.props.order || 0;
   }
+
+  /**
+   * This contains information pertinent to the View's draw mode so the view
+   * can properly determine if it should be rendered or not.
+   */
+  drawModeInfo = {
+    startFrame: 0,
+    toFrame: 0,
+    tillTimestamp: 0,
+  };
 
   constructor(scene: LayerScene, props: TViewProps) {
     super(props);
@@ -656,17 +742,81 @@ export abstract class View<
    * different. This method can be overridden to place custom logic at this
    * point to indicate when redraws should happen.
    *
-   * NOTE: This should be considered for redraw logic centered around changes in
-   * the view itself. There ARE additional triggers in the system that causes
-   * redraws. This method just aids in ensuring necessary redraws take place for
-   * view level logic and props.
+   * This is also where the view's drawMode is evaluated to determine if it is
+   * time to redraw.
    */
-  shouldDrawView(oldProps: TViewProps, newProps: TViewProps) {
-    for (const key in newProps) {
-      if (newProps[key] !== oldProps[key]) return true;
+  shouldDrawView(frameMetrics: FrameMetrics) {
+    let shouldDraw = false;
+    const newProps = this.props;
+    const oldProps = this.previousProps ?? this.props;
+
+    const drawModeChange =
+      !this.previousProps ||
+      newProps.drawMode?.mode !== oldProps.drawMode?.mode ||
+      newProps.drawMode?.value !== oldProps.drawMode?.value ||
+      newProps.drawMode?.trigger !== oldProps.drawMode?.trigger;
+    const drawMode = newProps.drawMode?.mode ?? ViewDrawMode.ALWAYS;
+
+    // Initialize draw mode info if changes have happened.
+    if (drawModeChange) {
+      switch (drawMode) {
+        case ViewDrawMode.FRAME_COUNT:
+          this.drawModeInfo.toFrame =
+            frameMetrics.currentFrame + (newProps.drawMode?.value || 0);
+          break;
+        case ViewDrawMode.FRAME_SKIP:
+          this.drawModeInfo.startFrame = frameMetrics.currentFrame;
+          break;
+        case ViewDrawMode.UP_TO_TIMESTAMP_INCLUSIVE:
+        case ViewDrawMode.UP_TO_TIMESTAMP_EXCLUSIVE:
+          this.drawModeInfo.tillTimestamp = newProps.drawMode?.value || 0;
+          break;
+        case ViewDrawMode.ALWAYS:
+        case ViewDrawMode.NEVER:
+        case ViewDrawMode.ON_PROPS_CHANGE:
+        default:
+          break;
+      }
     }
 
-    return false;
+    // Analyze the draw mode and determine if this view is needing to be
+    // redrawn.
+    switch (drawMode) {
+      case ViewDrawMode.FRAME_COUNT:
+        shouldDraw = frameMetrics.currentFrame <= this.drawModeInfo.toFrame;
+        break;
+      case ViewDrawMode.FRAME_SKIP:
+        shouldDraw =
+          (frameMetrics.currentFrame - this.drawModeInfo.startFrame) %
+            (newProps.drawMode?.value || 1) ===
+          0;
+        break;
+      case ViewDrawMode.UP_TO_TIMESTAMP_INCLUSIVE:
+        shouldDraw = this.lastFrameTime <= this.drawModeInfo.tillTimestamp;
+        break;
+      case ViewDrawMode.UP_TO_TIMESTAMP_EXCLUSIVE:
+        shouldDraw = frameMetrics.currentTime < this.drawModeInfo.tillTimestamp;
+        break;
+      case ViewDrawMode.ALWAYS:
+        shouldDraw = true;
+        break;
+      case ViewDrawMode.NEVER:
+        shouldDraw = false;
+        break;
+      case ViewDrawMode.ON_TRIGGER:
+        shouldDraw = newProps.drawMode?.trigger?.(frameMetrics) ?? false;
+        break;
+      case ViewDrawMode.ON_PROPS_CHANGE:
+        for (const key in newProps) {
+          if (newProps[key] !== oldProps[key]) {
+            shouldDraw = true;
+            break;
+          }
+        }
+        break;
+    }
+
+    return shouldDraw;
   }
 
   /**
@@ -674,7 +824,7 @@ export abstract class View<
    * Allows view to respond to diff changes.
    */
   willUpdateProps(_newProps: IViewProps) {
-    // No-op for the base behavior
+    this.previousProps = this.props;
   }
 
   /**

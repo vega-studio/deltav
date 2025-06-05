@@ -396,7 +396,6 @@ export class Surface {
    *                    and are thus potentially ready to be rendered.
    */
   async commit(
-    time?: number,
     onViewReady?: (
       needsDraw: boolean,
       scene: LayerScene,
@@ -405,28 +404,9 @@ export class Surface {
   ) {
     if (!this.gl) return;
 
-    // For now, while certain mysteries remain, we will track only if any view
-    // needs to be redrawn. Any view that needs to be redrawn will trigger a
-    // redraw of the entire surface for now until we can optimize down to only
-    // drawing a single view without erasing views that were not redrawn.
-    let needsDraw = false;
-
-    // If no manual time was provided, we shall use Date.now in 32 bit format
-    if (time === undefined) {
-      this.frameMetrics.currentTime = Date.now() | 0;
-    } else {
-      // If this is our first frame and we have a manual time entry, then we
-      // first need to sync up The manual time as our previous timing.
-      if (this.frameMetrics.previousTime === this.frameMetrics.currentTime) {
-        this.frameMetrics.previousTime = time;
-      }
-
-      this.frameMetrics.currentTime = time;
-    }
-
     // Now that we have established what the time should be, let's swap our input parameter to reflect
     // the time we will be using for this frame
-    time = this.frameMetrics.currentTime;
+    const time = this.frameMetrics.currentTime;
 
     // Get the scenes in their added order
     const scenes = this.sceneDiffs.items;
@@ -448,6 +428,13 @@ export class Surface {
       for (let k = 0, endk = views.length; k < endk; ++k) {
         const view = views[k];
         const validLayers: { [key: string]: Layer<any, any> } = {};
+
+        // Let the view calculate if it should be drawn.
+        // TODO: This should become more robust over time where layers and view
+        // composition can be more self deterministic of what requires a redraw.
+        if (!view.shouldDrawView(this.frameMetrics)) {
+          continue;
+        }
 
         // If this view has information to use, then we should perform steps to
         // prepare the view for use.
@@ -507,11 +494,6 @@ export class Surface {
           try {
             // Update uniforms, resolve diff changes
             layer.draw();
-            // If any of the layers under the view need a redraw
-            // Then the view needs a redraw
-            if (layer.needsViewDrawn || layer.alwaysDraw) {
-              view.needsDraw = true;
-            }
             // Flag the layer as valid
             validLayers[layer.id] = layer;
             // The view's animationEndTime is the largest end time found on one
@@ -529,29 +511,6 @@ export class Surface {
                 erroredLayers[layer.id] = [layer, err];
               }
             }
-          }
-        }
-
-        // Analyze the view's animation end timings and the camera to see if
-        // there are view changes that will trigger a redraw outside of our
-        // layer changes
-        if (
-          view.needsDraw ||
-          (time && time < view.lastFrameTime) ||
-          (time && time < view.animationEndTime) ||
-          view.props.camera.needsViewDrawn
-        ) {
-          view.needsDraw = true;
-          needsDraw = true;
-
-          // Get all of the dependent views for that view
-          const overlapViews = this.viewDrawDependencies.get(view);
-
-          // And make all of them need a redraw.
-          if (overlapViews) {
-            overlapViews.forEach((view) => {
-              view.needsDraw = true;
-            });
           }
         }
 
@@ -577,8 +536,11 @@ export class Surface {
         // after the layer draws in context of it's view and has it's uniforms
         // updated in that context.
         if (onViewReady) {
-          onViewReady(needsDraw, scene, view);
+          onViewReady(true, scene, view);
         }
+
+        // This view has been resolved at this point.
+        view.previousProps = view.props;
       }
     }
 
@@ -610,6 +572,19 @@ export class Surface {
   async draw(time?: number) {
     if (!this.gl) return;
 
+    // If no manual time was provided, we shall use Date.now in 32 bit format
+    if (time === undefined) {
+      this.frameMetrics.currentTime = Date.now() | 0;
+    } else {
+      // If this is our first frame and we have a manual time entry, then we
+      // first need to sync up The manual time as our previous timing.
+      if (this.frameMetrics.previousTime === this.frameMetrics.currentTime) {
+        this.frameMetrics.previousTime = time;
+      }
+
+      this.frameMetrics.currentTime = time;
+    }
+
     // We are rendering a new frame so increment our frame count
     this.frameMetrics.currentFrame++;
     this.frameMetrics.frameDuration =
@@ -635,7 +610,7 @@ export class Surface {
 
     // Make the layers commit their changes to the buffers then draw each scene
     // view on Completion.
-    await this.commit(time, (needsDraw, scene, view) => {
+    await this.commit((needsDraw, scene, view) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
 

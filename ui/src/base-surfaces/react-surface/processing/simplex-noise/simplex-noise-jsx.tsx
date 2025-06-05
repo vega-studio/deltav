@@ -1,4 +1,7 @@
+import React from "react";
+
 import { inverse2, type Vec2, vec2, type Vec3 } from "../../../../math";
+import { ViewDrawMode } from "../../../../surface/index.js";
 import {
   FragmentOutputType,
   isNumber,
@@ -43,6 +46,7 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
     : ([props.scale] as Vec2[]);
   const scales = scaleArray.map((a) => inverse2(a));
   const scaleFactor = 1 / scales.length;
+  const currentZOffset = React.useRef(props.zOffset);
 
   if (isDefined(props.drift)) {
     const drift = props.drift;
@@ -50,6 +54,11 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
     return PostProcessJSX({
       name: props.name,
       buffers: {},
+      view: {
+        config: {
+          drawMode: { mode: ViewDrawMode.ALWAYS },
+        },
+      },
       output: {
         buffers: {
           [FragmentOutputType.COLOR]: props.output,
@@ -86,6 +95,18 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
     return PostProcessJSX({
       name: props.name,
       buffers: {},
+      view: {
+        config: {
+          drawMode: {
+            mode: ViewDrawMode.ON_TRIGGER,
+            trigger: () => {
+              const result = currentZOffset.current !== zOffset;
+              currentZOffset.current = zOffset;
+              return result;
+            },
+          },
+        },
+      },
       output: {
         buffers: {
           [FragmentOutputType.COLOR]: props.output,
@@ -120,6 +141,11 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
     return PostProcessJSX({
       name: props.name,
       buffers: {},
+      view: {
+        config: {
+          drawMode: { mode: ViewDrawMode.FRAME_COUNT, value: 1 },
+        },
+      },
       output: {
         buffers: {
           [FragmentOutputType.COLOR]: props.output,

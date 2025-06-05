@@ -276,6 +276,7 @@ export class LayerScene extends IdentifyByKey {
         const baseViewType = initializer.init[0];
         baseViewProps.key = initializer.key;
         const newView = new baseViewType(this, baseViewProps);
+        newView.props = Object.assign({}, baseViewProps);
         newView.props.camera = newView.props.camera || defaultElements.camera;
         newView.pixelRatio = this.surface.pixelRatio;
         newView.resource = this.surface.resourceManager;
@@ -322,12 +323,9 @@ export class LayerScene extends IdentifyByKey {
         const baseViewProps = initializer.init[1];
         const baseViewType = initializer.init[0];
         view.willUpdateProps(baseViewProps);
+        view.previousProps = view.props;
 
-        if (view.shouldDrawView(view.props, baseViewProps)) {
-          view.needsDraw = true;
-        }
-
-        Object.assign(view.props, baseViewProps);
+        view.props = Object.assign({}, view.props, baseViewProps);
         view.didUpdateProps();
 
         if (this.surface) {

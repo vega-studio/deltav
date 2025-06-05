@@ -44,18 +44,14 @@ export function BoxSampleJSX(props: IBoxSampleJSX) {
   return PostProcessJSX({
     name: props.name,
     printShader: props.printShader,
-    view: Object.assign(
-      output
-        ? {
-            output: {
-              buffers: { [FragmentOutputType.COLOR]: output },
-              depth: false,
-            },
-          }
-        : {},
-      props.view
-    ),
-    buffers: { color: input },
+    output: output
+      ? {
+          buffers: { [FragmentOutputType.COLOR]: output },
+          depth: false,
+        }
+      : void 0,
+    view: props.view,
+    buffers: { sourceTex: input },
     shader: BoxSampleFS,
     material: props.material,
     uniforms: [

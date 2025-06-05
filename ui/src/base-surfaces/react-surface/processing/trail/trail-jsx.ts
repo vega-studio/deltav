@@ -1,6 +1,5 @@
 import { IView2DProps } from "../../../../2d";
 import type { Vec2 } from "../../../../math";
-import { ClearFlags } from "../../../../surface";
 import {
   FragmentOutputType,
   ILayerMaterialOptions,
@@ -76,39 +75,37 @@ export function TrailJSX(props: ITrailJSX) {
         blending: null,
       },
       // Render to the screen, or to a potentially specified target
+      output: {
+        buffers: { [FragmentOutputType.COLOR]: output },
+        depth: false,
+      },
       view: {
         ...{
           config: {
-            clearFlags: [ClearFlags.COLOR],
-          },
-          output: {
-            buffers: { [FragmentOutputType.COLOR]: output },
-            depth: false,
+            // clearFlags: [ClearFlags.COLOR],
           },
         },
         ...view,
       },
       // Utilize our composition shader
       shader: `
-          varying vec2 texCoord;
+        void main() {
+          // Add the trailTex and addTex but fade out the trailTex slightly
+          vec4 addT = texture2D(addTex, texCoord);
+          vec4 trailT = texture2D(trailTex, texCoord);
 
-          void main() {
-            // Add the trailTex and addTex but fade out the trailTex slightly
-            vec4 addT = texture2D(addTex, texCoord);
-            vec4 trailT = texture2D(trailTex, texCoord);
-
-            // Blend the textures
-            float alpha = addT.a + trailT.a * (1.0 - addT.a); // Compute final alpha
-            vec3 color;
-            if (alpha > 0.0) { // Avoid division by zero
-              color = (addT.rgb * addT.a + trailT.rgb * trailT.a * (1.0 - addT.a)) / alpha;
-            } else {
-              color = vec3(0.0); // Fallback to black (or any other fallback color)
-            }
-
-            gl_FragColor = vec4(color, alpha);
+          // Blend the textures
+          float alpha = addT.a + trailT.a * (1.0 - addT.a); // Compute final alpha
+          vec3 color;
+          if (alpha > 0.0) { // Avoid division by zero
+            color = (addT.rgb * addT.a + trailT.rgb * trailT.a * (1.0 - addT.a)) / alpha;
+          } else {
+            color = vec3(0.0); // Fallback to black (or any other fallback color)
           }
-        `,
+
+          gl_FragColor = vec4(color, alpha);
+        }
+      `,
     })
   );
 
@@ -128,19 +125,13 @@ export function TrailJSX(props: ITrailJSX) {
         },
         // Render the composited textures back to the trail input but faded back a
         // little.
-        view: {
-          ...{
-            output: {
-              buffers: { [FragmentOutputType.COLOR]: input.trail },
-              depth: false,
-            },
-          },
-          ...view,
+        output: {
+          buffers: { [FragmentOutputType.COLOR]: input.trail },
+          depth: false,
         },
+        view,
         // Utilize our composition shader
         shader: `
-          varying vec2 texCoord;
-
           void main() {
             vec4 fade = texture2D(tex, texCoord);
             fade.rgba *= ${props.intensity || 0.7};
@@ -167,14 +158,10 @@ export function TrailJSX(props: ITrailJSX) {
         },
         // Render the composited textures back to the trail input but faded back a
         // little.
-        view: {
-          ...{
-            output: {
-              buffers: { [FragmentOutputType.COLOR]: input.trail },
-              depth: false,
-            },
-          },
-          ...view,
+        view,
+        output: {
+          buffers: { [FragmentOutputType.COLOR]: input.trail },
+          depth: false,
         },
         uniforms: [
           createUniform({
@@ -186,8 +173,6 @@ export function TrailJSX(props: ITrailJSX) {
         ],
         // Utilize our composition shader
         shader: `
-          varying vec2 texCoord;
-
           void main() {
             vec4 fade = texture2D(tex, texCoord + (drift / tex_size));
             fade.rgba *= ${props.intensity || 0.7};

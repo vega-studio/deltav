@@ -148,8 +148,6 @@ export function BloomJSX(props: IBloomJSX) {
         ],
         // Utilize our composition shader
         shader: `
-          varying vec2 texCoord;
-
           void main() {
             vec3 base = texture2D(color, texCoord).rgb;
             vec3 glow = texture2D(glow, texCoord).rgb;
@@ -168,7 +166,7 @@ export function BloomJSX(props: IBloomJSX) {
             `
             }
 
-            gl_FragColor = vec4(result, 1.0);
+            $\{out: color} = vec4(result, 1.0);
           }
         `,
       })

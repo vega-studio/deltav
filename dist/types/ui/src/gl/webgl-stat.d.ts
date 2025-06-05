@@ -28,5 +28,29 @@ export declare class WebGLStat {
         half: boolean;
         full: boolean;
     };
+    /**
+     * Max uniform buffers that can be bound at the same time (across vertex and
+     * fragment shaders)
+     */
+    static MAX_UNIFORM_BUFFER_BINDINGS: number;
+    /**
+     * Max size in bytes of a single uniform buffer (you can have multiple buffers
+     * at max size)
+     */
+    static MAX_UNIFORM_BLOCK_SIZE: number;
+    /**
+     * Max number of uniform blocks that can be bound to a single vertex shader
+     */
+    static MAX_VERTEX_UNIFORM_BLOCKS: number;
+    /**
+     * Max number of uniform blocks that can be bound to a single fragment shader
+     */
+    static MAX_FRAGMENT_UNIFORM_BLOCKS: number;
+    /**
+     * Max number of uniform blocks that can be declared in a program (vs + fs).
+     * This is probably not used within deltav as deltav is responsible for
+     * writing in the uniform buffer declarations.
+     */
+    static MAX_COMBINED_UNIFORM_BLOCKS: number;
     static print(): typeof WebGLStat;
 }

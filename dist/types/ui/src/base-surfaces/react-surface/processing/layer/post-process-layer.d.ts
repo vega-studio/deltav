@@ -1,19 +1,26 @@
 import { Instance } from "../../../../instance-provider";
 import { IRenderTextureResource } from "../../../../resources";
 import { ILayerProps, Layer } from "../../../../surface";
-import { Color, IShaderInitialization, IUniform } from "../../../../types.js";
+import { Color, IShaderInitialization, IUniform, type OutputFragmentShaderSource } from "../../../../types.js";
 export declare class PostProcessInstance extends Instance {
     tint: Color;
     constructor();
 }
 export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
-    /** List of resource names and their respective keys to apply  */
-    buffers: Record<string, IRenderTextureResource | undefined>;
+    /**
+     * The name of the texture coordinate variable used in the shader.
+     */
+    textureCoordinateName?: string;
+    /**
+     * List of resource names and their respective keys to apply. Use an array of
+     * resources if you want that resource to be swapped every render.
+     */
+    buffers: Record<string, IRenderTextureResource | IRenderTextureResource[] | undefined>;
     /**
      * This is the fragment shader that will handle the operation to perform
      * computations against all of the input shaders.
      */
-    fs: string;
+    fs: OutputFragmentShaderSource;
     /**
      * Additional uniforms to inject into the program.
      */

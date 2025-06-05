@@ -1,3 +1,20 @@
+## 5.0.0
+
+## Breaking
+
+- [`BREAKING`]: The automated needs update system has been gutted in favor of direct view draw mode controls that can instruct when a view can draw. This includes limited frame draw calls to time frames to triggers. The automated system will come back someday, but this approach allows for control before magic. The magic layer has many more nuances to consider now compared to the inception of deltav, so the implementation will take careful consideration to reintroduce.
+- [`BREAKING`]: Added in support for buffer swapping via specifying buffer chains. This concept has been integrated into Views and has been demonstrated as working with uniforms swapping between target textures
+
+## Added
+
+- [`ADDED`]: FloatTextureJSX added to simplify float texture use
+
+## Fixed
+
+- [`FIXED`]: New changes required updates to existing stories to make some work properly. Particularly around output buffers for views
+- [`FIXED`]: LOTS of gl state management has been corrected to facilitate the latest elements
+- [`FIXED`]: Textures with Float data have been confirmed to be working
+
 ## 4.4.6
 
 ## Fixed

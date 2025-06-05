@@ -55,7 +55,7 @@ export declare function useChildResolvers<TResolve, TProps extends IResolverProv
     React.ReactNode[] | undefined | null,
     Promise<(Awaited<TResolve> | null)[]>,
     {
-        resolvers: React.MutableRefObject<PromiseResolver<TResolve | null>[]>;
+        resolvers: React.RefObject<PromiseResolver<TResolve | null>[]>;
         nameConflict: Set<string | number | null | undefined>;
     }
 ];

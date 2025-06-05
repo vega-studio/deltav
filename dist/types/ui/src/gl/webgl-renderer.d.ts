@@ -188,8 +188,9 @@ export declare class WebGLRenderer {
     /**
      * Sets the viewport we render into.
      *
-     * By default the viewport is set based on the canvas being rendered into. Include a render target
-     * to make the viewport be applied with the target considered rather than needing pixel density considerations.
+     * By default the viewport is set based on the canvas being rendered into.
+     * Include a render target to make the viewport be applied with the target
+     * considered rather than needing pixel density considerations.
      */
     setViewport(bounds: {
         x: number;

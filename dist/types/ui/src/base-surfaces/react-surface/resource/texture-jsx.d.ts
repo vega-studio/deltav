@@ -4,8 +4,7 @@ import { SurfaceJSXType } from "../group-surface-children.js";
 import { IResourceJSX } from "./as-resource.js";
 export interface ITexturePropsJSX extends Partial<IResourceJSX> {
     /**
-     * Resource name for debugging mostly. Maps to resource "key" in the deltav
-     * resource.
+     * The identifier for the resource.
      */
     name?: string;
 }
@@ -14,7 +13,7 @@ export interface ITexturePropsJSX extends Partial<IResourceJSX> {
  */
 type ITextureJSX = ITexturePropsJSX & Omit<IRenderTextureResource, "type" | "key">;
 /**
- * Provides a simple event handler to be used by the surface
+ * Generates a texture Resource that can be used by the name provided.
  */
 export declare const TextureJSX: {
     (props: ITextureJSX): React.JSX.Element;

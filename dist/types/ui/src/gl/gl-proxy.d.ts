@@ -8,6 +8,7 @@ import { Model } from "./model.js";
 import { RenderTarget } from "./render-target.js";
 import { Texture } from "./texture.js";
 import { GLContext, IExtensions } from "./types.js";
+import type { UniformBuffer } from "./uniform-buffer.js";
 /**
  * This is where all objects go to be processed and updated with webgl calls. Such as textures, geometries, etc
  */
@@ -62,6 +63,10 @@ export declare class GLProxy {
      */
     compileMaterial(material: Material): boolean | undefined;
     /**
+     * Generates and uploads a uniform buffer to the GPU
+     */
+    compileUniformBuffer(uniformBuffer: UniformBuffer): true | undefined;
+    /**
      * This does what is needed to generate a GPU FBO that we can utilize as a render target
      * for subsequent draw calls.
      */
@@ -96,6 +101,10 @@ export declare class GLProxy {
      * Destroys an index buffer's resources from the GL Context
      */
     disposeIndexBuffer(indexBuffer: IndexBuffer): void;
+    /**
+     * Destroys a uniform buffer's resources from the GL Context.
+     */
+    disposeUniformBuffer(uniform: UniformBuffer): void;
     /**
      * Destroys a color buffer's resources from the GL Context
      */

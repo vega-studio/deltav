@@ -84,6 +84,12 @@ export interface ISurfaceJSX {
    * expressly told to render utilizing enableOutput
    */
   optimizedOutputTargets?: number[];
+
+  /**
+   * Will render for the specified number of frames then stop. This is useful
+   * for running simulations to a certain point, or for debugging your pipeline.
+   */
+  renderFrameCount?: number;
 }
 
 export interface ISurfaceContext {
@@ -232,6 +238,12 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
     if (!surface.current) return;
     currentTime.current = time;
     surface.current.draw(time);
+
+    if (props.renderFrameCount) {
+      if (surface.current.frameMetrics.currentFrame >= props.renderFrameCount) {
+        stopAnimationLoop(drawLoopId.current!);
+      }
+    }
   };
 
   /**
@@ -261,7 +273,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
     async didMount() {
       if (!canvasRef.current || !container.current) return;
 
-      // Let everything resolve as parellel as possible.
+      // Let everything resolve as parallel as possible.
       const [
         resolvedEventManagers,
         resolvedResources,

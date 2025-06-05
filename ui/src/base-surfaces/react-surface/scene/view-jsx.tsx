@@ -31,25 +31,43 @@ export interface IViewJSX<TProps extends IViewProps>
   /** The View constructor type we wish to initialize */
   type: IViewConstructable<TProps> & { defaultProps: TProps };
   /** Configure the constructed layer via the layer's props */
-  config: Omit<TProps, "key" | "viewport"> &
-    Partial<Pick<TProps, "key" | "viewport">>;
+  config: Omit<TProps, "key" | "viewport" | "output" | "chain"> &
+    Partial<Pick<TProps, "key" | "viewport">> & {
+      output?: undefined;
+      chain?: undefined;
+    };
   /**
    * An output configuration that handles the JSX pattern where we use refs
-   * to pass the values around to each other.
+   * to pass the values around to each other. Specify an array to create a view
+   * chain for rendering to different targets.
    */
-  output?: {
-    /**
-     * Specify output targets for the render/color buffers this view wants to write to.
-     * Use the name of the Resource that will be used to be written to.
-     */
-    buffers: Record<number, string | undefined>;
-    /**
-     * Set to true to include a depth buffer the system will generate for you.
-     * Use the name of the Resource to use it if you wish to target an output
-     * target texture.
-     */
-    depth: string | boolean;
-  };
+  output?:
+    | {
+        /**
+         * Specify output targets for the render/color buffers this view wants to write to.
+         * Use the name of the Resource that will be used to be written to.
+         */
+        buffers: Record<number, string | undefined>;
+        /**
+         * Set to true to include a depth buffer the system will generate for you.
+         * Use the name of the Resource to use it if you wish to target an output
+         * target texture.
+         */
+        depth: string | boolean;
+      }
+    | {
+        /**
+         * Specify output targets for the render/color buffers this view wants to write to.
+         * Use the name of the Resource that will be used to be written to.
+         */
+        buffers: Record<number, string | undefined>;
+        /**
+         * Set to true to include a depth buffer the system will generate for you.
+         * Use the name of the Resource to use it if you wish to target an output
+         * target texture.
+         */
+        depth: string | boolean;
+      }[];
 }
 
 export type IPartialViewJSX<TProps extends IViewProps> = Partial<
@@ -79,6 +97,102 @@ function getResourceResolverForName(
   return resolver;
 }
 
+async function requestBuffers<TProps extends IViewProps = IViewProps>(
+  requestedOutputBuffer: {
+    /**
+     * Specify output targets for the render/color buffers this view wants to write to.
+     * Use the name of the Resource that will be used to be written to.
+     */
+    buffers: Record<number, string | undefined>;
+    /**
+     * Set to true to include a depth buffer the system will generate for you.
+     * Use the name of the Resource to use it if you wish to target an output
+     * target texture.
+     */
+    depth: string | boolean;
+  },
+  props: IViewJSX<TProps>,
+  surfaceContext: ISurfaceContext
+) {
+  const requestedOutput = requestedOutputBuffer.buffers;
+  const resourceResolvers = Object.entries(requestedOutput)
+    .map(([key, name]) => {
+      const resolver = getResourceResolverForName(
+        props.name,
+        surfaceContext,
+        name || ""
+      );
+
+      if (!resolver) {
+        console.warn("View props", props);
+        return null;
+      }
+
+      return [Number.parseInt(key), resolver, name] as [
+        number,
+        PromiseResolver<BaseResourceOptions | null>,
+        string,
+      ];
+    })
+    .filter(isDefined);
+
+  const outputBuffers: ViewOutputBuffers = {};
+
+  // Wait till all of the resources are available for the view and map those
+  // resources to our output buffers
+  await Promise.all(
+    resourceResolvers.map(async (r) => {
+      const resource = await r[1].promise;
+      if (isRenderTextureResource(resource)) outputBuffers[r[0]] = resource;
+      else if (isColorBufferResource(resource)) {
+        outputBuffers[r[0]] = resource;
+      } else {
+        console.error(
+          `A View "${props.name}" requested an output buffer for the resource with name: ${r[2]} but the resource indicated is not a valid output target type.`,
+          "Ensure the resource is a RenderTextureResource or ColorBufferResource"
+        );
+        console.warn("View props", props);
+      }
+    })
+  );
+
+  // Do the resource check and await for the depth buffer as well
+  let outputDepth: ViewDepthBuffer = true;
+
+  const requestedDepth = requestedOutputBuffer.depth;
+  if (isString(requestedDepth)) {
+    const resolver = getResourceResolverForName(
+      props.name,
+      surfaceContext,
+      requestedDepth
+    );
+
+    if (!resolver) {
+      console.warn("View props", props);
+      outputDepth = false;
+    } else {
+      const resource = await resolver.promise;
+
+      if (isRenderTextureResource(resource)) outputDepth = resource;
+      else if (isColorBufferResource(resource)) outputDepth = resource;
+      else {
+        console.error(
+          `A View "${props.name}" requested a depth buffer for the resource with name: ${requestedDepth} but the resource indicated is not a valid output target type.`,
+          "Ensure the resource is a RenderTextureResource or ColorBufferResource"
+        );
+        console.warn("View props", props);
+      }
+    }
+  } else if (isDefined(requestedDepth)) {
+    outputDepth = requestedDepth;
+  }
+
+  return {
+    buffers: outputBuffers,
+    depth: outputDepth,
+  };
+}
+
 /**
  * Provides a View to be used by a scene
  */
@@ -89,103 +203,61 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
 
   useLifecycle({
     async didMount() {
-      // Some validation
-      if (props.config.output && !props.output) {
-        console.warn(
-          "Do NOT use the output property in the config. Use the output property on the props of the JSX element"
-        );
-      }
-
       // We need to easily access resource resolvers so we wait for them to be
       // ready.
       await surfaceContext?.resolversReady;
 
+      if (!surfaceContext) {
+        console.error("No surface context found");
+        return;
+      }
+
       // Loop through our output buffers and map them over to the resolvers for
       // the indicated resource name
-      const requestedOutput = props.output?.buffers || {};
-      const resourceResolvers = Object.entries(requestedOutput)
-        .map(([key, name]) => {
-          const resolver = getResourceResolverForName(
-            props.name,
-            surfaceContext,
-            name || ""
-          );
+      let requestedOutputs: {
+        buffers: Record<number, string | undefined>;
+        depth: string | boolean;
+      }[] = [];
 
-          if (!resolver) {
-            console.warn("View props", props);
-            return null;
-          }
+      if (props.output && !Array.isArray(props.output)) {
+        requestedOutputs = [props.output];
+      } else if (props.output) {
+        requestedOutputs = props.output;
+      }
 
-          return [Number.parseInt(key), resolver, name] as [
-            number,
-            PromiseResolver<BaseResourceOptions | null>,
-            string,
-          ];
-        })
-        .filter(isDefined);
-
-      const outputBuffers: ViewOutputBuffers = {};
-
-      // Wait till all of the resources are available for the view and map those
-      // resources to our output buffers
-      await Promise.all(
-        resourceResolvers.map(async (r) => {
-          const resource = await r[1].promise;
-          if (isRenderTextureResource(resource)) outputBuffers[r[0]] = resource;
-          else if (isColorBufferResource(resource)) {
-            outputBuffers[r[0]] = resource;
-          } else {
-            console.error(
-              `A View "${props.name}" requested an output buffer for the resource with name: ${r[2]} but the resource indicated is not a valid output target type.`,
-              "Ensure the resource is a RenderTextureResource or ColorBufferResource"
-            );
-            console.warn("View props", props);
-          }
-        })
+      // Wait for all buffer resources to be ready for every target specified
+      const allBuffers = await Promise.all(
+        requestedOutputs.map((reqestedOutput) =>
+          requestBuffers(reqestedOutput, props, surfaceContext)
+        )
       );
 
-      // Do the resource check and await for the depth buffer as well
-      let outputDepth: ViewDepthBuffer = true;
-
-      const requestedDepth = props.output?.depth;
-      if (isString(requestedDepth)) {
-        const resolver = getResourceResolverForName(
-          props.name,
-          surfaceContext,
-          requestedDepth
-        );
-
-        if (!resolver) {
-          console.warn("View props", props);
-          outputDepth = false;
-        } else {
-          const resource = await resolver.promise;
-
-          if (isRenderTextureResource(resource)) outputDepth = resource;
-          else if (isColorBufferResource(resource)) outputDepth = resource;
-          else {
-            console.error(
-              `A View "${props.name}" requested a depth buffer for the resource with name: ${requestedDepth} but the resource indicated is not a valid output target type.`,
-              "Ensure the resource is a RenderTextureResource or ColorBufferResource"
-            );
-            console.warn("View props", props);
-          }
-        }
-      } else if (isDefined(requestedDepth)) {
-        outputDepth = requestedDepth;
-      }
+      const chainBuffers = allBuffers.slice(1);
 
       // Generate the view object based on the given configuration.
       const view = createView(props.type, {
         key: props.name,
         ...props.config,
+        // First buffer is the primary view we create
         output: props.output
           ? {
-              buffers: outputBuffers,
-              depth: outputDepth,
+              buffers: allBuffers[0].buffers,
+              depth: allBuffers[0].depth,
             }
           : void 0,
-      });
+
+        // Additional outputs will map to chaining in the view.
+        chain:
+          chainBuffers.length > 0
+            ? chainBuffers.map((buffer) => ({
+                output: {
+                  buffers: buffer.buffers,
+                  depth: buffer.depth,
+                },
+              }))
+            : undefined,
+      } as Omit<TProps, "key" | "viewport"> &
+        Partial<Pick<TProps, "key" | "viewport">>);
 
       props.resolver?.resolve(view);
     },

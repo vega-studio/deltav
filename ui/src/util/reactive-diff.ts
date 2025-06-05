@@ -1,12 +1,19 @@
 import { IdentifiableById } from "../types.js";
 
 /**
- * These are the minimum properties required for a ReactiveDiff to monitor a set of objects.
+ * These are the minimum properties required for a ReactiveDiff to monitor a set
+ * of objects.
  */
 export type ReactiveDiffObject<U> = {
-  /** The identifier of the object which is used to determine who is added/removed/updated */
+  /**
+   * The identifier of the object which is used to determine who is
+   * added/removed/updated
+   */
   key: string | number;
-  /** When inline() is used, it designates the caller of inline as the parent object */
+  /**
+   * When inline() is used, it designates the caller of inline as the parent
+   * object
+   */
   parent?: U;
 };
 
@@ -14,11 +21,20 @@ export type ReactiveDiffObject<U> = {
  * Customizes a ReactiveDiff object
  */
 export interface IReactiveDiffOptions<U, T extends ReactiveDiffObject<U>> {
-  /** This method will execute when this controller has determined a new object should be constructed */
+  /**
+   * This method will execute when this controller has determined a new object
+   * should be constructed
+   */
   buildItem(intiializer: T): Promise<U | null>;
-  /** This method will execute when this controller has determined an object should be deconstructed */
+  /**
+   * This method will execute when this controller has determined an object
+   * should be deconstructed
+   */
   destroyItem(intiializer: T, item: U): Promise<boolean | null>;
-  /** This method will execute when this controller has determined an object has potential new properties to be applied to it */
+  /**
+   * This method will execute when this controller has determined an object has
+   * potential new properties to be applied to it
+   */
   updateItem(initializer: T, item: U): Promise<void>;
 }
 
@@ -40,22 +56,26 @@ export class ReactiveDiff<
   /** Used to faciliate and enable the inline() ability */
   private currentInitalizerIndex = 0;
   /**
-   * The current initializers being processed. This is used to ensure the inline() method can inject correctly without
-   * jmutating the input initializer list.
+   * The current initializers being processed. This is used to ensure the
+   * inline() method can inject correctly without jmutating the input
+   * initializer list.
    */
   private currentInitializers: T[] = [];
   /**
-   * This is the list of the items generated and managed by this diff object, this list is in the order they appear
-   * in the diff initializers injected into the diff.
+   * This is the list of the items generated and managed by this diff object,
+   * this list is in the order they appear in the diff initializers injected
+   * into the diff.
    */
   private _items: U[] = [];
   /**
-   * While processing, this keeps track of the currently executing initializer and object
+   * While processing, this keeps track of the currently executing initializer
+   * and object
    */
   private currentInitializer?: T;
   private currentItem?: U;
   /**
-   * This stores deferred inlined elements that are waiting for their parent to be completely created
+   * This stores deferred inlined elements that are waiting for their parent to
+   * be completely created
    */
   private deferredInlining?: T[];
 
@@ -69,7 +89,8 @@ export class ReactiveDiff<
   }
 
   /**
-   * This triggers all resources currently managed by this diff manager to process their destroy procedure
+   * This triggers all resources currently managed by this diff manager to
+   * process their destroy procedure
    */
   async destroy() {
     const promises: Promise<boolean | null>[] = [];
@@ -85,26 +106,30 @@ export class ReactiveDiff<
   }
 
   /**
-   * This injects the objects into the diff to be processed for new and removed items.
+   * This injects the objects into the diff to be processed for new and removed
+   * items.
    */
   async diff(intializers: T[]) {
     // Make sure we don't mutate the input
     const processing = intializers.slice(0);
     this.currentInitializers = processing;
-    // Clear out our items listing so we can repopulate it with the correct order of elements injected
+    // Clear out our items listing so we can repopulate it with the correct
+    // order of elements injected
     this._items = [];
 
-    // We loop through all items injected to see who is new, who exists already, and who no longer
-    // exists in our input list. We MUST analyze the length on the loop as this list can be expanded.
-    // We use a while loop to ensure the async pattern is honored.
+    // We loop through all items injected to see who is new, who exists already,
+    // and who no longer exists in our input list. We MUST analyze the length on
+    // the loop as this list can be expanded. We use a while loop to ensure the
+    // async pattern is honored.
     let i = 0;
     while (i < processing.length) {
       const initializer = processing[i];
       this.currentInitalizerIndex = i;
       this.currentInitializer = initializer;
 
-      // Existing items will be in our dispose list, so since we received this item again
-      // then we merely have an update and we remove the flag that would cause it to get tossed away
+      // Existing items will be in our dispose list, so since we received this
+      // item again then we merely have an update and we remove the flag that
+      // would cause it to get tossed away
       if (this.willDispose.has(initializer.key)) {
         let item = this.keyToItem.get(initializer.key) || null;
 
@@ -147,8 +172,8 @@ export class ReactiveDiff<
       i++;
     }
 
-    // Now that we have processed all incoming items, the remaining items in our disposal list
-    // are the items we should remove.
+    // Now that we have processed all incoming items, the remaining items in our
+    // disposal list are the items we should remove.
     this.willDispose.forEach(async (key: string | number) => {
       const item = this.keyToItem.get(key);
       const initializer = this.keyToInitializer.get(key);
@@ -183,6 +208,13 @@ export class ReactiveDiff<
   }
 
   /**
+   * Returns a specified initializer by key. void if not found.
+   */
+  getInitializerByKey(key: string): T | undefined {
+    return this.keyToInitializer.get(key);
+  }
+
+  /**
    * This method is used to inline new elements at the time a creation occurs
    */
   private inlineDeferred = (newInitializers: T[]) => {
@@ -212,17 +244,20 @@ export class ReactiveDiff<
   };
 
   /**
-   * Inlining new items takes on two different modes: immediate inlining for during update cycles
-   * and inlining during creation cycles which requires deferring the inline until the creation of the item has been completed.
+   * Inlining new items takes on two different modes: immediate inlining for
+   * during update cycles and inlining during creation cycles which requires
+   * deferring the inline until the creation of the item has been completed.
    */
   inline = this.inlineImmediate;
 
   /**
-   * Only during the updateItem phase of an item can this be called. This will cause the item
-   * to be fully destroyed, then reconstructed instead of go through an update.
+   * Only during the updateItem phase of an item can this be called. This will
+   * cause the item to be fully destroyed, then reconstructed instead of go
+   * through an update.
    */
   async rebuild() {
-    // Only execute if currently running diffs and if currently in an update phase
+    // Only execute if currently running diffs and if currently in an update
+    // phase
     if (!this.currentItem || !this.currentInitializer) return;
     // Clear the item from any look ups
     this.keyToItem.delete(this.currentItem.id);

@@ -31,12 +31,10 @@ export function GaussHorizontalBlurJSX(props: IGaussHorizontalBlurJSX) {
   return PostProcessJSX({
     name: props.name,
     printShader: props.printShader,
-    view: output
+    output: output
       ? {
-          output: {
-            buffers: { [FragmentOutputType.COLOR]: output },
-            depth: false,
-          },
+          buffers: { [FragmentOutputType.COLOR]: output },
+          depth: false,
         }
       : void 0,
     buffers: { color: input },

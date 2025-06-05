@@ -396,8 +396,6 @@ export class Surface {
    *                    and are thus potentially ready to be rendered.
    */
   async commit(
-    time?: number,
-    frameIncrement?: boolean,
     onViewReady?: (
       needsDraw: boolean,
       scene: LayerScene,
@@ -406,34 +404,9 @@ export class Surface {
   ) {
     if (!this.gl) return;
 
-    // For now, while certain mysteries remain, we will track only if any view
-    // needs to be redrawn. Any view that needs to be redrawn will trigger a
-    // redraw of the entire surface for now until we can optimize down to only
-    // drawing a single view without erasing views that were not redrawn.
-    let needsDraw = false;
-
-    // We are rendering a new frame so increment our frame count
-    if (frameIncrement) this.frameMetrics.currentFrame++;
-    this.frameMetrics.frameDuration =
-      this.frameMetrics.currentTime - this.frameMetrics.previousTime;
-    this.frameMetrics.previousTime = this.frameMetrics.currentTime;
-
-    // If no manual time was provided, we shall use Date.now in 32 bit format
-    if (time === undefined) {
-      this.frameMetrics.currentTime = Date.now() | 0;
-    } else {
-      // If this is our first frame and we have a manual time entry, then we
-      // first need to sync up The manual time as our previous timing.
-      if (this.frameMetrics.previousTime === this.frameMetrics.currentTime) {
-        this.frameMetrics.previousTime = time;
-      }
-
-      this.frameMetrics.currentTime = time;
-    }
-
     // Now that we have established what the time should be, let's swap our input parameter to reflect
     // the time we will be using for this frame
-    time = this.frameMetrics.currentTime;
+    const time = this.frameMetrics.currentTime;
 
     // Get the scenes in their added order
     const scenes = this.sceneDiffs.items;
@@ -443,7 +416,7 @@ export class Surface {
     // Loop through scenes
     for (let i = 0, end = scenes.length; i < end; ++i) {
       const scene = scenes[i];
-      const views = scene.views;
+      const views = scene.renderViews;
       const layers = scene.layers;
 
       // Make sure the views and layers are ordered such that they render in the
@@ -455,6 +428,13 @@ export class Surface {
       for (let k = 0, endk = views.length; k < endk; ++k) {
         const view = views[k];
         const validLayers: { [key: string]: Layer<any, any> } = {};
+
+        // Let the view calculate if it should be drawn.
+        // TODO: This should become more robust over time where layers and view
+        // composition can be more self deterministic of what requires a redraw.
+        if (!view.shouldDrawView(this.frameMetrics)) {
+          continue;
+        }
 
         // If this view has information to use, then we should perform steps to
         // prepare the view for use.
@@ -514,11 +494,6 @@ export class Surface {
           try {
             // Update uniforms, resolve diff changes
             layer.draw();
-            // If any of the layers under the view need a redraw
-            // Then the view needs a redraw
-            if (layer.needsViewDrawn || layer.alwaysDraw) {
-              view.needsDraw = true;
-            }
             // Flag the layer as valid
             validLayers[layer.id] = layer;
             // The view's animationEndTime is the largest end time found on one
@@ -536,29 +511,6 @@ export class Surface {
                 erroredLayers[layer.id] = [layer, err];
               }
             }
-          }
-        }
-
-        // Analyze the view's animation end timings and the camera to see if
-        // there are view changes that will trigger a redraw outside of our
-        // layer changes
-        if (
-          view.needsDraw ||
-          (time && time < view.lastFrameTime) ||
-          (time && time < view.animationEndTime) ||
-          view.props.camera.needsViewDrawn
-        ) {
-          view.needsDraw = true;
-          needsDraw = true;
-
-          // Get all of the dependent views for that view
-          const overlapViews = this.viewDrawDependencies.get(view);
-
-          // And make all of them need a redraw.
-          if (overlapViews) {
-            overlapViews.forEach((view) => {
-              view.needsDraw = true;
-            });
           }
         }
 
@@ -584,8 +536,11 @@ export class Surface {
         // after the layer draws in context of it's view and has it's uniforms
         // updated in that context.
         if (onViewReady) {
-          onViewReady(needsDraw, scene, view);
+          onViewReady(true, scene, view);
         }
+
+        // This view has been resolved at this point.
+        view.previousProps = view.props;
       }
     }
 
@@ -617,6 +572,25 @@ export class Surface {
   async draw(time?: number) {
     if (!this.gl) return;
 
+    // If no manual time was provided, we shall use Date.now in 32 bit format
+    if (time === undefined) {
+      this.frameMetrics.currentTime = Date.now() | 0;
+    } else {
+      // If this is our first frame and we have a manual time entry, then we
+      // first need to sync up The manual time as our previous timing.
+      if (this.frameMetrics.previousTime === this.frameMetrics.currentTime) {
+        this.frameMetrics.previousTime = time;
+      }
+
+      this.frameMetrics.currentTime = time;
+    }
+
+    // We are rendering a new frame so increment our frame count
+    this.frameMetrics.currentFrame++;
+    this.frameMetrics.frameDuration =
+      this.frameMetrics.currentTime - this.frameMetrics.previousTime;
+    this.frameMetrics.previousTime = this.frameMetrics.currentTime;
+
     // Update all event managers with the current cycle event.
     this.broadcastEventManagerCycle(EventManagerBroadcastCycle.WILL_RENDER);
 
@@ -625,16 +599,18 @@ export class Surface {
     // operations take place.
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const scene = this.sceneDiffs.items[i];
+      // Make sure the scene will fully update for the render cycle.
+      scene.clearCaches();
 
-      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
-        const view = scene.views[k];
+      for (let k = 0, kMax = scene.renderViews.length; k < kMax; ++k) {
+        const view = scene.renderViews[k];
         view.props.camera.broadcast(view.id);
       }
     }
 
     // Make the layers commit their changes to the buffers then draw each scene
     // view on Completion.
-    await this.commit(time, true, (needsDraw, scene, view) => {
+    await this.commit((needsDraw, scene, view) => {
       // Our scene must have a valid container to operate
       if (!scene.container) return;
 
@@ -673,8 +649,8 @@ export class Surface {
       const scene = this.sceneDiffs.items[i];
 
       // Resolve view renders
-      for (let i = 0, iMax = scene.views.length; i < iMax; ++i) {
-        const view = scene.views[i];
+      for (let i = 0, iMax = scene.renderViews.length; i < iMax; ++i) {
+        const view = scene.renderViews[i];
         view.needsDraw = false;
         view.props.camera.resolve();
       }
@@ -826,8 +802,8 @@ export class Surface {
     for (let i = 0, endi = scenes.length; i < endi; i++) {
       const scene = scenes[i];
 
-      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
-        const view = scene.views[k];
+      for (let k = 0, kMax = scene.renderViews.length; k < kMax; ++k) {
+        const view = scene.renderViews[k];
         view.willUseView();
 
         // To look for the overlaps of the view in screen space, we must
@@ -872,16 +848,16 @@ export class Surface {
     for (let i = 0, endi = scenes.length; i < endi; i++) {
       const scene = scenes[i];
 
-      for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
-        const sourceView = scene.views[k];
+      for (let k = 0, kMax = scene.renderViews.length; k < kMax; ++k) {
+        const sourceView = scene.renderViews[k];
         const overlapViews: View<IViewProps>[] = [];
 
         for (let j = 0, endj = scenes.length; j < endj; j++) {
           if (j !== i) {
             const scene = scenes[j];
 
-            for (let l = 0, lMax = scene.views.length; l < lMax; ++l) {
-              const targetView = scene.views[l];
+            for (let l = 0, lMax = scene.renderViews.length; l < lMax; ++l) {
+              const targetView = scene.renderViews[l];
 
               if (sourceView.viewBounds.hitBounds(targetView.viewBounds)) {
                 overlapViews.push(targetView);
@@ -1331,8 +1307,8 @@ export class Surface {
       for (let i = 0, iMax = scenes.length; i < iMax; ++i) {
         const scene = scenes[i];
 
-        for (let k = 0, kMax = scene.views.length; k < kMax; ++k) {
-          const view = scene.views[k];
+        for (let k = 0, kMax = scene.renderViews.length; k < kMax; ++k) {
+          const view = scene.renderViews[k];
           view.pixelRatio = this.pixelRatio;
           view.props.camera.update(true);
         }
@@ -1351,8 +1327,8 @@ export class Surface {
     for (let i = 0, iMax = this.sceneDiffs.items.length; i < iMax; ++i) {
       const viewLayers = this.sceneDiffs.items[i];
 
-      for (let k = 0, kMax = viewLayers.views.length; k < kMax; ++k) {
-        const view = viewLayers.views[k];
+      for (let k = 0, kMax = viewLayers.renderViews.length; k < kMax; ++k) {
+        const view = viewLayers.renderViews[k];
         view.needsDraw = true;
       }
     }

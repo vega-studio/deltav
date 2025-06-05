@@ -3,7 +3,7 @@ import { GLProxy } from "./gl-proxy.js";
 /**
  * This is the options to apply to a texture
  */
-export type TextureOptions = Omit<Partial<Texture>, "destroy" | "update" | "updateRegions">;
+export type TextureOptions = Omit<Partial<Texture>, "destroy" | "update" | "updateRegions" | "isFloatTexture" | "isHalfFloatTexture">;
 /**
  * This represents a texture that is loaded into the GPU.
  */
@@ -60,15 +60,22 @@ export declare class Texture {
     set generateMipMaps(val: Texture["_generateMipmaps"]);
     private _generateMipmaps;
     /**
-     * This stores any gl state associated with this object. Modifying this object will cause the system to get out
-     * of sync with the GPU; however, the values inside this object can be read and used for custom WebGL calls as needed.
+     * This stores any gl state associated with this object. Modifying this object
+     * will cause the system to get out of sync with the GPU; however, the values
+     * inside this object can be read and used for custom WebGL calls as needed.
      */
     gl?: {
         /** The identifier used by gl to target this texture. */
         textureId: WebGLTexture | null;
-        /** The texture unit this texture is assocviated with. This is -1 if no unit is currently associated */
+        /**
+         * The texture unit this texture is associated with. This is -1 if no unit
+         * is currently associated
+         */
         textureUnit: number;
-        /** This is the proxy communicator with the context that generates and destroys Textures */
+        /**
+         * This is the proxy communicator with the context that generates and
+         * destroys Textures
+         */
         proxy: GLProxy;
     };
     /**

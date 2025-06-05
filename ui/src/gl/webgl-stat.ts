@@ -1,17 +1,20 @@
 export function getProgramInfo(gl: WebGLRenderingContext, program: any) {
   const result: {
-      attributeCount: number;
-      attributes: (WebGLActiveInfo | null)[];
-      uniformCount: number;
-      uniforms: (WebGLActiveInfo | null)[];
-    } = {
-      attributeCount: 0,
-      attributes: [],
-      uniformCount: 0,
-      uniforms: [],
-    },
-    activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS),
-    activeAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    attributeCount: number;
+    attributes: (WebGLActiveInfo | null)[];
+    uniformCount: number;
+    uniforms: (WebGLActiveInfo | null)[];
+  } = {
+    attributeCount: 0,
+    attributes: [],
+    uniformCount: 0,
+    uniforms: [],
+  };
+  const activeUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+  const activeAttributes = gl.getProgramParameter(
+    program,
+    gl.ACTIVE_ATTRIBUTES
+  );
 
   // Taken from the WebGl spec:
   // Http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14
@@ -109,6 +112,32 @@ export class WebGLStat {
     half: false,
     full: false,
   };
+
+  /**
+   * Max uniform buffers that can be bound at the same time (across vertex and
+   * fragment shaders)
+   */
+  static MAX_UNIFORM_BUFFER_BINDINGS = 0;
+  /**
+   * Max size in bytes of a single uniform buffer (you can have multiple buffers
+   * at max size)
+   */
+  static MAX_UNIFORM_BLOCK_SIZE = 0;
+  /**
+   * Max number of uniform blocks that can be bound to a single vertex shader
+   */
+  static MAX_VERTEX_UNIFORM_BLOCKS = 0;
+  /**
+   * Max number of uniform blocks that can be bound to a single fragment shader
+   */
+  static MAX_FRAGMENT_UNIFORM_BLOCKS = 0;
+
+  /**
+   * Max number of uniform blocks that can be declared in a program (vs + fs).
+   * This is probably not used within deltav as deltav is responsible for
+   * writing in the uniform buffer declarations.
+   */
+  static MAX_COMBINED_UNIFORM_BLOCKS = 0;
 
   static print() {
     return Object.assign({}, WebGLStat);
@@ -331,6 +360,22 @@ function initStats() {
 
       WebGLStat.MAX_COLOR_ATTACHMENTS = gl.getParameter(
         gl.MAX_COLOR_ATTACHMENTS
+      );
+
+      WebGLStat.MAX_UNIFORM_BUFFER_BINDINGS = gl.getParameter(
+        gl.MAX_UNIFORM_BUFFER_BINDINGS
+      );
+      WebGLStat.MAX_UNIFORM_BLOCK_SIZE = gl.getParameter(
+        gl.MAX_UNIFORM_BLOCK_SIZE
+      );
+      WebGLStat.MAX_VERTEX_UNIFORM_BLOCKS = gl.getParameter(
+        gl.MAX_VERTEX_UNIFORM_BLOCKS
+      );
+      WebGLStat.MAX_FRAGMENT_UNIFORM_BLOCKS = gl.getParameter(
+        gl.MAX_FRAGMENT_UNIFORM_BLOCKS
+      );
+      WebGLStat.MAX_COMBINED_UNIFORM_BLOCKS = gl.getParameter(
+        gl.MAX_COMBINED_UNIFORM_BLOCKS
       );
     }
 

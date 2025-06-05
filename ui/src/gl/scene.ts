@@ -1,11 +1,14 @@
 import { Model } from "./model.js";
 
 /**
- * This is an object that contains a list of buffers and state for those buffers to
- * be rendered together.
+ * This is an object that contains a list of buffers and state for those buffers
+ * to be rendered together.
  */
 export class Scene {
-  /** The models this scene will render. They will be rendered in the order they were insertted */
+  /**
+   * The models this scene will render. They will be rendered in the order they
+   * were insertted
+   */
   models = new Set<Model>();
 
   /**

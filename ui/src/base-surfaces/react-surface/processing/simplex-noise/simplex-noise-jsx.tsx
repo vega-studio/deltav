@@ -1,4 +1,7 @@
+import React from "react";
+
 import { inverse2, type Vec2, vec2, type Vec3 } from "../../../../math";
+import { ViewDrawMode } from "../../../../surface/index.js";
 import {
   FragmentOutputType,
   isNumber,
@@ -43,6 +46,7 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
     : ([props.scale] as Vec2[]);
   const scales = scaleArray.map((a) => inverse2(a));
   const scaleFactor = 1 / scales.length;
+  const currentZOffset = React.useRef(props.zOffset);
 
   if (isDefined(props.drift)) {
     const drift = props.drift;
@@ -51,12 +55,15 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
       name: props.name,
       buffers: {},
       view: {
-        output: {
-          buffers: {
-            [FragmentOutputType.COLOR]: props.output,
-          },
-          depth: false,
+        config: {
+          drawMode: { mode: ViewDrawMode.ALWAYS },
         },
+      },
+      output: {
+        buffers: {
+          [FragmentOutputType.COLOR]: props.output,
+        },
+        depth: false,
       },
       uniforms: [
         createUniform({
@@ -89,12 +96,22 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
       name: props.name,
       buffers: {},
       view: {
-        output: {
-          buffers: {
-            [FragmentOutputType.COLOR]: props.output,
+        config: {
+          drawMode: {
+            mode: ViewDrawMode.ON_TRIGGER,
+            trigger: () => {
+              const result = currentZOffset.current !== zOffset;
+              currentZOffset.current = zOffset;
+              return result;
+            },
           },
-          depth: false,
         },
+      },
+      output: {
+        buffers: {
+          [FragmentOutputType.COLOR]: props.output,
+        },
+        depth: false,
       },
       uniforms: [
         createUniform({
@@ -125,12 +142,15 @@ export const SimplexNoiseJSX = (props: ISimplexNoiseJSX) => {
       name: props.name,
       buffers: {},
       view: {
-        output: {
-          buffers: {
-            [FragmentOutputType.COLOR]: props.output,
-          },
-          depth: false,
+        config: {
+          drawMode: { mode: ViewDrawMode.FRAME_COUNT, value: 1 },
         },
+      },
+      output: {
+        buffers: {
+          [FragmentOutputType.COLOR]: props.output,
+        },
+        depth: false,
       },
       shader: `
         $\{import: simplexNoise2D}

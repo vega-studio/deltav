@@ -13,10 +13,14 @@ export interface IViewJSX<TProps extends IViewProps> extends Partial<IViewBaseJS
         defaultProps: TProps;
     };
     /** Configure the constructed layer via the layer's props */
-    config: Omit<TProps, "key" | "viewport"> & Partial<Pick<TProps, "key" | "viewport">>;
+    config: Omit<TProps, "key" | "viewport" | "output" | "chain"> & Partial<Pick<TProps, "key" | "viewport">> & {
+        output?: undefined;
+        chain?: undefined;
+    };
     /**
      * An output configuration that handles the JSX pattern where we use refs
-     * to pass the values around to each other.
+     * to pass the values around to each other. Specify an array to create a view
+     * chain for rendering to different targets.
      */
     output?: {
         /**
@@ -30,7 +34,19 @@ export interface IViewJSX<TProps extends IViewProps> extends Partial<IViewBaseJS
          * target texture.
          */
         depth: string | boolean;
-    };
+    } | {
+        /**
+         * Specify output targets for the render/color buffers this view wants to write to.
+         * Use the name of the Resource that will be used to be written to.
+         */
+        buffers: Record<number, string | undefined>;
+        /**
+         * Set to true to include a depth buffer the system will generate for you.
+         * Use the name of the Resource to use it if you wish to target an output
+         * target texture.
+         */
+        depth: string | boolean;
+    }[];
 }
 export type IPartialViewJSX<TProps extends IViewProps> = Partial<Omit<IViewJSX<TProps>, "config">> & {
     config?: Partial<IViewJSX<TProps>["config"]>;

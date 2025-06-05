@@ -84,6 +84,14 @@ export enum UniformSize {
   TEXTURE = 99,
 }
 
+export type UniformBufferSize =
+  | UniformSize.ONE
+  | UniformSize.TWO
+  | UniformSize.THREE
+  | UniformSize.FOUR
+  | UniformSize.MATRIX3
+  | UniformSize.MATRIX4;
+
 export enum VertexAttributeSize {
   ONE = 1,
   TWO = 2,

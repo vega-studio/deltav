@@ -214,7 +214,7 @@ export declare class Surface {
      * @param onViewReady Callback for when all of the layers of a scene view have been committed
      *                    and are thus potentially ready to be rendered.
      */
-    commit(time?: number, frameIncrement?: boolean, onViewReady?: (needsDraw: boolean, scene: LayerScene, view: View<IViewProps>) => void): Promise<void>;
+    commit(onViewReady?: (needsDraw: boolean, scene: LayerScene, view: View<IViewProps>) => void): Promise<void>;
     /**
      * Free all resources consumed by this surface that gets applied to the GPU.
      */

@@ -270,7 +270,10 @@ export class TextureIOExpansion extends BaseIOExpansion {
       const uniform = uniforms[i];
       const injection = uniform.shaderInjection || ShaderInjectionTarget.VERTEX;
 
-      if (uniform.size === UniformSize.TEXTURE && injection === target) {
+      if (
+        uniform.size === UniformSize.TEXTURE &&
+        (injection === target || injection === ShaderInjectionTarget.ALL)
+      ) {
         this.setDeclaration(
           declarations,
           uniform.name,

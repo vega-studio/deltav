@@ -46,15 +46,15 @@ export function DrawJSX(props: IDrawJSX) {
   return PostProcessJSX({
     name: props.name,
     printShader: props.printShader,
+    output: output
+      ? {
+          buffers: {
+            [FragmentOutputType.COLOR]: output || "",
+          },
+          depth: false,
+        }
+      : void 0,
     view: {
-      output: output
-        ? {
-            buffers: {
-              [FragmentOutputType.COLOR]: output || "",
-            },
-            depth: false,
-          }
-        : void 0,
       ...props.view,
       config: {
         camera: new Camera2D(),
@@ -65,25 +65,19 @@ export function DrawJSX(props: IDrawJSX) {
     shader:
       grayScale && channel
         ? `
-      varying vec2 texCoord;
-
       void main() {
-        gl_FragColor = vec4(texture2D(color, texCoord).${channel}${channel}${channel}, 1.);
+        $\{out: color} = vec4(texture2D(color, texCoord).${channel}${channel}${channel}, 1.);
       }
     `
         : channel
         ? `
-      varying vec2 texCoord;
-
       void main() {
-        gl_FragColor = vec4(texture2D(color, texCoord).${channel}, 0., 0., 1.);
+        $\{out: color} = vec4(texture2D(color, texCoord).${channel}, 0., 0., 1.);
       }
     `
         : `
-      varying vec2 texCoord;
-
       void main() {
-        gl_FragColor = texture2D(color, texCoord);
+        $\{out: color} = texture2D(color, texCoord);
       }
     `,
     material: props.material,

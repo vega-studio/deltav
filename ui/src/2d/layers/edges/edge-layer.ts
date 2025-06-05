@@ -6,7 +6,6 @@ import {
   InstanceAttributeSize,
   InstanceIOValue,
   IShaderInitialization,
-  IUniform,
   UniformSize,
   VertexAttributeSize,
 } from "../../../types.js";
@@ -232,12 +231,12 @@ export class EdgeLayer<
         {
           name: "scaleFactor",
           size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [scaleFactor()],
+          update: (_uniform) => [scaleFactor()],
         },
         {
           name: "layerOpacity",
           size: UniformSize.ONE,
-          update: (_uniform: IUniform) => [
+          update: (_uniform) => [
             this.props.opacity === undefined ? 1.0 : this.props.opacity,
           ],
         },

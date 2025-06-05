@@ -58,7 +58,7 @@ export declare class Attribute {
      */
     size: number;
     /**
-     * This is the number of "size" elements in the buffer. Essentially the value
+     * This is the number of "sized" elements in the buffer. Essentially the value
      * passed to the parameter of the "resize" method.
      */
     get count(): number;

@@ -1,7 +1,7 @@
 import React from "react";
 import { IView2DProps } from "../../../2d";
 import { IRenderTextureResource } from "../../../resources";
-import { ILayerMaterialOptions, IUniform } from "../../../types.js";
+import { ILayerMaterialOptions, IUniform, type OutputFragmentShaderSource } from "../../../types.js";
 import { IPartialViewJSX } from "../scene/view-jsx.js";
 import { PostProcessLayer } from "./layer/post-process-layer.js";
 export interface IPostProcessJSX {
@@ -16,14 +16,42 @@ export interface IPostProcessJSX {
      * will make the uniform sampler "color" be available in your shader and will
      * provide the resource with the key "colorTextureKey".
      */
-    buffers: Record<string, string>;
+    buffers: Record<string, string | string[]>;
+    /**
+     * Specify a target output buffer or buffer chain for this process.
+     */
+    output?: {
+        /**
+         * Specify output targets for the render/color buffers this view wants to write to.
+         * Use the name of the Resource that will be used to be written to.
+         */
+        buffers: Record<number, string | undefined>;
+        /**
+         * Set to true to include a depth buffer the system will generate for you.
+         * Use the name of the Resource to use it if you wish to target an output
+         * target texture.
+         */
+        depth: string | boolean;
+    } | {
+        /**
+         * Specify output targets for the render/color buffers this view wants to write to.
+         * Use the name of the Resource that will be used to be written to.
+         */
+        buffers: Record<number, string | undefined>;
+        /**
+         * Set to true to include a depth buffer the system will generate for you.
+         * Use the name of the Resource to use it if you wish to target an output
+         * target texture.
+         */
+        depth: string | boolean;
+    }[];
     /**
      * Custom material options to apply to the layer to aid in controlling
      * blending etc.
      */
     material?: ILayerMaterialOptions;
     /** This is the shader program you will be using when you  */
-    shader: string;
+    shader: OutputFragmentShaderSource;
     /**
      * Use this to specify some additional uniforms your shader may use.
      * NOTE: Remember to use ShaderInjectionTarget Fragment only! You are not
@@ -35,7 +63,7 @@ export interface IPostProcessJSX {
      * these options to redirect the output of this step to another resource if
      * desired.
      */
-    view?: IPartialViewJSX<IView2DProps>;
+    view?: Omit<IPartialViewJSX<IView2DProps>, "output" | "chain">;
     /**
      * For debugging purposes only. Prints the shader generated to the console.
      */
@@ -51,4 +79,8 @@ export interface IPostProcessJSX {
      */
     onResources?: (resources: Record<string, IRenderTextureResource>) => void;
 }
+/**
+ * Offers a convenient means to process a full Quad output with texture buffer
+ * data inputs.
+ */
 export declare const PostProcessJSX: (props: IPostProcessJSX) => React.JSX.Element;

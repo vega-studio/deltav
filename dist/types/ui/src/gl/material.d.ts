@@ -3,6 +3,7 @@ import { GLProxy } from "./gl-proxy.js";
 import { GLSettings } from "./gl-settings.js";
 import { RenderTarget } from "./render-target.js";
 import { IMaterialUniform, MaterialUniformType } from "./types.js";
+import type { UniformBuffer } from "./uniform-buffer.js";
 export type MaterialOptions = Omit<Partial<Material>, "clone" | "dispose" | "gl">;
 /**
  * For materials, we narrow the definition of a fragment shader mapping. It
@@ -123,6 +124,10 @@ export declare class Material {
     /** Uniforms that will be synced with the GPU when this material is used */
     uniforms: {
         [key: string]: IMaterialUniform<MaterialUniformType>;
+    };
+    /** Uniform buffers that will be synced with the GPU when this material is used */
+    uniformBuffers: {
+        [key: string]: UniformBuffer;
     };
     /**
      * The vertex shader that will be compiled to run as the program to use when

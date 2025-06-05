@@ -178,6 +178,12 @@ export const Simple_Trail: StoryFn = (() => {
       {DrawJSX({
         name: "draw",
         input: "trailing",
+        view: {
+          config: {
+            background: [0, 0, 0, 1],
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          },
+        },
       })}
     </SurfaceJSX>
   );
@@ -375,7 +381,7 @@ export const Glowing_Trail: StoryFn = (() => {
         name: "bloom",
         view: {
           config: {
-            background: [0, 0, 0, 0],
+            background: [0, 0, 0, 1],
             clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
           },
         },
@@ -394,6 +400,16 @@ export const Glowing_Trail: StoryFn = (() => {
         ],
         compose: "glow",
       })}
+      {/* {DrawJSX({
+        name: "draw",
+        input: "glowingTrail",
+        view: {
+          config: {
+            background: [0, 0, 0, 1],
+            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          },
+        },
+      })} */}
     </SurfaceJSX>
   );
 }).bind({});

@@ -16,6 +16,7 @@ import {
   Surface,
   SurfaceJSX,
   View2D,
+  ViewDrawMode,
   ViewJSX,
 } from "../../../src/index.js";
 
@@ -29,6 +30,8 @@ export const Basic: StoryFn = (() => {
   const imageProvider = React.useRef<InstanceProvider<ImageInstance>>(null);
   const ready = React.useRef(new PromiseResolver<Surface>());
   const camera = React.useRef(new Camera2D());
+  // Let the system free render until the images have loaded in.
+  const shouldDraw = React.useRef(999);
 
   useLifecycle({
     async didMount() {
@@ -116,6 +119,10 @@ export const Basic: StoryFn = (() => {
                 1,
               ],
               scaling: ScaleMode.ALWAYS,
+
+              onReady: () => {
+                shouldDraw.current = 1;
+              },
             })
           );
         }
@@ -131,7 +138,14 @@ export const Basic: StoryFn = (() => {
         antialias: true,
       }}
     >
-      <BasicCamera2DControllerJSX config={{ camera: camera.current }} />
+      <BasicCamera2DControllerJSX
+        config={{
+          camera: camera.current,
+          // Render some frames when camera movement happens. More than 1 frame
+          // promotes a smoother experience.
+          onRangeChanged: () => (shouldDraw.current = 10),
+        }}
+      />
       <AtlasJSX name="atlas" width={4096} height={4096} />
       <ViewJSX
         name="main"
@@ -140,6 +154,14 @@ export const Basic: StoryFn = (() => {
           camera: camera.current,
           background: [0, 0, 0, 1],
           clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          drawMode: {
+            mode: ViewDrawMode.ON_TRIGGER,
+            trigger: () => {
+              const result = shouldDraw.current;
+              shouldDraw.current--;
+              return result > 0;
+            },
+          },
         }}
       />
       <LayerJSX

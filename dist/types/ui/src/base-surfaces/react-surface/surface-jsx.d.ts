@@ -59,6 +59,11 @@ export interface ISurfaceJSX {
      * expressly told to render utilizing enableOutput
      */
     optimizedOutputTargets?: number[];
+    /**
+     * Will render for the specified number of frames then stop. This is useful
+     * for running simulations to a certain point, or for debugging your pipeline.
+     */
+    renderFrameCount?: number;
 }
 export interface ISurfaceContext {
     /**

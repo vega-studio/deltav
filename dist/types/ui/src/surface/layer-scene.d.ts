@@ -27,25 +27,44 @@ export interface ISceneOptions extends IdentifyByKeyOptions {
     views: ViewInitializer<IViewProps>[];
 }
 /**
- * This defines a scene to which layers are added to. It also tracks the views that this scene
- * is rendered with.
+ * This defines a scene to which layers are added to. It also tracks the views
+ * that this scene is rendered with.
  */
 export declare class LayerScene extends IdentifyByKey {
     static DEFAULT_SCENE_ID: string;
     /** This is the GL scene which actually sets up the rendering objects */
     container: Scene | undefined;
-    /** This is the diff tracker for the layers for the scene which allows us to make the pipeline easier to manage */
+    /**
+     * This is the diff tracker for the layers for the scene which allows us to
+     * make the pipeline easier to manage
+     */
     layerDiffs: ReactiveDiff<Layer<Instance, ILayerProps<Instance>>, LayerInitializer<Instance, ILayerProps<Instance>>>;
-    /** Helps assert a guaranteed render order for scenes. Lower numbers render first. */
+    /**
+     * Helps assert a guaranteed render order for scenes. Lower numbers render
+     * first.
+     */
     order?: number;
     /** The presiding surface over this scene */
     surface?: Surface;
-    /** This is the diff tracker for the views for the scene which allows us to make the pip0eline easier to manage */
+    /**
+     * This is the diff tracker for the views for the scene which allows us to
+     * make the pip0eline easier to manage
+     */
     viewDiffs: ReactiveDiff<View<IViewProps>, ViewInitializer<IViewProps>>;
+    /** Memoizes the renderView result until next view diff update */
+    private _renderViewCache;
     /** This is all of the layers attached to the scene */
     get layers(): Layer<any, any>[];
-    /** This is all of the views attached to the scene */
+    /**
+     * This is all of the views attached to the scene
+     */
     get views(): View<IViewProps>[];
+    /**
+     * This returns all of the views that are actually going to be rendered in the
+     * current frame. This will properly strip any views that are in a chain but
+     * not the current item viewed in the chain.
+     */
+    get renderViews(): View<IViewProps>[];
     constructor(surface: Surface | undefined, options: ISceneOptions);
     /**
      * Initialize all that needs to be initialized
@@ -63,4 +82,8 @@ export declare class LayerScene extends IdentifyByKey {
      * Hand off the diff objects to our view and layer diffs
      */
     update(options: ISceneOptions): Promise<void>;
+    /**
+     * Clear caches to ensure the view is up to date.
+     */
+    clearCaches(): void;
 }

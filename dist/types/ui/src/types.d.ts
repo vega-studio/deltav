@@ -50,6 +50,7 @@ export declare enum UniformSize {
     VEC4_ARRAY = 98,
     TEXTURE = 99
 }
+export type UniformBufferSize = UniformSize.ONE | UniformSize.TWO | UniformSize.THREE | UniformSize.FOUR | UniformSize.MATRIX3 | UniformSize.MATRIX4;
 export declare enum VertexAttributeSize {
     ONE = 1,
     TWO = 2,

@@ -20,6 +20,7 @@ import {
   TextureJSX,
   TextureSize,
   View2D,
+  ViewDrawMode,
   ViewJSX,
 } from "../../src/index.js";
 
@@ -100,6 +101,11 @@ export const Simplex2D: StoryFn = (() => {
       {DrawJSX({
         name: "draw",
         input: "simplex",
+        view: {
+          config: {
+            drawMode: { mode: ViewDrawMode.FRAME_COUNT, value: 2 },
+          },
+        },
       })}
     </SurfaceJSX>
   );
@@ -183,6 +189,11 @@ export const Simplex2DWithOctaves: StoryFn = (() => {
       {DrawJSX({
         name: "draw",
         input: "simplex",
+        view: {
+          config: {
+            drawMode: { mode: ViewDrawMode.FRAME_COUNT, value: 2 },
+          },
+        },
       })}
     </SurfaceJSX>
   );
@@ -252,16 +263,6 @@ export const Simplex3D: StoryFn = (() => {
           magFilter: GLSettings.Texture.TextureMagFilter.Linear,
         }}
       />
-      <TextureJSX
-        name="blur"
-        width={TextureSize.SCREEN_QUARTER}
-        height={TextureSize.SCREEN_QUARTER}
-        textureSettings={{
-          generateMipMaps: false,
-          format: GLSettings.Texture.TexelDataType.RGB,
-          internalFormat: GLSettings.Texture.TexelDataType.RGB,
-        }}
-      />
       {SimplexNoiseJSX({
         name: "render-noise",
         output: "simplex",
@@ -287,6 +288,7 @@ export const PseudoRandom: StoryFn = (() => {
   const circleProvider = React.useRef<InstanceProvider<CircleInstance>>(null);
   const camera = React.useRef<Camera2D>(new Camera2D());
   const ready = React.useRef(new PromiseResolver<Surface>());
+  const shouldDraw = React.useRef(2);
 
   useLifecycle({
     async didMount() {
@@ -397,7 +399,12 @@ export const PseudoRandom: StoryFn = (() => {
         antialias: true,
       }}
     >
-      <BasicCamera2DControllerJSX config={{ camera: camera.current }} />
+      <BasicCamera2DControllerJSX
+        config={{
+          camera: camera.current,
+          onRangeChanged: () => (shouldDraw.current = 1),
+        }}
+      />
       <ViewJSX
         name="main"
         type={View2D}
@@ -405,6 +412,14 @@ export const PseudoRandom: StoryFn = (() => {
           camera: camera.current,
           background: [0, 0, 0, 1],
           clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+          drawMode: {
+            mode: ViewDrawMode.ON_TRIGGER,
+            trigger: () => {
+              const result = shouldDraw.current;
+              shouldDraw.current = result - 1;
+              return result > 0;
+            },
+          },
         }}
       />
       <LayerJSX

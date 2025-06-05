@@ -6,6 +6,7 @@ import { Material } from "./material.js";
 import { RenderTarget } from "./render-target.js";
 import { Texture } from "./texture.js";
 import { IExtensions, IMaterialUniform, MaterialUniformType, UseMaterialStatus } from "./types.js";
+import type { UniformBuffer } from "./uniform-buffer.js";
 /**
  * This class represents all of the current state and settings that the gl context is in currently. This
  * helps to decide when to make gl calls to alter the state and not do so unecessarily.
@@ -25,7 +26,10 @@ export declare class GLState {
     /** Lookup a texture unit to it's current assigned texture. */
     private _textureUnitToTexture;
     /** This holds which texture units are free for use and have no Texture assigned to them */
-    private _freeUnits;
+    private _freeTextureUnits;
+    /** Lookup a uniform buffer to it's current assigned binding point. */
+    /** This holds which uniform buffer binding points are free for use and have no UniformBuffer assigned to them */
+    private _freeUniformBufferBindings;
     /** Indicates if blending is enabled */
     get blendingEnabled(): boolean;
     private _blendingEnabled;
@@ -141,7 +145,8 @@ export declare class GLState {
     /** Tracks the current divisor set to a given vertex array location. */
     private _vertexAttributeArrayDivisor;
     /**
-     * Generate a new state manager and establish some initial state settings by querying the context.
+     * Generate a new state manager and establish some initial state settings by
+     * querying the context.
      */
     constructor(gl: WebGLRenderingContext, extensions: IExtensions);
     /**
@@ -166,8 +171,9 @@ export declare class GLState {
      */
     bindFBO(id: WebGLFramebuffer | null): void;
     /**
-     * Sets the provided buffer identifier as the current bound item. This automatically
-     * updates all stateful information to track that a texture is now utilizing a texture unit.
+     * Sets the provided buffer identifier as the current bound item. This
+     * automatically updates all stateful information to track that a texture is
+     * now utilizing a texture unit.
      */
     bindTexture(texture: Texture, target: GLSettings.Texture.TextureBindingTarget): void;
     /**
@@ -176,7 +182,8 @@ export declare class GLState {
     disableVertexAttributeArray(): void;
     /**
      * Flags an attribute array as going to be used. Any attribute array location
-     * no longer in use will be disabled when applyVertexAttributeArrays is called.
+     * no longer in use will be disabled when applyVertexAttributeArrays is
+     * called.
      */
     willUseVertexAttributeArray(index: number): void;
     /**
@@ -184,12 +191,13 @@ export declare class GLState {
      */
     applyVertexAttributeArrays(): void;
     /**
-     * Applies (if necessary) the divisor for a given array. This only works if the array location
-     * is enabled.
+     * Applies (if necessary) the divisor for a given array. This only works if
+     * the array location is enabled.
      */
     setVertexAttributeArrayDivisor(index: number, divisor: number): void;
     /**
-     * This takes a texture and flags it's texture unit as freed if the texture has a used unit
+     * This takes a texture and flags it's texture unit as freed if the texture
+     * has a used unit
      */
     freeTextureUnit(texture: Texture): void;
     /**
@@ -209,8 +217,8 @@ export declare class GLState {
      */
     setDrawBuffers(attachments: number[], preventCommit?: boolean): void;
     /**
-     * Sets the GPU proxy to be used to handle commands that call to the GPU but don't alter
-     * global GL state.
+     * Sets the GPU proxy to be used to handle commands that call to the GPU but
+     * don't alter global GL state.
      */
     setProxy(proxy: GLProxy): void;
     /**
@@ -249,6 +257,12 @@ export declare class GLState {
      */
     syncMaterial(material: Material): boolean;
     /**
+     * Ensures the uniform buffer is bound to a binding point and ensures the
+     * program in use links it's declared uniform structures to the binding point
+     * as well.
+     */
+    useUniformBuffer(uniformBuffer: UniformBuffer): boolean;
+    /**
      * Set masking for the depth
      */
     setDepthMask(depthWrite: boolean): void;
@@ -281,19 +295,25 @@ export declare class GLState {
      */
     private uploadUniform;
     /**
-     * This will consume the values aggregated within willUseTextureUnit. All Texture objects
-     * consumed will be assigned an active texture unit (if one was not already applied), then
-     * the Texture will be compiled / updated as necessary and applied to all uniforms requiring
-     * a Sampler unit.
+     * This will consume the values aggregated within willUseTextureUnit. All
+     * Texture objects consumed will be assigned an active texture unit (if one
+     * was not already applied), then the Texture will be compiled / updated as
+     * necessary and applied to all uniforms requiring a Sampler unit.
      */
     applyUsedTextures(): boolean;
     /**
-     * Attempts to assign free or freed texture units to the provided texture objects.
-     * This will return a list of textures
+     * Attempts to assign free or freed texture units to the provided texture
+     * objects. This will return a list of textures that could not be assigned an
+     * available unit.
+     *
+     * NOTE: This DOES NOT CHANGE THE Active unit texture state NOR does it bind
+     * the textures yet. This is merely for figuring out which texture units the
+     * texture SHOULD be assigned to.
      */
     private assignTextureUnits;
     /**
-     * Applies the necessary value for a texture to be applied to a sampler uniform.
+     * Applies the necessary value for a texture to be applied to a sampler
+     * uniform.
      */
     private uploadTextureToUniform;
     /**

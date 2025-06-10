@@ -5,6 +5,7 @@ export * from "./event-managers/as-event-manager.js";
 export * from "./event-managers/queued-event-handler-jsx.jsx";
 export * from "./event-managers/simple-event-handler-jsx.jsx";
 export * from "./event-managers/basic-camera-2d-controller-jsx.jsx";
+export * from "./event-managers/simple-3d-transform-controller-jsx.jsx";
 export * from "./resource/texture-jsx.jsx";
 export * from "./resource/font-jsx.jsx";
 export * from "./resource/atlas-jsx.jsx";

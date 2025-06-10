@@ -169,8 +169,16 @@ export const LayerJSX = <
   // On props chane, make sure the pipeline updates so the underlying layer will
   // trigger a props update.
   React.useEffect(() => {
+    if (!layerRef.current?.init[1]) return;
+
+    layerRef.current.init[1] = Object.assign(
+      {},
+      layerRef.current.init[1] || {},
+      props.config
+    );
+
     surfaceContext?.updatePipeline?.();
-  }, [...Object.values(props)]);
+  }, [...Object.values(props), ...Object.values(props.config)]);
 
   return <CustomTag tagName="Layer" {...props} />;
 };

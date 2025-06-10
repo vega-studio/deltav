@@ -49,8 +49,8 @@ export class InstanceProvider<TInstance extends Instance>
   }
 
   /**
-   * Adds an instance to the provider which will stream observable changes of the instance to
-   * the framework.
+   * Adds an instance to the provider which will stream observable changes of
+   * the instance to the framework.
    */
   add(instance: TInstance) {
     // No need to duplicate the addition
@@ -158,19 +158,21 @@ export class InstanceProvider<TInstance extends Instance>
   }
 
   /**
-   * This performs an operation that forces all of the instances to be flagged as an
-   * 'add' change. This allows a layer listening to this provider to ensure it has added
-   * all currently existing instances monitored by the provider.
+   * This performs an operation that forces all of the instances to be flagged
+   * as an 'add' change. This allows a layer listening to this provider to
+   * ensure it has added all currently existing instances monitored by the
+   * provider.
    *
-   * NOTE: This is a VERY poor performing method and should probably be used by the framework
-   * and not manually.
+   * NOTE: This is a VERY poor performing method and should probably be used by
+   * the framework and not manually.
    */
   sync() {
     const emptyPropertyChanges: number[] = [];
 
-    // Loop through all registered instances (which is only stored in the disposer list kept by this provider)
+    // Loop through all registered instances (which is only stored in the
+    // disposer list kept by this provider)
     this.cleanObservation.forEach((disposer) => {
-      const [instance] = disposer;
+      const { 0: instance } = disposer;
       // Flag the instance as having a property changed
       this.instanceChanges.set(instance.uid, [
         instance,

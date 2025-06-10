@@ -172,6 +172,8 @@ export class ReactiveDiff<
       i++;
     }
 
+    const toRemove = new Set<U>();
+
     // Now that we have processed all incoming items, the remaining items in our
     // disposal list are the items we should remove.
     this.willDispose.forEach(async (key: string | number) => {
@@ -183,8 +185,24 @@ export class ReactiveDiff<
       if (success) {
         this.keyToItem.delete(key);
         this.keyToInitializer.delete(key);
+        toRemove.add(item);
       }
     });
+
+    // Rebuild the item list, excluding any items that were destroyed.
+    if (toRemove.size > 0) {
+      const items = this._items;
+      this._items = new Array(items.length - toRemove.size);
+      let _itemsIndex = 0;
+
+      for (let i = 0, iMax = items.length; i < iMax; ++i) {
+        const item = items[i];
+        if (!toRemove.has(item)) {
+          this._items[_itemsIndex] = item;
+          _itemsIndex++;
+        }
+      }
+    }
 
     // Clear the disposal list so we can make it anew
     this.willDispose.clear();
@@ -271,6 +289,7 @@ export class ReactiveDiff<
     if (item) {
       this.keyToItem.set(this.currentItem.id, item);
       this.keyToInitializer.set(this.currentItem.id, this.currentInitializer);
+      this._items.splice(this._items.indexOf(this.currentItem), 1, item);
     }
   }
 }

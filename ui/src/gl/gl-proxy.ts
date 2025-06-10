@@ -1271,8 +1271,8 @@ export class GLProxy {
       const { vsId, fsId: fsIds, programId } = material.gl;
       let fsLookup = this.programs.get(vsId);
 
-      // If nothing is found we have something with odd state. Just delete the vertex
-      // and fake the object to continue the program normally
+      // If nothing is found we have something with odd state. Just delete the
+      // vertex and fake the object to continue the program normally
       if (!fsLookup) {
         fsLookup = new Map();
         this.gl.deleteShader(vsId);
@@ -1280,42 +1280,46 @@ export class GLProxy {
 
       for (let i = 0, iMax = fsIds.length; i < iMax; ++i) {
         const fsId = fsIds[i];
-        let useMetrics = fsLookup.get(fsId);
+        let useMetrics = fsLookup.get(fsId.id);
 
-        // No use metrics means odd state, make a fake object to continue the process normally
+        // No use metrics means odd state, make a fake object to continue the
+        // process normally
         if (!useMetrics) {
           useMetrics = {
             useCount: 0,
-            program: programId,
+            program: programId[i].id,
           };
         }
 
-        // We're removing a material from utilizing this program, thus reduce it's useage
+        // We're removing a material from utilizing this program, thus reduce
+        // it's useage
         useMetrics.useCount--;
 
-        // If the useage is at or drops below zero, the program is no longer valid and not in use
+        // If the useage is at or drops below zero, the program is no longer
+        // valid and not in use
         if (useMetrics.useCount < 1) {
           this.gl.deleteProgram(useMetrics.program);
-          fsLookup.delete(fsId);
+          fsLookup.delete(fsId.id);
 
-          // If removing this fragment shader reference reduces the lookups to zero, then the
-          // vertex shader is not paired with anything and has no programs. It is ready for
-          // removal as well
+          // If removing this fragment shader reference reduces the lookups to
+          // zero, then the vertex shader is not paired with anything and has no
+          // programs. It is ready for removal as well
           if (fsLookup.size <= 0) {
             this.gl.deleteShader(vsId);
           }
         }
 
-        // The fragment shader is a bit trickier, we must go through all vertex shader lookups and see
-        // if the fragment shader exists in any of them. If not: the fragment shader is ready for removal
+        // The fragment shader is a bit trickier, we must go through all vertex
+        // shader lookups and see if the fragment shader exists in any of them.
+        // If not: the fragment shader is ready for removal
         let found = false;
         this.programs.forEach((fsLookup) => {
-          if (fsLookup.has(fsId)) found = true;
+          if (fsLookup.has(fsId.id)) found = true;
         });
 
         // If no fragment shader references remain: delete it.
         if (!found) {
-          this.gl.deleteShader(fsId);
+          this.gl.deleteShader(fsId.id);
         }
       }
     }

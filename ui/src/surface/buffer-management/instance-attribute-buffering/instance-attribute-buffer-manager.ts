@@ -75,6 +75,13 @@ export class InstanceAttributeBufferManager<
   TProps,
   IInstanceAttributeBufferLocation
 > {
+  /**
+   * This is the unique identifier for this buffer manager, used for debugging
+   */
+  get uid() {
+    return this._uid;
+  }
+  private _uid = uid();
   /** This contains the buffer locations the system will have available */
   private availableLocations: IInstanceAttributeBufferLocationGroup[] = [];
   /** This is the number of instances the buffer draws currently */

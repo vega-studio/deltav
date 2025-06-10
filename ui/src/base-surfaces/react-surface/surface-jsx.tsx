@@ -364,6 +364,10 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
       // Starts the render loop to keep updating.
       drawLoopId.current = onAnimationLoop(draw);
 
+      // Track our resources that we gathered
+      currentScenes.current = validScenes;
+      currentResources.current = validResources;
+
       // Update the pipeline with the current rendering elements
       pipelineUpdating.current = newSurface.pipeline({
         resources: validResources,
@@ -408,6 +412,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
 
     updatePipelineRequest.current = onFrame(async () => {
       if (!surface.current) return;
+
       pipelineUpdating.current = surface.current.pipeline({
         resources: currentResources.current,
         scenes: currentScenes.current,

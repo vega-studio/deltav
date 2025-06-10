@@ -1181,10 +1181,7 @@ export class Surface {
       await this.sceneDiffs.diff(pipeline.scenes);
     }
 
-    // This gathers the draw dependencies of the views (which views overlap
-    // other views.) This will let the system know when a view is needing
-    // re-rendering how it can preserve other views and prevent them from
-    // needing a redraw
+    // Ensures our view's dimensions are up to date
     this.updateViewDimensions();
   }
 

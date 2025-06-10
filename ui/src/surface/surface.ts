@@ -792,7 +792,7 @@ export class Surface {
   /**
    * This gathers all the overlap views of every view
    */
-  private gatherViewDrawDependencies() {
+  private updateViewDimensions() {
     if (!this.sceneDiffs) return;
     this.viewDrawDependencies.clear();
     const scenes = this.sceneDiffs.items;
@@ -841,32 +841,6 @@ export class Surface {
 
         view.fitViewtoViewport(renderTargetBounds, viewportBounds);
         view.props.camera.update(true);
-      }
-    }
-
-    // Set viewDrawDependencies
-    for (let i = 0, endi = scenes.length; i < endi; i++) {
-      const scene = scenes[i];
-
-      for (let k = 0, kMax = scene.renderViews.length; k < kMax; ++k) {
-        const sourceView = scene.renderViews[k];
-        const overlapViews: View<IViewProps>[] = [];
-
-        for (let j = 0, endj = scenes.length; j < endj; j++) {
-          if (j !== i) {
-            const scene = scenes[j];
-
-            for (let l = 0, lMax = scene.renderViews.length; l < lMax; ++l) {
-              const targetView = scene.renderViews[l];
-
-              if (sourceView.viewBounds.hitBounds(targetView.viewBounds)) {
-                overlapViews.push(targetView);
-              }
-            }
-          }
-        }
-
-        this.viewDrawDependencies.set(sourceView, overlapViews);
       }
     }
   }
@@ -1211,7 +1185,7 @@ export class Surface {
     // other views.) This will let the system know when a view is needing
     // re-rendering how it can preserve other views and prevent them from
     // needing a redraw
-    this.gatherViewDrawDependencies();
+    this.updateViewDimensions();
   }
 
   /**
@@ -1317,7 +1291,7 @@ export class Surface {
 
     // After the resize happens, the view draw dependencies may change as the
     // views will cover different region sizes
-    this.gatherViewDrawDependencies();
+    this.updateViewDimensions();
   }
 
   /**

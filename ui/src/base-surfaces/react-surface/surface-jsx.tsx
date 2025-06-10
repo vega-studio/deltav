@@ -17,6 +17,8 @@ import {
 } from "../../surface/index.js";
 import { isDefined } from "../../util/common-filters.js";
 import {
+  type createLayer,
+  type nextFrame,
   onAnimationLoop,
   onFrame,
   stopAnimationLoop,
@@ -121,6 +123,17 @@ export interface ISurfaceContext {
    * ready and established for the current pipeline.
    */
   resolversReady?: PromiseResolver<void>;
+
+  /**
+   * Triggers the pipeline to be updated. This makes deltav re-evaluate all the
+   * current pipeline elements and push updated props to the elements.
+   */
+  updatePipeline?(): void;
+
+  /**
+   * Indicates a layer should be removed from the pipeline.
+   */
+  disposeLayer?(layerInit: ReturnType<typeof createLayer<any, any>>): void;
 }
 
 /** Context the surface provides to all of it's children */
@@ -139,6 +152,14 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
   const surface = React.useRef<Surface | null>(null);
   const drawLoopId = React.useRef<Promise<number> | null>(null);
   const resizeDebounceId = React.useRef(-1);
+
+  // Update cycles Refs
+  const pipelineUpdating = React.useRef<Promise<void> | null>(null);
+  const updatePipelineRequest = React.useRef<ReturnType<
+    typeof nextFrame
+  > | null>(null);
+  const currentResources = React.useRef<BaseResourceOptions[]>([]);
+  const currentScenes = React.useRef<ISceneOptions[]>([]);
 
   // Generate the Surface context content
   const eventResolvers = React.useRef(
@@ -344,14 +365,14 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
       drawLoopId.current = onAnimationLoop(draw);
 
       // Update the pipeline with the current rendering elements
-      newSurface.pipeline({
+      pipelineUpdating.current = newSurface.pipeline({
         resources: validResources,
         scenes: validScenes,
       });
 
-      surface.current = newSurface;
       // Let a single render happen to ensure that everything is ready
       await onFrame();
+      surface.current = newSurface;
       // Size the surface to the initial container layout
       fitContainer(true);
       // Pass back feed back that our resources are initialized
@@ -366,9 +387,52 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
         stopAnimationLoop(drawLoopId.current!);
         // Destroy the surface
         surface.current?.destroy();
+        // Remove the surface reference so any calls to it can not happen
+        // anymore
+        surface.current = null;
       };
     },
   });
+
+  // Triggers a request to update the pipeline on the next frame
+  const handleUpdatePipeline = async () => {
+    if (!surface.current) return;
+
+    if (updatePipelineRequest.current) {
+      stopAnimationLoop(updatePipelineRequest.current);
+    }
+
+    // The previous pipeline update needs to be completed before we can submit a
+    // request for a new pipeline update
+    await pipelineUpdating.current;
+
+    updatePipelineRequest.current = onFrame(async () => {
+      if (!surface.current) return;
+      pipelineUpdating.current = surface.current.pipeline({
+        resources: currentResources.current,
+        scenes: currentScenes.current,
+      });
+    });
+  };
+
+  // Handles removing the specified layer from the pipeline elements, then
+  // triggers a pipeline update.
+  const handleDisposeLayer = (
+    layerInit: ReturnType<typeof createLayer<any, any>>
+  ) => {
+    if (!surface.current) return;
+    const scenes = currentScenes.current;
+    if (!scenes) return;
+
+    currentScenes.current.forEach((scene) => {
+      const index = scene.layers.findIndex((layer) => layer === layerInit);
+      if (index !== -1) {
+        scene.layers.splice(index, 1);
+      }
+    });
+
+    handleUpdatePipeline();
+  };
 
   // We render our canvas, but also render our children. This allows the
   // children to inject custom DOM mostly for interesting ways to review and
@@ -390,6 +454,9 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
             layerResolvers: layerResolvers.current,
             sceneResolvers: sceneResolvers.current,
             resolversReady: resolversReady.current,
+
+            updatePipeline: handleUpdatePipeline,
+            disposeLayer: handleDisposeLayer,
           }}
         >
           <CustomTag tagName="Surface" {...props}>

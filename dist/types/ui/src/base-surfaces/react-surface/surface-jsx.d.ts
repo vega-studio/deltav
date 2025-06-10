@@ -4,6 +4,7 @@ import { EventManager } from "../../event-management/index.js";
 import { Instance } from "../../instance-provider/instance.js";
 import { BaseResourceOptions } from "../../resources/index.js";
 import { ILayerProps, ISceneOptions, ISurfaceOptions, IViewProps, LayerInitializer, Surface, ViewInitializer } from "../../surface/index.js";
+import { type createLayer } from "../../util/index.js";
 import { PromiseResolver } from "../../util/promise-resolver.js";
 export interface ISurfaceJSX {
     /** Accepts children */
@@ -85,6 +86,15 @@ export interface ISurfaceContext {
      * ready and established for the current pipeline.
      */
     resolversReady?: PromiseResolver<void>;
+    /**
+     * Triggers the pipeline to be updated. This makes deltav re-evaluate all the
+     * current pipeline elements and push updated props to the elements.
+     */
+    updatePipeline?(): void;
+    /**
+     * Indicates a layer should be removed from the pipeline.
+     */
+    disposeLayer?(layerInit: ReturnType<typeof createLayer<any, any>>): void;
 }
 /** Context the surface provides to all of it's children */
 export declare const SurfaceContext: React.Context<Partial<ISurfaceContext> | undefined>;

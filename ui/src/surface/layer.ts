@@ -989,6 +989,10 @@ export class Layer<
       this.props.ref.easing = this.easingManager;
     }
 
+    // Make sure the provider is properly synced. This will alleviate any issues
+    // that arise if the provider came from another layer.
+    this.props.data.sync();
+
     return true;
   }
 
@@ -1211,8 +1215,8 @@ export class Layer<
       streamChanges.count = 10000;
     }
 
-    // Validate the number of items to stream. Any number at 0 or less indicates a desire to stream all remaining
-    // changes.
+    // Validate the number of items to stream. Any number at 0 or less indicates
+    // a desire to stream all remaining changes.
     if (streamChanges.count <= 0) {
       streamChanges.count = Number.MAX_SAFE_INTEGER;
     }
@@ -1545,9 +1549,9 @@ export class Layer<
       Boolean(check && check.easing)
     );
 
-    // Establish the diff processing this layer needs to do based on the Easing IO present
-    // This will ensure there is not already some diff manager handling already established as a base layer's
-    // implementation.
+    // Establish the diff processing this layer needs to do based on the Easing
+    // IO present This will ensure there is not already some diff manager
+    // handling already established as a base layer's implementation.
     if (easing) {
       if (this.picking.type === PickType.SINGLE) {
         this.onDiffAdd = this.handleDiffAddWithPickingAndEasing;

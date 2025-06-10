@@ -29,7 +29,7 @@ export interface IResolverProvider<T> {
     /**
      * Pass a ref through here to receive the resolver for the resource.
      */
-    share?: React.MutableRefObject<PromiseResolver<T | null> | null>;
+    share?: React.RefObject<PromiseResolver<T | null> | null>;
 }
 /**
  * This simplifies having child IResolverProvider components that will provide

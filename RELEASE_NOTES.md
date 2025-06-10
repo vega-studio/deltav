@@ -1,3 +1,11 @@
+## 5.0.1
+
+## Fixed
+
+- [`FIXED`]: Layers rebuild functionality is fixed. The Layer correctly disposes of it's old resources and allows the system to correctly rebuild the Layer for display.
+- [`FIXED`]: Created a means for LayerJSX to update the underlying deltav Layer and dispose of that layer as necessary.
+- [`FIXED`]: Removed view dependency calculcations in favor of just simply properly sizing the views to the view port.
+
 ## 5.0.0
 
 ## Breaking

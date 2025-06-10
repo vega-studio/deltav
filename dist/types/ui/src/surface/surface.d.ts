@@ -242,7 +242,7 @@ export declare class Surface {
     /**
      * This gathers all the overlap views of every view
      */
-    private gatherViewDrawDependencies;
+    private updateViewDimensions;
     /**
      * As users interact with the surface, this provides a quick way to view the
      * latest interaction that occurred from User events.

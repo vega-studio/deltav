@@ -32,6 +32,11 @@ export declare function isInstanceAttributeBufferLocationGroup(val: any): val is
  * instanced attribute strategy.
  */
 export declare class InstanceAttributeBufferManager<TInstance extends Instance, TProps extends ILayerProps<TInstance>> extends BufferManagerBase<TInstance, TProps, IInstanceAttributeBufferLocation> {
+    /**
+     * This is the unique identifier for this buffer manager, used for debugging
+     */
+    get uid(): number;
+    private _uid;
     /** This contains the buffer locations the system will have available */
     private availableLocations;
     /** This is the number of instances the buffer draws currently */

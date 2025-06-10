@@ -71,6 +71,9 @@ export const LayerJSX = <
   props: ILayerJSX<TInstance, TProps>
 ) => {
   const surfaceContext = React.useContext(SurfaceContext);
+  const layerRef = React.useRef<ReturnType<
+    typeof createLayer<TInstance, TProps>
+  > | null>(null);
 
   useLifecycle({
     async didMount() {
@@ -153,9 +156,29 @@ export const LayerJSX = <
         props.providerRef.current = provider;
       }
 
+      layerRef.current = layer;
       props.resolver?.resolve(layer);
+
+      return () => {
+        // Indicate the layer is ready for disposal when the component unmounts.
+        surfaceContext?.disposeLayer?.(layer);
+      };
     },
   });
+
+  // On props chane, make sure the pipeline updates so the underlying layer will
+  // trigger a props update.
+  React.useEffect(() => {
+    if (!layerRef.current?.init[1]) return;
+
+    layerRef.current.init[1] = Object.assign(
+      {},
+      layerRef.current.init[1] || {},
+      props.config
+    );
+
+    surfaceContext?.updatePipeline?.();
+  }, [...Object.values(props), ...Object.values(props.config)]);
 
   return <CustomTag tagName="Layer" {...props} />;
 };

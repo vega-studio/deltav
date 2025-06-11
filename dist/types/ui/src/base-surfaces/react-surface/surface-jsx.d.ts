@@ -65,6 +65,16 @@ export interface ISurfaceJSX {
      * for running simulations to a certain point, or for debugging your pipeline.
      */
     renderFrameCount?: number;
+    /**
+     * Forces a closish frame rate specified by the number of frames per second.
+     * This still renders on an animation frame, so it will not enforce a strict
+     * rate but do a closest matching to the animation frame rate.
+     */
+    frameRate?: number;
+    /**
+     * Stops the render loop when set to true.
+     */
+    stop?: boolean;
 }
 export interface ISurfaceContext {
     /**

@@ -207,10 +207,10 @@ export interface IViewProps extends IdentifyByKeyOptions {
     /**
      * This allows for additional views to be configured but as a rendering chain
      * instead of multiple views. Each chained view will be rendered in the order
-     * they are provided (the wrapping view is first, then the chained views come
-     * next in the order they appear in the list). Each chained view will be
-     * rendered in isolation: meaning only one of the views will be rendered at a
-     * time.
+     * they are provided, only ONE per draw of the surface (the wrapping view is
+     * first, then the chained views come next in the order they appear in the
+     * list). Each chained view will be rendered in isolation: meaning only one of
+     * the views will be rendered at a time.
      *
      * Each chain configuration is a Partial because it will inherit the
      * properties of the primary view and override those properties with the
@@ -325,6 +325,10 @@ export declare abstract class View<TViewProps extends IViewProps> extends Identi
      * This is called by the system and should never need to be called externally.
      */
     createRenderTarget(): void;
+    /**
+     * Clean out the render targets we created
+     */
+    destroy(): void;
     /**
      * This let's the view do anything it needs to be ready for next render. Some
      * tasks this may include is checking if it's render target is still valid.

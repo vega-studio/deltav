@@ -18,7 +18,6 @@ import {
 import { isDefined } from "../../util/common-filters.js";
 import {
   type createLayer,
-  type nextFrame,
   onAnimationLoop,
   onFrame,
   stopAnimationLoop,
@@ -92,6 +91,18 @@ export interface ISurfaceJSX {
    * for running simulations to a certain point, or for debugging your pipeline.
    */
   renderFrameCount?: number;
+
+  /**
+   * Forces a closish frame rate specified by the number of frames per second.
+   * This still renders on an animation frame, so it will not enforce a strict
+   * rate but do a closest matching to the animation frame rate.
+   */
+  frameRate?: number;
+
+  /**
+   * Stops the render loop when set to true.
+   */
+  stop?: boolean;
 }
 
 export interface ISurfaceContext {
@@ -154,10 +165,6 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
   const resizeDebounceId = React.useRef(-1);
 
   // Update cycles Refs
-  const pipelineUpdating = React.useRef<Promise<void> | null>(null);
-  const updatePipelineRequest = React.useRef<ReturnType<
-    typeof nextFrame
-  > | null>(null);
   const currentResources = React.useRef<BaseResourceOptions[]>([]);
   const currentScenes = React.useRef<ISceneOptions[]>([]);
 
@@ -256,7 +263,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
    * The draw loop of the surface
    */
   const draw = async (time: number) => {
-    if (!surface.current) return;
+    if (!surface.current || props.stop) return;
     currentTime.current = time;
     surface.current.draw(time);
 
@@ -362,20 +369,24 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
       }).ready;
 
       // Starts the render loop to keep updating.
-      drawLoopId.current = onAnimationLoop(draw);
+      drawLoopId.current = onAnimationLoop(
+        draw,
+        props.frameRate ? 1000 / props.frameRate : void 0
+      );
 
       // Track our resources that we gathered
       currentScenes.current = validScenes;
       currentResources.current = validResources;
 
       // Update the pipeline with the current rendering elements
-      pipelineUpdating.current = newSurface.pipeline({
+      await newSurface.pipeline({
         resources: validResources,
         scenes: validScenes,
       });
 
       // Let a single render happen to ensure that everything is ready
       await onFrame();
+
       surface.current = newSurface;
       // Size the surface to the initial container layout
       fitContainer(true);
@@ -402,21 +413,9 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
   const handleUpdatePipeline = async () => {
     if (!surface.current) return;
 
-    if (updatePipelineRequest.current) {
-      stopAnimationLoop(updatePipelineRequest.current);
-    }
-
-    // The previous pipeline update needs to be completed before we can submit a
-    // request for a new pipeline update
-    await pipelineUpdating.current;
-
-    updatePipelineRequest.current = onFrame(async () => {
-      if (!surface.current) return;
-
-      pipelineUpdating.current = surface.current.pipeline({
-        resources: currentResources.current,
-        scenes: currentScenes.current,
-      });
+    surface.current.pipeline({
+      resources: currentResources.current,
+      scenes: currentScenes.current,
     });
   };
 

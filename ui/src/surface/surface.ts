@@ -290,6 +290,12 @@ export class Surface {
   ready: Promise<Surface>;
   /** This is used to reolve this surface as ready */
   private readyResolver: PromiseResolver<Surface>;
+  /**
+   * This is used to prevent multiple pipeline updates from being requested
+   * simultaneously. We take in all pipeline update requests for the frame, and
+   * execute a single pipeline update at the next frame.
+   */
+  private pipelineLoadContext = 0;
 
   /** Diff manager to handle diffing resource objects for the pipeline */
   resourceDiffs: ReactiveDiff<IdentifiableById, BaseResourceOptions> =
@@ -1173,6 +1179,10 @@ export class Surface {
    * tobe comepltely not rendered at all in many cases.
    */
   async pipeline(pipeline: IPipeline) {
+    const ctx = ++this.pipelineLoadContext;
+    await onFrame();
+    if (this.pipelineLoadContext !== ctx) return;
+
     if (pipeline.resources) {
       await this.resourceDiffs.diff(pipeline.resources);
     }

@@ -75,7 +75,7 @@ export class SimpleMeshLayer<
               vec3 ambient = vColor.rgb * 0.15;
 
               vec3 diffuse = vColor.rgb * diff;
-              gl_FragColor = vec4(ambient + diffuse, vColor.a);
+              $\{out: color} = vec4(ambient + diffuse, vColor.a);
             }
           `,
         },

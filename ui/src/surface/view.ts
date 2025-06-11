@@ -268,10 +268,10 @@ export interface IViewProps extends IdentifyByKeyOptions {
   /**
    * This allows for additional views to be configured but as a rendering chain
    * instead of multiple views. Each chained view will be rendered in the order
-   * they are provided (the wrapping view is first, then the chained views come
-   * next in the order they appear in the list). Each chained view will be
-   * rendered in isolation: meaning only one of the views will be rendered at a
-   * time.
+   * they are provided, only ONE per draw of the surface (the wrapping view is
+   * first, then the chained views come next in the order they appear in the
+   * list). Each chained view will be rendered in isolation: meaning only one of
+   * the views will be rendered at a time.
    *
    * Each chain configuration is a Partial because it will inherit the
    * properties of the primary view and override those properties with the
@@ -697,6 +697,19 @@ export abstract class View<
     // Non-MRT makes multiple render targets. One for each output type.
     else {
       throw new Error("MRT for non-MRT systems not supported yet.");
+    }
+  }
+
+  /**
+   * Clean out the render targets we created
+   */
+  destroy() {
+    if (this.renderTarget) {
+      if (Array.isArray(this.renderTarget)) {
+        this.renderTarget.forEach((t) => t.dispose());
+      } else {
+        this.renderTarget.dispose();
+      }
     }
   }
 

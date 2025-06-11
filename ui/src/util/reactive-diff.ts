@@ -138,12 +138,13 @@ export class ReactiveDiff<
           await this.options.updateItem(initializer, item);
         } else {
           item = await this.options.buildItem(initializer);
+          if (item) this.currentItem = item;
         }
 
-        if (item) {
+        if (this.currentItem) {
           this.keyToInitializer.set(initializer.key, initializer);
           this.willDispose.delete(initializer.key);
-          this._items.push(item);
+          this._items.push(this.currentItem);
         }
       }
 
@@ -162,9 +163,9 @@ export class ReactiveDiff<
             delete this.deferredInlining;
           }
 
-          this.keyToItem.set(initializer.key, item);
+          this.keyToItem.set(initializer.key, this.currentItem);
           this.keyToInitializer.set(initializer.key, initializer);
-          this._items.push(item);
+          this._items.push(this.currentItem);
         }
       }
 
@@ -287,9 +288,9 @@ export class ReactiveDiff<
 
     // Re-add the item to the lookups if the rebuild succeeded
     if (item) {
+      this.currentItem = item;
       this.keyToItem.set(this.currentItem.id, item);
       this.keyToInitializer.set(this.currentItem.id, this.currentInitializer);
-      this._items.splice(this._items.indexOf(this.currentItem), 1, item);
     }
   }
 }

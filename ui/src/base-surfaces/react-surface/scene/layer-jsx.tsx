@@ -178,7 +178,7 @@ export const LayerJSX = <
     );
 
     surfaceContext?.updatePipeline?.();
-  }, [...Object.values(props), ...Object.values(props.config)]);
+  }, [...Object.values(props.config)]);
 
   return <CustomTag tagName="Layer" {...props} />;
 };

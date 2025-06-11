@@ -307,11 +307,15 @@ export class LayerScene extends IdentifyByKey {
         return newView;
       },
 
-      // No special needs for destroying/removing a view
+      // Make sure the view cleans up it's render targets and related resources.
       destroyItem: async (
         _initializer: ViewInitializer<IViewProps>,
-        _view: View<IViewProps>
-      ) => true,
+        view: View<IViewProps>
+      ) => {
+        debug("Destroying view", view.id);
+        view.destroy();
+        return true;
+      },
 
       // Hand off the initializer to the update of the view
       updateItem: async (

@@ -190,6 +190,12 @@ export declare class Surface {
     ready: Promise<Surface>;
     /** This is used to reolve this surface as ready */
     private readyResolver;
+    /**
+     * This is used to prevent multiple pipeline updates from being requested
+     * simultaneously. We take in all pipeline update requests for the frame, and
+     * execute a single pipeline update at the next frame.
+     */
+    private pipelineLoadContext;
     /** Diff manager to handle diffing resource objects for the pipeline */
     resourceDiffs: ReactiveDiff<IdentifiableById, BaseResourceOptions>;
     /** Diff manager to handle diffing scene objects for the pipeline */

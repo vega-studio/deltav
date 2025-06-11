@@ -136,7 +136,19 @@ export class RenderTextureResourceManager extends BaseResourceManager<
    */
   updateResource(options: IRenderTextureResource) {
     const resource = this.resources.get(options.key);
-    if (!resource) return;
-    console.warn("UPDATING AN EXISTING RENDER TEXTURE IS NOT SUPPORTED YET");
+
+    if (!resource) {
+      console.error(
+        `A resource was requested to be updated with key: ${options.key}, but no resource was found`
+      );
+      return;
+    }
+
+    console.warn(
+      `UPDATING AN EXISTING RENDER TEXTURE IS NOT SUPPORTED YET FOR KEY: ${options.key}`,
+      `The update will be ignored and the existing resource will be used`
+    );
+
+    return;
   }
 }

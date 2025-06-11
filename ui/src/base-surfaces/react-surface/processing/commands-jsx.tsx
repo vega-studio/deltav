@@ -16,6 +16,14 @@ interface ICommandsJSX {
   name: string;
 }
 
+/**
+ * This is a helper Scene that lets you inject commands into the pipeline. Most
+ * commands are from the Surface.commands property that you will need, but this
+ * opens up the opportunity to make any GL related commands as well.
+ *
+ * Custom GL is VERY ADVANCED useage. You should stick to using Surface.commands
+ * AND read the documentation on those commands.
+ */
 export const CommandsJSX = (props: ICommandsJSX) => {
   return (
     <SceneJSX name={props.name}>

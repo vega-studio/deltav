@@ -189,6 +189,18 @@ export declare class Transform extends TreeNode<Transform> {
     private needsForwardUpdate;
     constructor(options?: ITransform);
     /**
+     * Set the local position. Supports chaining.
+     */
+    setLocalPosition(position: Vec3): this;
+    /**
+     * Set the local rotation. Supports chaining.
+     */
+    setLocalRotation(rotation: Quaternion): this;
+    /**
+     * Set the local scale. Supports chaining.
+     */
+    setLocalScale(scale: Vec3): this;
+    /**
      * Adjusts the transform's properties all at once to shave off a little bit of
      * overhead.
      */

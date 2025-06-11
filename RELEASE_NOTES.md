@@ -1,3 +1,9 @@
+## 5.0.2
+
+## Fixed
+
+- [`FIXED`]: Corrected several issues with the Layer diffing process. Made Layers able to rebuild and the JSX implementations considerably more stable.
+
 ## 5.0.1
 
 ## Fixed

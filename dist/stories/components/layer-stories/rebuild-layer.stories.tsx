@@ -3,17 +3,27 @@ import React from "react";
 
 import { useLifecycle } from "../../../../util/hooks/use-life-cycle.js";
 import {
-  Camera,
+  Camera2D,
+  CircleInstance,
+  CircleLayer,
   ClearFlags,
+  CommandsJSX,
+  DrawJSX,
+  FragmentOutputType,
+  GLSettings,
   InstanceProvider,
   LayerJSX,
+  PickType,
   PromiseResolver,
+  SceneJSX,
   Simple3DTransformControllerJSX,
   Surface,
   SurfaceJSX,
+  TextureJSX,
+  TextureSize,
   Transform,
   type Vec3,
-  View3D,
+  View2D,
   ViewJSX,
 } from "../../../src";
 import { SimpleMeshInstance } from "../layers/simple-mesh/simple-mesh-instance.js";
@@ -173,46 +183,60 @@ const sphereVertices = makeSphereVertices(1, 20);
 
 export const RebuildingLayers: StoryFn = (() => {
   const meshProvider = React.useRef<InstanceProvider<SimpleMeshInstance>>(null);
-  const camera = React.useRef(
-    Camera.makePerspective({
-      fov: (60 * Math.PI) / 180,
-      near: 0.1,
-      far: 10000,
-    })
-  );
+  const circleProvider = React.useRef<InstanceProvider<CircleInstance>>(null);
+  const camera = React.useRef(new Camera2D());
   const ready = React.useRef(new PromiseResolver<Surface>());
 
   const instance = React.useRef<SimpleMeshInstance>(
     new SimpleMeshInstance({
-      transform: new Transform(),
+      transform: new Transform().setLocalScale([100, 100, 100]),
       color: [0.5, 0.5, 0.5, 1],
     })
   );
 
   const [shape, setShape] = React.useState<"sphere" | "cube">("sphere");
+  const [stop, setStop] = React.useState(false);
 
   useLifecycle({
     async didMount() {
-      // Wait for the surface to establish the full pipeline
       const surface = await ready.current.promise;
+      // Wait for the surface to establish the full pipeline
       if (!meshProvider.current) return;
 
-      const size = surface.getViewSize("main");
-      if (!size) {
-        console.warn("Invalid View Size", surface);
-        return;
-      }
+      const view = surface.getViewWorldBounds("main.main");
+      if (!view) return;
 
-      camera.current.position = [0, 0, 20];
-      camera.current.lookAt([0, 0, 0], [0, 1, 0]);
-
-      // Add a single CircleInstance
+      // Center the camera on the origin (instead of the top left corner). This
+      // makes it easier to place our 3D object.
+      camera.current.control2D.setOffset([view.width / 2, view.height / 2, 0]);
       meshProvider.current.add(instance.current);
+
+      instance.current.transform.setLocalPosition([
+        view.width / 2,
+        view.height / 2,
+        100,
+      ]);
+
+      for (let i = 0; i < 100; i++) {
+        const circle = new CircleInstance({
+          center: [
+            Math.random() * view.width - view.width / 2,
+            Math.random() * view.height - view.height / 2,
+          ],
+          radius: Math.random() * 4 + 1,
+          color: [1, 1, 1, 1],
+        });
+        circleProvider.current?.add(circle);
+      }
     },
   });
 
   const toggleShape = () => {
     setShape((s) => (s === "sphere" ? "cube" : "sphere"));
+  };
+
+  const toggleStop = () => {
+    setStop((s) => !s);
   };
 
   return (
@@ -223,36 +247,96 @@ export const RebuildingLayers: StoryFn = (() => {
           alpha: true,
           antialias: true,
         }}
+        // frameRate={1}
+        stop={stop}
       >
         <Simple3DTransformControllerJSX
           config={{ camera: camera.current, target: instance.current }}
         />
-        <ViewJSX
-          name="main"
-          type={View3D}
-          config={{
-            camera: camera.current,
-            background: [0, 0, 0, 1],
-            clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+        <TextureJSX
+          name="pick"
+          width={TextureSize.SCREEN}
+          height={TextureSize.SCREEN}
+          textureSettings={{
+            generateMipMaps: false,
+            format: GLSettings.Texture.TexelDataType.RGBA,
+            internalFormat: GLSettings.Texture.TexelDataType.RGBA,
           }}
         />
-        <LayerJSX
-          type={SimpleMeshLayer}
-          providerRef={meshProvider}
-          config={
-            shape === "sphere"
-              ? {
-                  vertices: sphereVertices.vertices,
-                  normals: sphereVertices.normals,
-                }
-              : {
-                  vertices: cubeVertices,
-                  normals: cubeNormals,
-                }
-          }
-        />
+        {CommandsJSX({
+          name: "decode-picking",
+          callback: (surface) => {
+            surface.commands.decodePicking();
+          },
+        })}
+        <SceneJSX name="main">
+          <ViewJSX
+            name="main"
+            type={View2D}
+            config={{
+              camera: camera.current,
+              background: [0, 0, 0, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+            }}
+          />
+          <ViewJSX
+            name="pick-view"
+            type={View2D}
+            config={{
+              camera: camera.current,
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+            }}
+            output={{
+              buffers: { [FragmentOutputType.PICKING]: "pick" },
+              depth: true,
+            }}
+          />
+          <LayerJSX
+            name="mesh-layer"
+            type={SimpleMeshLayer}
+            providerRef={meshProvider}
+            config={{
+              picking: PickType.SINGLE,
+              ...(shape === "sphere"
+                ? {
+                    vertices: sphereVertices.vertices,
+                    normals: sphereVertices.normals,
+                  }
+                : {
+                    vertices: cubeVertices,
+                    normals: cubeNormals,
+                  }),
+              onMouseOver: (e) => {
+                if (e.instances.length <= 0) return;
+                e.instances[0].color = [1.0, 1.0, 1.0, 1.0];
+              },
+              onMouseOut: (e) => {
+                if (e.instances.length <= 0) return;
+                e.instances[0].color = [0.5, 0.5, 0.5, 1.0];
+              },
+            }}
+          />
+          <LayerJSX
+            name="circle-layer"
+            type={CircleLayer}
+            providerRef={circleProvider}
+            config={{}}
+          />
+        </SceneJSX>
+        {DrawJSX({
+          name: "render-pick",
+          input: "pick",
+          view: {
+            config: {
+              background: [0.1, 0.1, 0.1, 1],
+              clearFlags: [ClearFlags.COLOR, ClearFlags.DEPTH],
+              viewport: { right: 10, bottom: 10, width: "30%", height: "30%" },
+            },
+          },
+        })}
       </SurfaceJSX>
-      <button onClick={toggleShape}>Clicky</button>
+      <button onClick={toggleShape}>Rebuild Layer Geometry</button>
+      <button onClick={toggleStop}>Stop Rendering</button>
     </>
   );
 }).bind({});

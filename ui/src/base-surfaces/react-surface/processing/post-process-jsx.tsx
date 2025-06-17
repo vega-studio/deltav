@@ -1,15 +1,18 @@
 import React from "react";
 
 import { Camera2D, IView2DProps, View2D } from "../../../2d";
+import { GLSettings } from "../../../gl/gl-settings.js";
 import { IRenderTextureResource } from "../../../resources";
 import {
+  FragmentOutputType,
   ILayerMaterialOptions,
+  isString,
   IUniform,
   type OutputFragmentShaderSource,
 } from "../../../types.js";
 import { LayerJSX } from "../scene/layer-jsx.js";
 import { SceneJSX } from "../scene/scene-jsx.js";
-import { IPartialViewJSX, ViewJSX } from "../scene/view-jsx.js";
+import { IPartialViewJSX, type IViewJSX, ViewJSX } from "../scene/view-jsx.js";
 import { PostProcessLayer } from "./layer/post-process-layer.js";
 
 export interface IPostProcessJSX {
@@ -28,33 +31,7 @@ export interface IPostProcessJSX {
   /**
    * Specify a target output buffer or buffer chain for this process.
    */
-  output?:
-    | {
-        /**
-         * Specify output targets for the render/color buffers this view wants to write to.
-         * Use the name of the Resource that will be used to be written to.
-         */
-        buffers: Record<number, string | undefined>;
-        /**
-         * Set to true to include a depth buffer the system will generate for you.
-         * Use the name of the Resource to use it if you wish to target an output
-         * target texture.
-         */
-        depth: string | boolean;
-      }
-    | {
-        /**
-         * Specify output targets for the render/color buffers this view wants to write to.
-         * Use the name of the Resource that will be used to be written to.
-         */
-        buffers: Record<number, string | undefined>;
-        /**
-         * Set to true to include a depth buffer the system will generate for you.
-         * Use the name of the Resource to use it if you wish to target an output
-         * target texture.
-         */
-        depth: string | boolean;
-      }[];
+  output?: IViewJSX<IView2DProps>["output"];
   /**
    * Custom material options to apply to the layer to aid in controlling
    * blending etc.
@@ -106,6 +83,10 @@ export const PostProcessJSX = (props: IPostProcessJSX) => {
         config={{
           camera: new Camera2D(),
           viewport: { left: 0, top: 0, width: "100%", height: "100%" },
+          materialSettings: {
+            depthTest: false,
+            culling: GLSettings.Material.CullSide.NONE,
+          },
           ...props.view?.config,
         }}
       />
@@ -132,7 +113,14 @@ export const PostProcessJSX = (props: IPostProcessJSX) => {
         config={{
           printShader: props.printShader,
           buffers: {},
-          fs: props.shader,
+          fs: isString(props.shader)
+            ? [
+                {
+                  outputType: FragmentOutputType.COLOR,
+                  source: props.shader,
+                },
+              ]
+            : props.shader,
           uniforms: props.uniforms,
           materialOptions: props.material,
           preventDraw: props.preventDraw,

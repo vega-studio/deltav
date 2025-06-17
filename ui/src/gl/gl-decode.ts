@@ -144,6 +144,10 @@ export function texelFormat(
             return gl.RGBA8I;
           case GLSettings.Texture.TexelDataType.RGB8I:
             return gl.RGB8I;
+          case GLSettings.Texture.TexelDataType.RED:
+            return gl.RED;
+          case GLSettings.Texture.TexelDataType.RG:
+            return gl.RG;
 
           default:
             console.warn(
@@ -174,8 +178,7 @@ export function inputImageFormat(
     case GLSettings.Texture.SourcePixelFormat.Float:
       return gl.FLOAT;
     case GLSettings.Texture.SourcePixelFormat.HalfFloat:
-      console.warn("Unsupported HALF_FLOAT");
-      return gl.BYTE;
+      return gl.FLOAT;
     case GLSettings.Texture.SourcePixelFormat.Int:
       return gl.INT;
     case GLSettings.Texture.SourcePixelFormat.Short:
@@ -315,6 +318,25 @@ export function colorBufferFormat(
             return gl.RGBA32I;
           case GLSettings.RenderTarget.ColorBufferFormat.RGBA32UI:
             return gl.RGBA32UI;
+
+          case GLSettings.RenderTarget.ColorBufferFormat.R16F:
+            return gl.R16F;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG16F:
+            return gl.RG16F;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA16F:
+            return gl.RGBA16F;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGBA32F:
+            return gl.RGBA32F;
+          case GLSettings.RenderTarget.ColorBufferFormat.R32F:
+            return gl.R32F;
+          case GLSettings.RenderTarget.ColorBufferFormat.RG32F:
+            return gl.RG32F;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGB32F:
+            return gl.RGB32F;
+          case GLSettings.RenderTarget.ColorBufferFormat.RGB16F:
+            return gl.RGB16F;
+          case GLSettings.RenderTarget.ColorBufferFormat.R11F_G11F_B10F:
+            return gl.R11F_G11F_B10F;
         }
       }
 

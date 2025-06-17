@@ -5,7 +5,7 @@ import { FragmentOutputType, TypeVec } from "../types.js";
 import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode.js";
 import { GLProxy } from "./gl-proxy.js";
 import { GLSettings } from "./gl-settings.js";
-import { Material } from "./material.js";
+import { Material, type MaterialSettings } from "./material.js";
 import { RenderTarget } from "./render-target.js";
 import { Texture } from "./texture.js";
 import {
@@ -81,6 +81,12 @@ export class GLState {
   private _cullFace: GLSettings.Material.CullSide =
     GLSettings.Material.CullSide.NONE;
 
+  /** Indicates if culling is enabled */
+  get cullEnabled() {
+    return this._cullEnabled;
+  }
+  private _cullEnabled = true;
+
   /** The channels in the color buffer a fragment is allowed to write to */
   get colorMask() {
     return this._colorMask;
@@ -121,7 +127,10 @@ export class GLState {
   get boundFBO() {
     return this._boundFBO;
   }
-  private _boundFBO: WebGLFramebuffer | null = null;
+  private _boundFBO: {
+    read: WebGLFramebuffer | null;
+    draw: WebGLFramebuffer | null;
+  } = { read: null, draw: null };
 
   /**
    * This is the current render target who's FBO is bound. A null render target
@@ -270,6 +279,15 @@ export class GLState {
 
     // Initialize state to valid value
     this._activeTextureUnit = gl.TEXTURE0;
+    // Query cull state
+    this._cullEnabled = true;
+    gl.enable(gl.CULL_FACE);
+    // Query depth test state
+    this._depthTestEnabled = true;
+    gl.enable(gl.DEPTH_TEST);
+    // Query blending state
+    this._blendingEnabled = true;
+    gl.enable(gl.BLEND);
   }
 
   /**
@@ -325,10 +343,31 @@ export class GLState {
    * Sets the provided buffer identifier as the current bound item
    */
   bindFBO(id: WebGLFramebuffer | null) {
-    if (this._boundFBO !== id) {
-      this._boundFBO = id;
+    if (this._boundFBO.draw !== id || this._boundFBO.read !== id) {
+      this._boundFBO.draw = id;
+      this._boundFBO.read = id;
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, id);
     }
+  }
+
+  /**
+   * Binds the read and draw framebuffers for READ and DRAW framebuffer targets.
+   */
+  bindFBOTargets(
+    source: WebGLFramebuffer | null,
+    target: WebGLFramebuffer | null
+  ) {
+    if (!(this.gl instanceof WebGL2RenderingContext)) return;
+
+    // if (this._boundFBO.draw !== target) {
+    this._boundFBO.draw = target;
+    this.gl.bindFramebuffer(this.gl.DRAW_FRAMEBUFFER, target);
+    // }
+
+    // if (this._boundFBO.read !== source) {
+    this._boundFBO.read = source;
+    this.gl.bindFramebuffer(this.gl.READ_FRAMEBUFFER, source);
+    // }
   }
 
   /**
@@ -829,76 +868,85 @@ export class GLState {
    * This syncs the state of the GL context with the requested state of a
    * material
    */
-  syncMaterial(material: Material) {
+  syncMaterial(material: MaterialSettings) {
     // Depth mode changes
-    this.setDepthMask(material.depthWrite);
+    if (material.depthWrite !== void 0) this.setDepthMask(material.depthWrite);
     // Depth test enabled or no
-    this.setDepthTest(material.depthTest);
+    if (material.depthTest !== void 0) this.setDepthTest(material.depthTest);
     // Depth Func
-    this.setDepthFunc(material.depthFunc);
+    if (material.depthFunc !== void 0) this.setDepthFunc(material.depthFunc);
     // Blending changes
-    this.setBlending(material.blending);
+    if (material.blending !== void 0) this.setBlending(material.blending);
     // Cull mode
-    this.setCullFace(material.culling);
+    if (material.culling !== void 0) this.setCullFace(material.culling);
     // Color mode
-    this.setColorMask(material.colorWrite);
+    if (material.colorWrite !== void 0) this.setColorMask(material.colorWrite);
     // Dithering
-    this.setDithering(material.dithering);
+    if (material.dithering !== void 0) this.setDithering(material.dithering);
 
     // Uniforms
-    this._currentUniforms = material.uniforms;
+    if (material.uniforms) {
+      this._currentUniforms = material.uniforms;
 
-    if (!this._currentProgram) {
-      return false;
-    }
-
-    // Now we can update and retrieve the locations for each uniform in the
-    // program
-    Object.entries(material.uniforms).forEach((entry) => {
-      const { 0: name, 1: uniform } = entry;
-      if (!this._currentProgram) return;
-      if (!uniform.gl) uniform.gl = new Map();
-      let glSettings = uniform.gl.get(this._currentProgram);
-
-      // If no settings for the given program are present, then we must
-      // query the program for the uniform's locations and what not.
-      if (!glSettings) {
-        const location = this.gl.getUniformLocation(this._currentProgram, name);
-
-        if (!location) {
-          glSettings = {
-            location: void 0,
-          };
-
-          debug(
-            this.debugContext,
-            `A Material specified a uniform ${name}, but none was found in the current program.`
-          );
-
-          return;
-        }
-
-        glSettings = {
-          location,
-        };
-
-        // Store the found location for the uniform
-        uniform.gl.set(this._currentProgram, glSettings);
+      if (!this._currentProgram) {
+        return false;
       }
 
-      // After locations for the uniforms are established, we must now copy the
-      // uniform info into the GPU
-      if (glSettings.location) this.uploadUniform(glSettings.location, uniform);
-    });
+      // Now we can update and retrieve the locations for each uniform in the
+      // program
+      Object.entries(material.uniforms).forEach((entry) => {
+        const { 0: name, 1: uniform } = entry;
+        if (!this._currentProgram) return;
+        if (!uniform.gl) uniform.gl = new Map();
+        let glSettings = uniform.gl.get(this._currentProgram);
+
+        // If no settings for the given program are present, then we must
+        // query the program for the uniform's locations and what not.
+        if (!glSettings) {
+          const location = this.gl.getUniformLocation(
+            this._currentProgram,
+            name
+          );
+
+          if (!location) {
+            glSettings = {
+              location: void 0,
+            };
+
+            debug(
+              this.debugContext,
+              `A Material specified a uniform ${name}, but none was found in the current program.`
+            );
+
+            return;
+          }
+
+          glSettings = {
+            location,
+          };
+
+          // Store the found location for the uniform
+          uniform.gl.set(this._currentProgram, glSettings);
+        }
+
+        // After locations for the uniforms are established, we must now copy the
+        // uniform info into the GPU
+        if (glSettings.location) {
+          this.uploadUniform(glSettings.location, uniform);
+        }
+      });
+    }
 
     // Uniform buffers. This procedure is more complex than uniforms as they
     // will contain steps similar to attribute buffers for updates, then there
     // will be a step binding the program to the uniform buffer binding point.
-    Object.entries(material.uniformBuffers).forEach((entry) => {
-      const { 0: _name, 1: uniformBuffer } = entry;
-      if (!this._currentProgram) return;
-      this.useUniformBuffer(uniformBuffer);
-    });
+    if (material.uniformBuffers) {
+      Object.entries(material.uniformBuffers).forEach((entry) => {
+        const { 0: _name, 1: uniformBuffer } = entry;
+        if (!this._currentProgram) return;
+        this.useUniformBuffer(uniformBuffer);
+      });
+    }
 
     // Textures
     if (this._textureWillBeUsed.size > 0) {
@@ -940,7 +988,7 @@ export class GLState {
     if (this._depthTestEnabled !== depthTest) {
       this._depthTestEnabled = depthTest;
 
-      if (this._depthTestEnabled) {
+      if (depthTest) {
         this.gl.enable(this.gl.DEPTH_TEST);
       } else {
         this.gl.disable(this.gl.DEPTH_TEST);
@@ -1618,18 +1666,22 @@ export class GLState {
   private applyCullFace() {
     const gl = this.gl;
 
-    if (this._cullFace !== GLSettings.Material.CullSide.NONE) {
+    if (this._cullFace === GLSettings.Material.CullSide.NONE) {
+      gl.disable(gl.CULL_FACE);
+      this._cullEnabled = false;
+    } else {
       gl.enable(gl.CULL_FACE);
+      this._cullEnabled = true;
     }
 
     switch (this._cullFace) {
       case GLSettings.Material.CullSide.CW:
-        gl.frontFace(gl.CW);
-        gl.cullFace(gl.FRONT);
+        gl.frontFace(gl.CCW);
+        gl.cullFace(gl.BACK);
         break;
       case GLSettings.Material.CullSide.CCW:
-        gl.frontFace(gl.CCW);
-        gl.cullFace(gl.FRONT);
+        gl.frontFace(gl.CW);
+        gl.cullFace(gl.BACK);
         break;
       case GLSettings.Material.CullSide.BOTH:
         gl.frontFace(gl.CW);

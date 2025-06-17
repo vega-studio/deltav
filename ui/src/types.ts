@@ -1486,6 +1486,10 @@ export enum FragmentOutputType {
    */
   ALPHA,
   /**
+   * This indicates it will provide Opacity information
+   */
+  OPAQUE,
+  /**
    * This indicates it will provide Beta information
    */
   BETA,

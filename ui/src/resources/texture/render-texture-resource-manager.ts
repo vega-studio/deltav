@@ -135,7 +135,7 @@ export class RenderTextureResourceManager extends BaseResourceManager<
    * This targets the specified resource and attempts to update it's settings.
    */
   updateResource(options: IRenderTextureResource) {
-    const resource = this.resources.get(options.key);
+    let resource = this.resources.get(options.key);
 
     if (!resource) {
       console.error(
@@ -144,10 +144,23 @@ export class RenderTextureResourceManager extends BaseResourceManager<
       return;
     }
 
-    console.warn(
-      `UPDATING AN EXISTING RENDER TEXTURE IS NOT SUPPORTED YET FOR KEY: ${options.key}`,
-      `The update will be ignored and the existing resource will be used`
-    );
+    // Change in dimensions requires a texture rebuild.
+    if (
+      options.height !== resource.height ||
+      options.width !== resource.width
+    ) {
+      // Remove the old texture
+      resource.texture.destroy();
+      // Regenerate the resource with the new dimensions
+      resource = new RenderTexture(options, this.webGLRenderer);
+      // Update the resource in the manager
+      this.resources.set(options.key, resource);
+    }
+
+    // Settings changes are applied to the existing texture.
+    else if (options.textureSettings) {
+      resource.texture.applySettings(options.textureSettings);
+    }
 
     return;
   }

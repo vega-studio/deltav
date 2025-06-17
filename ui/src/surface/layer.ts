@@ -229,6 +229,14 @@ export interface ILayerProps<TInstance extends Instance>
     };
   };
 
+  /**
+   * If you have an understanding about the layer in use, you can provide
+   * fragment output overrides or additions to the layer's fragment shader. If
+   * you specify an output type that already exists, this provided source will
+   * override the existing source.
+   */
+  fs?: { source: string; outputType: number }[];
+
   // ---- EVENTS ----
   /**
    * Executes when the mouse is down on instances (Picking type must be set)
@@ -706,6 +714,21 @@ export class Layer<
           source: shaderIO.fs,
         },
       ];
+    }
+
+    if (this.props.fs) {
+      for (let i = 0, iMax = this.props.fs.length; i < iMax; ++i) {
+        const { outputType, source } = this.props.fs[i];
+        const index = shaderIO.fs.findIndex(
+          (layerOutput) => layerOutput.outputType === outputType
+        );
+
+        if (index > -1) {
+          shaderIO.fs[index] = { outputType, source };
+        } else {
+          shaderIO.fs.push({ outputType, source });
+        }
+      }
     }
 
     // We inject automated picking items if the user has not defined their own

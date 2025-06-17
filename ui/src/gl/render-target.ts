@@ -41,6 +41,14 @@ export interface IRenderTargetOptions {
      * testing.
      */
     stencil?: GLSettings.RenderTarget.StencilBufferFormat | Texture;
+    /**
+     * A target texture that this render target's FBO will be blitted to after
+     * the rendering process has completed.
+     */
+    blit?: {
+      color?: RenderBufferOutputTarget | RenderBufferOutputTarget[];
+      depth?: Texture;
+    };
   };
   /**
    * The height of the render target. This is used when the textures are not
@@ -89,6 +97,7 @@ export class RenderTarget {
         : this._buffers.color,
       depth: this._buffers.depth,
       stencil: this._buffers.stencil,
+      blit: this._buffers.blit,
     };
   }
   private _buffers: IRenderTargetOptions["buffers"];
@@ -137,7 +146,7 @@ export class RenderTarget {
    * cleaning out the FBO and it's attachments, but we need the Texture to live
    * on for additional purposes.
    */
-  retainTextureTargets = false;
+  retainTextureTargets = true;
 
   /**
    * This contains gl state that is processed and identified for the render
@@ -147,6 +156,8 @@ export class RenderTarget {
   gl?: {
     /** Identifier for the FBO object representing this target */
     fboId: WebGLFramebuffer;
+    /** Identifier for the blit FBO object representing this target */
+    blitFboId?: WebGLFramebuffer;
     /**
      * Each material that is generated has the potential to need a FBO to
      * properly target the buffers it is capable of rendering to.
@@ -165,6 +176,8 @@ export class RenderTarget {
     depthBufferId?: WebGLRenderbuffer | Texture;
     /** The stencil buffer this target is rendering into */
     stencilBufferId?: WebGLRenderbuffer | Texture;
+    /** A map of output types to their attachment points */
+    outputTypeToAttachment: Map<number, number>;
     /** The managing GL proxy of this target */
     proxy: GLProxy;
   };
@@ -176,10 +189,11 @@ export class RenderTarget {
         : options.buffers.color,
       depth: options.buffers.depth,
       stencil: options.buffers.stencil,
+      blit: options.buffers.blit,
     };
     this._width = options.width || 0;
     this._height = options.height || 0;
-    this.retainTextureTargets = options.retainTextureTargets || false;
+    this.retainTextureTargets = options.retainTextureTargets ?? true;
     this.calculateDimensions();
   }
 
@@ -188,16 +202,23 @@ export class RenderTarget {
    * also ensures all Texture objects are the same size to prevent errors.
    */
   private calculateDimensions() {
-    const textures: Texture[] = [];
+    const textures: (Texture | ColorBuffer)[] = [];
+    let hasMultiSampling = 0;
 
     if (this._buffers.color instanceof Texture) {
       textures.push(this._buffers.color);
+    } else if (this._buffers.color instanceof ColorBuffer) {
+      textures.push(this._buffers.color);
+      hasMultiSampling = this._buffers.color.multiSample;
     } else if (Array.isArray(this._buffers.color)) {
       for (let i = 0, iMax = this._buffers.color.length; i < iMax; ++i) {
         const buffer = this._buffers.color[i];
 
         if (buffer.buffer instanceof Texture) {
           textures.push(buffer.buffer);
+        } else if (buffer.buffer instanceof ColorBuffer) {
+          textures.push(buffer.buffer);
+          hasMultiSampling = buffer.buffer.multiSample;
         }
       }
     } else if (
@@ -205,10 +226,19 @@ export class RenderTarget {
       this._buffers.color.buffer instanceof Texture
     ) {
       textures.push(this._buffers.color.buffer);
+    } else if (
+      this._buffers.color &&
+      this._buffers.color.buffer instanceof ColorBuffer
+    ) {
+      textures.push(this._buffers.color.buffer);
+      hasMultiSampling = this._buffers.color.buffer.multiSample;
     }
 
     if (this._buffers.depth instanceof Texture) {
       textures.push(this._buffers.depth);
+    } else if (this._buffers.depth instanceof ColorBuffer) {
+      textures.push(this._buffers.depth);
+      hasMultiSampling = this._buffers.depth.multiSample;
     }
 
     if (this._buffers.stencil instanceof Texture) {
@@ -220,30 +250,80 @@ export class RenderTarget {
     // used as this render target's dimensions. This is how the texture buffers
     // specify the dimensions of the render target and ignores other set
     // dimensions applied to the render target.
-    if (textures.length > 0 && textures[0].data) {
-      const { width, height } = textures[0].data;
+    if (textures.length > 0) {
+      let width = 0;
+      let height = 0;
+      const baseTexture = textures[0];
+
+      if (baseTexture instanceof Texture && baseTexture.data) {
+        width = baseTexture.data.width;
+        height = baseTexture.data.height;
+      } else if (baseTexture instanceof ColorBuffer) {
+        width = baseTexture.size[0];
+        height = baseTexture.size[1];
+      }
 
       for (let i = 0, iMax = textures.length; i < iMax; ++i) {
         const texture = textures[i];
 
-        if (!texture.data) {
+        if (hasMultiSampling > 0) {
+          if (texture instanceof Texture) {
+            console.warn(
+              "The output has a buffer that specifies multisampling, but a texture was also specified. Textures are not allowed in multisampled render targets.",
+              texture,
+              textures,
+              "The texture will be removed as a target for the render target"
+            );
+            this.removeBufferFromOutput(texture);
+            continue;
+          } else if (texture instanceof ColorBuffer) {
+            if (texture.multiSample !== hasMultiSampling) {
+              console.warn(
+                "The output has a buffer that specifies multisampling, but an additional buffer specified did not have the same multisampling value as the other buffers.",
+                texture,
+                textures,
+                "The buffer will be removed as a target for the render target"
+              );
+              this.removeBufferFromOutput(texture);
+              continue;
+            }
+          }
+        }
+
+        if (texture instanceof Texture && !texture.data) {
           console.warn(
             "A texture specified for thie RenderTarget did not have any data associated with it."
           );
-          return;
+          this.removeBufferFromOutput(texture);
+          continue;
+        } else if (texture instanceof Texture && texture.data) {
+          const { width: checkWidth, height: checkHeight } = texture.data;
+
+          if (checkWidth !== width || checkHeight !== height) {
+            console.warn(
+              "Texture applied to the render target is invalid as it does not match dimensions of all textures/buffers applied:",
+              texture,
+              textures,
+              "The texture will be removed as a target for the render target"
+            );
+
+            this.removeBufferFromOutput(texture);
+            continue;
+          }
         }
 
-        const { width: checkWidth, height: checkHeight } = texture.data;
+        if (texture instanceof ColorBuffer) {
+          if (texture.size[0] !== width || texture.size[1] !== height) {
+            console.warn(
+              "ColorBuffer applied to the render target is invalid as it does not match dimensions of all textures/buffers applied:",
+              texture,
+              textures,
+              "The color buffer will be removed as a target for the render target"
+            );
 
-        if (checkWidth !== width || checkHeight !== height) {
-          console.warn(
-            "Texture applied to the render target is invalid as it does not match dimensions of all textures applied:",
-            texture,
-            textures,
-            "The texture will be removed as a target for the render target"
-          );
-
-          this.removeTextureFromBuffer(texture);
+            this.removeBufferFromOutput(texture);
+            continue;
+          }
         }
       }
 
@@ -352,6 +432,22 @@ export class RenderTarget {
       textures.push(this.buffers.stencil);
     }
 
+    if (this.buffers.blit?.color) {
+      if (Array.isArray(this.buffers.blit.color)) {
+        this.buffers.blit.color.forEach((buffer) => {
+          if (buffer.buffer instanceof Texture) {
+            textures.push(buffer.buffer);
+          }
+        });
+      } else if (this.buffers.blit.color.buffer instanceof Texture) {
+        textures.push(this.buffers.blit.color.buffer);
+      }
+    }
+
+    if (this.buffers.blit?.depth) {
+      textures.push(this.buffers.blit.depth);
+    }
+
     return textures;
   }
 
@@ -374,9 +470,9 @@ export class RenderTarget {
   }
 
   /**
-   * Cleanses a texture from being used as a buffer
+   * Cleanses a texture or color buffer from being used as an output buffer
    */
-  private removeTextureFromBuffer(texture: Texture) {
+  private removeBufferFromOutput(texture: Texture | ColorBuffer) {
     if (Array.isArray(this._buffers.color)) {
       const found = this._buffers.color.find((b) => b.buffer === texture);
       if (!found) return;

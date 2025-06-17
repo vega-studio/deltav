@@ -185,9 +185,14 @@ export class Texture {
   private _minFilter: GLSettings.Texture.TextureMinFilter =
     GLSettings.Texture.TextureMinFilter.LinearMipMapLinear;
 
-  /** Flag indicates if the texture object needs to have it's data modified */
+  /**
+   * Flag indicates if the texture object needs to have it's data modified
+   */
   needsDataUpload = false;
-  /** Flag indicates if the texture object has sub texture updates needed to be applied to it */
+  /**
+   * Flag indicates if the texture object has sub texture updates needed to be
+   * applied to it
+   */
   needsPartialDataUpload = false;
   /** Flag indicates if the texture object needs it's settings modified */
   needsSettingsUpdate = false;
@@ -208,7 +213,9 @@ export class Texture {
     GLSettings.Texture.PackAlignment.FOUR;
 
   /**
-   * Tells the input packing to premultiply the alpha values with the other channels as the texture is generated. See:
+   * Tells the input packing to premultiply the alpha values with the other
+   * channels as the texture is generated. See:
+   *
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
    */
   get premultiplyAlpha() {
@@ -249,8 +256,8 @@ export class Texture {
     GLSettings.Texture.UnpackAlignment.FOUR;
 
   /**
-   * These are the regions that have been requested to be applied to the Texture along
-   * with the data that should be buffered into that region.
+   * These are the regions that have been requested to be applied to the Texture
+   * along with the data that should be buffered into that region.
    */
   get updateRegions() {
     return this._updateRegions;
@@ -261,7 +268,8 @@ export class Texture {
   ][] = [];
 
   /**
-   * Specifies sample wrapping for when samples fall outside the 0 - 1 range See:
+   * Specifies sample wrapping for when samples fall outside the 0 - 1 range
+   * See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
    */
   get wrapHorizontal() {
@@ -275,7 +283,8 @@ export class Texture {
     GLSettings.Texture.Wrapping.CLAMP_TO_EDGE;
 
   /**
-   * Specifies sample wrapping for when samples fall outside the 0 - 1 range. See:
+   * Specifies sample wrapping for when samples fall outside the 0 - 1 range.
+   * See:
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
    */
   get wrapVertical() {
@@ -348,6 +357,79 @@ export class Texture {
     this.unpackAlignment = options.unpackAlignment || this.unpackAlignment;
     this.wrapHorizontal = options.wrapHorizontal || this.wrapHorizontal;
     this.wrapVertical = options.wrapVertical || this.wrapVertical;
+  }
+
+  /**
+   * Apply a new settings object to the texture which will trigger updates to
+   * the texture.
+   */
+  applySettings(options: TextureOptions) {
+    if (
+      options.anisotropy !== void 0 &&
+      options.anisotropy !== this.anisotropy
+    ) {
+      this.anisotropy = options.anisotropy;
+    }
+    if (options.data !== void 0 && options.data !== this.data) {
+      this.data = options.data;
+    }
+    if (options.flipY !== void 0 && options.flipY !== this.flipY) {
+      this.flipY = options.flipY;
+    }
+    if (options.format !== void 0 && options.format !== this.format) {
+      this.format = options.format;
+    }
+    if (
+      options.internalFormat !== void 0 &&
+      options.internalFormat !== this.internalFormat
+    ) {
+      this.internalFormat = options.internalFormat;
+    }
+    if (
+      options.generateMipMaps !== void 0 &&
+      options.generateMipMaps !== this.generateMipMaps
+    ) {
+      this.generateMipMaps = options.generateMipMaps;
+    }
+    if (options.magFilter !== void 0 && options.magFilter !== this.magFilter) {
+      this.magFilter = options.magFilter;
+    }
+    if (options.minFilter !== void 0 && options.minFilter !== this.minFilter) {
+      this.minFilter = options.minFilter;
+    }
+    if (
+      options.packAlignment !== void 0 &&
+      options.packAlignment !== this.packAlignment
+    ) {
+      this.packAlignment = options.packAlignment;
+    }
+    if (
+      options.premultiplyAlpha !== void 0 &&
+      options.premultiplyAlpha !== this.premultiplyAlpha
+    ) {
+      this.premultiplyAlpha = options.premultiplyAlpha;
+    }
+    if (options.type !== void 0 && options.type !== this.type) {
+      this.type = options.type;
+    }
+    if (
+      options.unpackAlignment !== void 0 &&
+      options.unpackAlignment !== this.unpackAlignment
+    ) {
+      this.unpackAlignment = options.unpackAlignment;
+    }
+    if (
+      options.wrapHorizontal !== void 0 &&
+      options.wrapHorizontal !== this.wrapHorizontal
+    ) {
+      this.wrapHorizontal = options.wrapHorizontal;
+    }
+    if (
+      options.wrapVertical !== void 0 &&
+      options.wrapVertical !== this.wrapVertical
+    ) {
+      this.wrapVertical = options.wrapVertical;
+    }
   }
 
   /**

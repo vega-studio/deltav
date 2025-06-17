@@ -5,6 +5,7 @@ import { isString } from "../../../../../util/types.js";
 import { isColorBufferResource } from "../../../resources/color-buffer/color-buffer-resource.js";
 import {
   BaseResourceOptions,
+  type IRenderTextureResource,
   isRenderTextureResource,
 } from "../../../resources/index.js";
 import {
@@ -20,6 +21,24 @@ import { CustomTag } from "../custom-tag.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
 import { ISurfaceContext, SurfaceContext } from "../surface-jsx.js";
 import { IViewBaseJSX } from "./as-view.js";
+
+type ViewJSXOutput = {
+  /**
+   * Specify output targets for the render/color buffers this view wants to write to.
+   * Use the name of the Resource that will be used to be written to.
+   */
+  buffers: Record<number, string | undefined>;
+  /**
+   * Set to true to include a depth buffer the system will generate for you.
+   * Use the name of the Resource to use it if you wish to target an output
+   * target texture.
+   */
+  depth: string | boolean;
+  /**
+   * Specify a render target to blit the current framebuffer to.
+   */
+  blit?: { color?: Record<number, string | undefined>; depth?: string };
+};
 
 export interface IViewJSX<TProps extends IViewProps>
   extends Partial<IViewBaseJSX<TProps>> {
@@ -41,33 +60,7 @@ export interface IViewJSX<TProps extends IViewProps>
    * to pass the values around to each other. Specify an array to create a view
    * chain for rendering to different targets.
    */
-  output?:
-    | {
-        /**
-         * Specify output targets for the render/color buffers this view wants to write to.
-         * Use the name of the Resource that will be used to be written to.
-         */
-        buffers: Record<number, string | undefined>;
-        /**
-         * Set to true to include a depth buffer the system will generate for you.
-         * Use the name of the Resource to use it if you wish to target an output
-         * target texture.
-         */
-        depth: string | boolean;
-      }
-    | {
-        /**
-         * Specify output targets for the render/color buffers this view wants to write to.
-         * Use the name of the Resource that will be used to be written to.
-         */
-        buffers: Record<number, string | undefined>;
-        /**
-         * Set to true to include a depth buffer the system will generate for you.
-         * Use the name of the Resource to use it if you wish to target an output
-         * target texture.
-         */
-        depth: string | boolean;
-      }[];
+  output?: ViewJSXOutput | ViewJSXOutput[];
 }
 
 export type IPartialViewJSX<TProps extends IViewProps> = Partial<
@@ -97,54 +90,57 @@ function getResourceResolverForName(
   return resolver;
 }
 
-async function requestBuffers<TProps extends IViewProps = IViewProps>(
-  requestedOutputBuffer: {
-    /**
-     * Specify output targets for the render/color buffers this view wants to write to.
-     * Use the name of the Resource that will be used to be written to.
-     */
-    buffers: Record<number, string | undefined>;
-    /**
-     * Set to true to include a depth buffer the system will generate for you.
-     * Use the name of the Resource to use it if you wish to target an output
-     * target texture.
-     */
-    depth: string | boolean;
-  },
+async function bufferRecordToViewOutputBuffers<TProps extends IViewProps>(
+  buffers: Record<number, string | undefined>,
   props: IViewJSX<TProps>,
   surfaceContext: ISurfaceContext
 ) {
-  const requestedOutput = requestedOutputBuffer.buffers;
-  const resourceResolvers = Object.entries(requestedOutput)
-    .map(([key, name]) => {
-      const resolver = getResourceResolverForName(
-        props.name,
-        surfaceContext,
-        name || ""
-      );
-
-      if (!resolver) {
-        console.warn("View props", props);
-        return null;
-      }
-
-      return [Number.parseInt(key), resolver, name] as [
-        number,
-        PromiseResolver<BaseResourceOptions | null>,
-        string,
-      ];
-    })
-    .filter(isDefined);
-
   const outputBuffers: ViewOutputBuffers = {};
+
+  const resourceResolvers = Object.entries(buffers)
+    .map(
+      ([key, name]):
+        | [
+            number,
+            (
+              | PromiseResolver<BaseResourceOptions | null>
+              | PromiseResolver<undefined>
+            ),
+            string | undefined,
+          ]
+        | null => {
+        if (name === void 0) {
+          const resolver = new PromiseResolver<undefined>();
+          return [Number.parseInt(key), resolver, void 0];
+        }
+
+        const resolver = getResourceResolverForName(
+          props.name,
+          surfaceContext,
+          name || ""
+        );
+
+        if (!resolver) {
+          console.warn("View props", props);
+          return null;
+        }
+
+        return [Number.parseInt(key), resolver, name];
+      }
+    )
+    .filter(isDefined);
 
   // Wait till all of the resources are available for the view and map those
   // resources to our output buffers
   await Promise.all(
     resourceResolvers.map(async (r) => {
-      const resource = await r[1].promise;
-      if (isRenderTextureResource(resource)) outputBuffers[r[0]] = resource;
-      else if (isColorBufferResource(resource)) {
+      const { 0: outputBufferTarget, 1: resolver, 2: name } = r;
+      const resource = await resolver.promise;
+      if (name === void 0) {
+        outputBuffers[outputBufferTarget] = void 0;
+      } else if (isRenderTextureResource(resource)) {
+        outputBuffers[outputBufferTarget] = resource;
+      } else if (isColorBufferResource(resource)) {
         outputBuffers[r[0]] = resource;
       } else {
         console.error(
@@ -155,6 +151,22 @@ async function requestBuffers<TProps extends IViewProps = IViewProps>(
       }
     })
   );
+
+  return outputBuffers;
+}
+
+async function requestBuffers<TProps extends IViewProps = IViewProps>(
+  requestedOutputBuffer: ViewJSXOutput,
+  props: IViewJSX<TProps>,
+  surfaceContext: ISurfaceContext
+) {
+  const requestedOutput = requestedOutputBuffer.buffers;
+  const outputBuffers: ViewOutputBuffers =
+    await bufferRecordToViewOutputBuffers(
+      requestedOutput,
+      props,
+      surfaceContext
+    );
 
   // Do the resource check and await for the depth buffer as well
   let outputDepth: ViewDepthBuffer = true;
@@ -187,9 +199,51 @@ async function requestBuffers<TProps extends IViewProps = IViewProps>(
     outputDepth = requestedDepth;
   }
 
+  // Do the resource check and await for the blit outputs as well.
+  const outputBlit: {
+    color?: ViewOutputBuffers;
+    depth?: IRenderTextureResource;
+  } = {};
+  const requestedBlit = requestedOutputBuffer.blit;
+
+  if (requestedBlit?.color) {
+    const blitBuffers = await bufferRecordToViewOutputBuffers(
+      requestedBlit.color,
+      props,
+      surfaceContext
+    );
+
+    outputBlit.color = blitBuffers;
+  }
+
+  if (isString(requestedBlit?.depth)) {
+    const resolver = getResourceResolverForName(
+      props.name,
+      surfaceContext,
+      requestedBlit.depth
+    );
+
+    if (!resolver) {
+      console.warn("View props", props);
+      outputBlit.depth = void 0;
+    } else {
+      const resource = await resolver.promise;
+
+      if (isRenderTextureResource(resource)) outputBlit.depth = resource;
+      else {
+        console.error(
+          `A View "${props.name}" requested a depth blit buffer for the resource with name: ${requestedBlit.depth} but the resource indicated is not a valid output target type.`,
+          "Ensure the resource is a RenderTextureResource"
+        );
+        console.warn("View props", props);
+      }
+    }
+  }
+
   return {
     buffers: outputBuffers,
     depth: outputDepth,
+    blit: outputBlit?.color || outputBlit?.depth ? outputBlit : void 0,
   };
 }
 
@@ -217,6 +271,7 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
       let requestedOutputs: {
         buffers: Record<number, string | undefined>;
         depth: string | boolean;
+        blit?: { color?: Record<number, string | undefined>; depth?: string };
       }[] = [];
 
       if (props.output && !Array.isArray(props.output)) {
@@ -243,6 +298,7 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
           ? {
               buffers: allBuffers[0].buffers,
               depth: allBuffers[0].depth,
+              blit: allBuffers[0].blit,
             }
           : void 0,
 
@@ -253,6 +309,7 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
                 output: {
                   buffers: buffer.buffers,
                   depth: buffer.depth,
+                  blit: buffer.blit,
                 },
               }))
             : undefined,

@@ -67,6 +67,25 @@ export namespace GLSettings {
       RGBA32I,
       /** WebGL 2 Format */
       RGBA32UI,
+
+      /** WebGL 2 Format WITH extension */
+      R16F,
+      /** WebGL 2 Format WITH extension */
+      R32F,
+      /** WebGL 2 Format WITH extension */
+      RG16F,
+      /** WebGL 2 Format WITH extension */
+      RG32F,
+      /** WebGL 2 Format WITH extension */
+      RGB16F,
+      /** WebGL 2 Format WITH extension */
+      RGB32F,
+      /** WebGL 2 Format WITH extension */
+      RGBA16F,
+      /** WebGL 2 Format WITH extension */
+      RGBA32F,
+      /** WebGL 2 Format WITH extension */
+      R11F_G11F_B10F,
     }
 
     /**
@@ -430,6 +449,11 @@ export namespace GLSettings {
       RGB_INTEGER = 49,
       /** WebGL 2 texel format */
       RGBA_INTEGER = 50,
+
+      /** WebGL 2 texel format */
+      RED = 51,
+      /** WebGL 2 texel format */
+      RG = 52,
     }
 
     /**

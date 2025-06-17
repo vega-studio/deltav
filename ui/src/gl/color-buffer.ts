@@ -1,6 +1,8 @@
 import { Vec2 } from "../math";
+import { uid } from "../util/uid.js";
 import { GLProxy } from "./gl-proxy.js";
 import { GLSettings } from "./gl-settings.js";
+import { WebGLStat } from "./webgl-stat.js";
 
 /**
  * This is the options to apply to a texture
@@ -13,6 +15,13 @@ export type ColorBufferOptions = Omit<Partial<ColorBuffer>, "destroy">;
  * some rare cases, this is a faster render target on some hardware than others.
  */
 export class ColorBuffer {
+  /**
+   * A unique identifier of this object.
+   */
+  get uid() {
+    return this._uid;
+  }
+  private _uid = uid();
   /**
    * Indicates this ColorBuffer has been destroyed, meaning it is useless and
    * invalid to use within the application.
@@ -54,7 +63,7 @@ export class ColorBuffer {
     | GLSettings.RenderTarget.ColorBufferFormat
     | GLSettings.RenderTarget.DepthBufferFormat
     | GLSettings.RenderTarget.StencilBufferFormat =
-    GLSettings.RenderTarget.ColorBufferFormat.RGBA4;
+    GLSettings.RenderTarget.ColorBufferFormat.RGBA8;
 
   /** Flag indicates if the Render Buffer needs it's settings modified */
   needsSettingsUpdate = false;
@@ -71,12 +80,22 @@ export class ColorBuffer {
   }
   private _size: Vec2 = [0, 0];
 
+  get multiSample() {
+    return this._multiSample;
+  }
+  set multiSample(val: ColorBuffer["_multiSample"]) {
+    this.needsSettingsUpdate = true;
+    this._multiSample = Math.min(WebGLStat.MSAA_MAX_SAMPLES, val);
+  }
+  private _multiSample: number = 0;
+
   /**
    * Default ctor
    */
   constructor(options: ColorBufferOptions) {
     this.size = options.size || this.size;
     this.internalFormat = options.internalFormat ?? this.internalFormat;
+    this.multiSample = options.multiSample ?? this.multiSample;
   }
 
   /**

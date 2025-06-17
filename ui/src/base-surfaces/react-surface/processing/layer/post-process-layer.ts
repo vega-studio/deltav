@@ -14,10 +14,10 @@ import {
 import { ILayerProps, Layer } from "../../../../surface";
 import {
   Color,
+  FragmentOutputType,
   InstanceAttributeSize,
   IShaderInitialization,
   IUniform,
-  type OutputFragmentShaderSource,
   ShaderInjectionTarget,
   UniformSize,
   VertexAttributeSize,
@@ -51,7 +51,7 @@ export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
    * This is the fragment shader that will handle the operation to perform
    * computations against all of the input shaders.
    */
-  fs: OutputFragmentShaderSource;
+  fs: { source: string; outputType: number }[];
   /**
    * Additional uniforms to inject into the program.
    */
@@ -87,7 +87,12 @@ export class PostProcessLayer extends Layer<
     data: new InstanceProvider<PostProcessInstance>(),
     buffers: {},
     baseShaderModules: () => ({ fs: [], vs: [] }),
-    fs: "void main() { gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
+    fs: [
+      {
+        outputType: FragmentOutputType.COLOR,
+        source: "void main() { gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
+      },
+    ],
   };
 
   initShader(): IShaderInitialization<PostProcessInstance> {
@@ -184,8 +189,15 @@ export class PostProcessLayer extends Layer<
       };
       ${fs[0].source}`;
     } else {
-      fs = `varying vec2 ${this.props.textureCoordinateName || "texCoord"};
-      ${fs}`;
+      fs = [
+        {
+          source: `
+            varying vec2 ${this.props.textureCoordinateName || "texCoord"};
+            ${fs}
+          `,
+          outputType: FragmentOutputType.COLOR,
+        },
+      ];
     }
 
     return {

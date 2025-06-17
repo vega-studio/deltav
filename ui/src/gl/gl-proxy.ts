@@ -1,6 +1,7 @@
 import Debug from "debug";
 
 import { isString } from "../types.js";
+import { isDefined } from "../util/common-filters.js";
 import { Attribute } from "./attribute.js";
 import { ColorBuffer } from "./color-buffer.js";
 import { Geometry } from "./geometry.js";
@@ -117,6 +118,10 @@ export class GLProxy {
     );
     const renderFloatTexture = gl.getExtension("EXT_color_buffer_float");
     const vao = gl.getExtension("OES_vertex_array_object");
+    const floatRenderTarget = gl.getExtension("EXT_color_buffer_float");
+    const halfFloatRenderTarget = gl.getExtension(
+      "EXT_color_buffer_half_float"
+    );
 
     const anisotropicStats = {
       maxAnistropicFilter: 0,
@@ -155,30 +160,31 @@ export class GLProxy {
 
     return {
       instancing:
-        (gl instanceof WebGL2RenderingContext ? gl : instancing) || void 0,
-      drawBuffers: (gl instanceof WebGL2RenderingContext ? gl : mrt) || void 0,
+        (gl instanceof WebGL2RenderingContext ? gl : instancing) ?? void 0,
+      drawBuffers: (gl instanceof WebGL2RenderingContext ? gl : mrt) ?? void 0,
       anisotropicFiltering: anisotropicFiltering
         ? {
             ext: anisotropicFiltering,
             stat: anisotropicStats,
           }
         : void 0,
-      renderFloatTexture: renderFloatTexture || void 0,
+      renderFloatTexture: renderFloatTexture ?? void 0,
       floatTex:
-        (gl instanceof WebGL2RenderingContext ? gl : floatTex) || void 0,
+        (gl instanceof WebGL2RenderingContext ? gl : floatTex) ?? void 0,
       floatTexFilterLinear:
-        (gl instanceof WebGL2RenderingContext ? gl : floatTexFilterLinear) ||
+        (gl instanceof WebGL2RenderingContext ? gl : floatTexFilterLinear) ??
         void 0,
       halfFloatTex:
-        (gl instanceof WebGL2RenderingContext ? gl : halfFloatTex) || void 0,
+        (gl instanceof WebGL2RenderingContext ? gl : halfFloatTex) ?? void 0,
       halfFloatTexFilterLinear:
         (gl instanceof WebGL2RenderingContext
           ? gl
-          : halfFloatTexFilterLinear) || void 0,
-      vao: (gl instanceof WebGL2RenderingContext ? gl : vao) || void 0,
+          : halfFloatTexFilterLinear) ?? void 0,
+      vao: (gl instanceof WebGL2RenderingContext ? gl : vao) ?? void 0,
+      floatRenderTarget: floatRenderTarget ?? void 0,
+      halfFloatRenderTarget: halfFloatRenderTarget ?? void 0,
     };
   }
-
   /**
    * Clears the specified buffers
    */
@@ -642,6 +648,7 @@ export class GLProxy {
       fboId: fbo,
       proxy: this,
       fboByMaterial: new WeakMap(),
+      outputTypeToAttachment: new Map(),
     };
 
     // Color buffer
@@ -679,6 +686,10 @@ export class GLProxy {
             outputType: buffer.outputType,
             attachment: bufferAttachment,
           });
+          glContext.outputTypeToAttachment.set(
+            buffer.outputType,
+            bufferAttachment
+          );
 
           if (isTextureReady(buffer.buffer)) {
             gl.framebufferTexture2D(
@@ -696,11 +707,14 @@ export class GLProxy {
             isReady = false;
           }
         } else {
-          const rboId = this.compileColorBuffer(
-            buffer.buffer,
-            target.width,
-            target.height
-          );
+          const rboId =
+            buffer.buffer.gl?.bufferId ??
+            this.compileColorBuffer(
+              buffer.buffer,
+              target.width,
+              target.height,
+              buffer.buffer.multiSample
+            );
 
           if (rboId) {
             const bufferAttachment = indexToColorAttachment(
@@ -715,6 +729,10 @@ export class GLProxy {
               outputType: buffer.outputType,
               attachment: bufferAttachment,
             });
+            glContext.outputTypeToAttachment.set(
+              buffer.outputType,
+              bufferAttachment
+            );
             gl.framebufferRenderbuffer(
               gl.FRAMEBUFFER,
               bufferAttachment,
@@ -744,6 +762,10 @@ export class GLProxy {
           outputType: buffer.outputType,
           attachment: bufferAttachment,
         };
+        glContext.outputTypeToAttachment.set(
+          buffer.outputType,
+          bufferAttachment
+        );
 
         if (isTextureReady(buffer.buffer)) {
           gl.framebufferTexture2D(
@@ -761,11 +783,14 @@ export class GLProxy {
           return false;
         }
       } else {
-        const rboId = this.compileColorBuffer(
-          buffer.buffer,
-          target.width,
-          target.height
-        );
+        const rboId =
+          buffer.buffer.gl?.bufferId ??
+          this.compileColorBuffer(
+            buffer.buffer,
+            target.width,
+            target.height,
+            buffer.buffer.multiSample
+          );
 
         if (rboId) {
           const bufferAttachment = indexToColorAttachment(
@@ -780,6 +805,10 @@ export class GLProxy {
             outputType: buffer.outputType,
             attachment: bufferAttachment,
           };
+          glContext.outputTypeToAttachment.set(
+            buffer.outputType,
+            bufferAttachment
+          );
           gl.framebufferRenderbuffer(
             gl.FRAMEBUFFER,
             bufferAttachment,
@@ -808,9 +837,10 @@ export class GLProxy {
         }
       } else if (buffer instanceof ColorBuffer) {
         const rboId = this.compileDepthBuffer(
-          buffer.internalFormat as GLSettings.RenderTarget.DepthBufferFormat,
+          buffer,
           target.width,
-          target.height
+          target.height,
+          buffer.multiSample
         );
 
         if (rboId) {
@@ -826,7 +856,8 @@ export class GLProxy {
         const rboId = this.compileDepthBuffer(
           buffer,
           target.width,
-          target.height
+          target.height,
+          0
         );
 
         if (rboId) {
@@ -951,6 +982,178 @@ export class GLProxy {
       return false;
     }
 
+    // Make sure any blitting requirements are compiled as well. We do this
+    // AFTER complete verification of the RenderTarget as the blit buffer has an
+    // FBO change that needs to be verified.
+    if (!this.compileBlitTargets(target)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * After the render targets have been compiled, we need to check to see if any
+   * of those targets are flagged for blitting. If so, we need to make sure the
+   * blit targets are prepared for use by establishing their own framebuffers as
+   * necessary.
+   */
+  private compileBlitTargets(target: RenderTarget) {
+    const gl = this.gl;
+    // If there is no blit target, there is nothing to do
+    if (!target.buffers.blit) return;
+    // If the blit FBO already exists, there is nothing to do
+    if (!target.gl || target.gl?.blitFboId) return;
+
+    // Create the blit FBO
+    const blitFboId = gl.createFramebuffer();
+    // Get the blit buffer attachment points
+    const outputTypeToAttachment = target.gl.outputTypeToAttachment;
+
+    if (!blitFboId) {
+      console.warn(this.debugContext, "Could not create blit FBO");
+      return;
+    }
+
+    // Bind the blit FBO
+    this.state.bindFBO(blitFboId);
+
+    // Make sure the blit texture referenced is valid
+    if (target.buffers.blit?.color) {
+      if (Array.isArray(target.buffers.blit.color)) {
+        target.buffers.blit.color.forEach((buffer) => {
+          const attachment = outputTypeToAttachment.get(buffer.outputType);
+          if (attachment === void 0) {
+            console.warn(
+              "A blit output could not be mapped to an attachment point."
+            );
+            return;
+          }
+
+          if (buffer.buffer instanceof Texture) {
+            if (isTextureReady(buffer.buffer)) {
+              gl.framebufferTexture2D(
+                gl.FRAMEBUFFER,
+                attachment,
+                gl.TEXTURE_2D,
+                buffer.buffer.gl.textureId,
+                0
+              );
+            } else {
+              console.warn(
+                this.debugContext,
+                "Attempted to compile render target whose target blit texture was not ready for use."
+              );
+              return false;
+            }
+          } else {
+            const rboId = this.compileColorBuffer(
+              buffer.buffer,
+              target.width,
+              target.height,
+              0
+            );
+
+            if (rboId) {
+              gl.framebufferRenderbuffer(
+                gl.FRAMEBUFFER,
+                attachment,
+                gl.RENDERBUFFER,
+                rboId
+              );
+            }
+          }
+        });
+      } else {
+        const buffer = target.buffers.blit.color;
+        const attachment = outputTypeToAttachment.get(buffer.outputType);
+        if (attachment === void 0) {
+          console.warn(
+            "A blit output could not be mapped to an attachment point."
+          );
+          return;
+        }
+        if (buffer.buffer instanceof Texture) {
+          if (isTextureReady(buffer.buffer)) {
+            gl.framebufferTexture2D(
+              gl.FRAMEBUFFER,
+              attachment,
+              gl.TEXTURE_2D,
+              buffer.buffer.gl.textureId,
+              0
+            );
+          } else {
+            console.warn(
+              this.debugContext,
+              "Attempted to compile render target whose target blit texture was not ready for use."
+            );
+            return false;
+          }
+        } else {
+          const rboId = this.compileColorBuffer(
+            buffer.buffer,
+            target.width,
+            target.height,
+            0
+          );
+
+          if (rboId) {
+            gl.framebufferRenderbuffer(
+              gl.FRAMEBUFFER,
+              attachment,
+              gl.RENDERBUFFER,
+              rboId
+            );
+          }
+        }
+      }
+    }
+
+    // Make sure the blit texture referenced is valid
+    if (target.buffers.blit?.depth) {
+      if (target.buffers.blit.depth instanceof Texture) {
+        if (isTextureReady(target.buffers.blit.depth)) {
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.DEPTH_ATTACHMENT,
+            gl.TEXTURE_2D,
+            target.buffers.blit.depth.gl.textureId,
+            0
+          );
+        } else {
+          console.warn(
+            this.debugContext,
+            "Attempted to compile render target whose target depth blit texture was not ready for use."
+          );
+          return false;
+        }
+      } else {
+        const rboId = this.compileDepthBuffer(
+          target.buffers.blit.depth,
+          target.width,
+          target.height,
+          0
+        );
+
+        if (rboId) {
+          gl.framebufferRenderbuffer(
+            gl.FRAMEBUFFER,
+            gl.DEPTH_ATTACHMENT,
+            gl.RENDERBUFFER,
+            rboId
+          );
+        }
+      }
+    }
+
+    // Bind the previous fbo
+    if (target.gl?.fboId) {
+      this.state.bindFBO(target.gl?.fboId);
+    }
+
+    // Store the blit FBO id
+    target.gl.blitFboId = blitFboId;
+
     return true;
   }
 
@@ -958,10 +1161,23 @@ export class GLProxy {
    * Produces a render buffer object intended for a render target for the depth buffer attachment
    */
   private compileDepthBuffer(
-    buffer: GLSettings.RenderTarget.DepthBufferFormat,
+    buffer: ColorBuffer | GLSettings.RenderTarget.DepthBufferFormat,
     width: number,
-    height: number
+    height: number,
+    multiSample: number
   ) {
+    let bufferFormat: GLSettings.RenderTarget.DepthBufferFormat;
+
+    if (buffer instanceof ColorBuffer) {
+      if (buffer.gl?.bufferId) {
+        return buffer.gl.bufferId;
+      }
+      bufferFormat =
+        buffer.internalFormat as GLSettings.RenderTarget.DepthBufferFormat;
+    } else {
+      bufferFormat = buffer;
+    }
+
     const gl = this.gl;
     const rbo = gl.createRenderbuffer();
 
@@ -976,13 +1192,31 @@ export class GLProxy {
 
     // State change
     this.state.bindRBO(rbo);
+
     // Set the storage format of the RBO
-    gl.renderbufferStorage(
-      gl.RENDERBUFFER,
-      depthBufferFormat(gl, buffer),
-      width,
-      height
-    );
+    if (gl instanceof WebGL2RenderingContext && multiSample > 0) {
+      gl.renderbufferStorageMultisample(
+        gl.RENDERBUFFER,
+        multiSample,
+        depthBufferFormat(gl, bufferFormat),
+        width,
+        height
+      );
+    } else {
+      gl.renderbufferStorage(
+        gl.RENDERBUFFER,
+        depthBufferFormat(gl, bufferFormat),
+        width,
+        height
+      );
+    }
+
+    if (buffer instanceof ColorBuffer) {
+      buffer.gl = {
+        bufferId: rbo,
+        proxy: this,
+      };
+    }
 
     return rbo;
   }
@@ -1027,7 +1261,8 @@ export class GLProxy {
   private compileColorBuffer(
     buffer: ColorBuffer,
     width: number,
-    height: number
+    height: number,
+    multiSample: number
   ) {
     const gl = this.gl;
     const rbo = gl.createRenderbuffer();
@@ -1043,13 +1278,24 @@ export class GLProxy {
 
     // State change
     this.state.bindRBO(rbo);
+
     // Set the storage format of the RBO
-    gl.renderbufferStorage(
-      gl.RENDERBUFFER,
-      colorBufferFormat(gl, buffer.internalFormat),
-      width,
-      height
-    );
+    if (gl instanceof WebGL2RenderingContext && multiSample > 0) {
+      gl.renderbufferStorageMultisample(
+        gl.RENDERBUFFER,
+        buffer.multiSample,
+        colorBufferFormat(gl, buffer.internalFormat),
+        width,
+        height
+      );
+    } else {
+      gl.renderbufferStorage(
+        gl.RENDERBUFFER,
+        colorBufferFormat(gl, buffer.internalFormat),
+        width,
+        height
+      );
+    }
 
     buffer.gl = {
       bufferId: rbo,
@@ -1378,8 +1624,40 @@ export class GLProxy {
         this.disposeRenderBuffer(target.gl.stencilBufferId);
       }
 
+      // Dispose of the blit texture
+      if (target.buffers.blit && !target.retainTextureTargets) {
+        if (target.buffers.blit.color) {
+          if (Array.isArray(target.buffers.blit.color)) {
+            target.buffers.blit.color.forEach((buffer) => {
+              if (buffer.buffer instanceof Texture) {
+                this.disposeTexture(buffer.buffer);
+              } else if (buffer.buffer instanceof WebGLRenderbuffer) {
+                this.disposeRenderBuffer(buffer.buffer);
+              }
+            });
+          } else {
+            const buffer = target.buffers.blit.color;
+            if (buffer.buffer instanceof Texture) {
+              this.disposeTexture(buffer.buffer);
+            } else if (buffer.buffer instanceof WebGLRenderbuffer) {
+              this.disposeRenderBuffer(buffer.buffer);
+            }
+          }
+        }
+        if (target.buffers.blit.depth) {
+          if (target.buffers.blit.depth instanceof Texture) {
+            this.disposeTexture(target.buffers.blit.depth);
+          }
+        }
+      }
+
       // Delete the framebuffer object associated with this render target
       this.gl.deleteFramebuffer(target.gl.fboId);
+
+      // Delete the FBO associated with the blit target
+      if (target.gl.blitFboId) {
+        this.gl.deleteFramebuffer(target.gl.blitFboId);
+      }
 
       // Clean up the context generated for the render target
       delete target.gl;
@@ -1870,24 +2148,16 @@ export class GLProxy {
       );
     }
 
-    // NOTE: All pixelStorei with boolean settings:
-    // The typescript definitions are wrong right now thus requiring some weird casting
-    // voodoo. The correct value according to the webgl specs IS true right here and not a number
-    // for this particular enum.
-
     if (!texture.isFloatTexture) {
       gl.pixelStorei(
         gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
-        texture.premultiplyAlpha as unknown as number
+        texture.premultiplyAlpha
       );
 
-      gl.pixelStorei(
-        gl.UNPACK_FLIP_Y_WEBGL,
-        texture.flipY as unknown as number
-      );
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
     }
 
-    // Apply the anistropic extension (if available)
+    // Apply the anisotropic extension (if available)
     if (this.extensions.anisotropicFiltering) {
       const { ext, stat } = this.extensions.anisotropicFiltering;
       const anisotropy = Math.min(
@@ -2132,5 +2402,76 @@ export class GLProxy {
     }
 
     return true;
+  }
+
+  /**
+   * Uses the configuration in the specified render target to perform a blit
+   * from the current framebuffer to the target texture which should be bound to
+   * an FBO.
+   */
+  blitFramebuffer(target: RenderTarget) {
+    if (this.gl instanceof WebGL2RenderingContext && target.gl) {
+      const outputTypeToAttachment = target.gl.outputTypeToAttachment;
+      const source = target.gl.fboId;
+      const destination = target.gl.blitFboId;
+
+      if (!source || !destination) return;
+      const blitColorBuffers = target.buffers.blit?.color;
+      let buffers = [];
+      if (!blitColorBuffers) return;
+
+      if (Array.isArray(blitColorBuffers)) buffers = blitColorBuffers;
+      else buffers = [blitColorBuffers];
+
+      // Store original
+      this.state.bindFBOTargets(source, destination);
+
+      // Make our attachment list
+      const attachments = buffers
+        .map((buffer) => outputTypeToAttachment.get(buffer.outputType))
+        .filter(isDefined);
+
+      // Blit each attachment to the blit targets
+      for (let i = 0; i < buffers.length; i++) {
+        const buffer = buffers[i];
+        const attachment = outputTypeToAttachment.get(buffer.outputType);
+
+        if (attachment) {
+          const drawBuffersAlignment = attachments
+            .slice(0)
+            .map((a) => (a === attachment ? attachment : this.gl.NONE));
+          this.gl.readBuffer(attachment);
+          this.state.setDrawBuffers(drawBuffersAlignment);
+          this.gl.blitFramebuffer(
+            0,
+            0,
+            target.width,
+            target.height,
+            0,
+            0,
+            target.width,
+            target.height,
+            this.gl.COLOR_BUFFER_BIT,
+            this.gl.NEAREST
+          );
+        }
+      }
+
+      // Blit the depth buffer if it exists
+      if (target.buffers.blit?.depth) {
+        this.gl.blitFramebuffer(
+          0,
+          0,
+          target.width,
+          target.height,
+          0,
+          0,
+          target.width,
+          target.height,
+          this.gl.DEPTH_BUFFER_BIT,
+          this.gl.NEAREST
+        );
+      }
+    }
   }
 }

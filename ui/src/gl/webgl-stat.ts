@@ -112,6 +112,7 @@ export class WebGLStat {
     half: false,
     full: false,
   };
+  static MSAA_MAX_SAMPLES = 0;
 
   /**
    * Max uniform buffers that can be bound at the same time (across vertex and
@@ -357,6 +358,7 @@ function initStats() {
       WebGLStat.SHADERS_3_0 = true;
       WebGLStat.HARDWARE_INSTANCING = true;
       WebGLStat.DEPTH_TEXTURE = true;
+      WebGLStat.MSAA_MAX_SAMPLES = gl.getParameter(gl.MAX_SAMPLES);
 
       WebGLStat.MAX_COLOR_ATTACHMENTS = gl.getParameter(
         gl.MAX_COLOR_ATTACHMENTS

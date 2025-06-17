@@ -761,7 +761,7 @@ export class Surface {
     }
 
     // Render the scene with the provided view metrics
-    renderer.render(scene, renderTarget, view.props.glState);
+    renderer.render(scene, renderTarget, view, view.props.glState);
     // Indicate this view has been rendered for the given time allottment
     view.lastFrameTime = this.frameMetrics.currentTime;
   }

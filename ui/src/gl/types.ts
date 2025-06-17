@@ -174,6 +174,10 @@ export interface IExtensions {
     | OES_texture_half_float_linear;
   /** Extension support for Vertex Array Objects */
   vao?: WebGL2RenderingContext | OES_vertex_array_object;
+  /** Extension for float render targets */
+  floatRenderTarget?: WEBGL_color_buffer_float | EXT_color_buffer_float;
+  /** Extension for half float render targets */
+  halfFloatRenderTarget?: EXT_color_buffer_half_float;
 }
 
 /**

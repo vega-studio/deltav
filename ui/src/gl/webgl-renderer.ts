@@ -1,6 +1,7 @@
 import Debug from "debug";
 
 import { Vec4 } from "../math";
+import type { IViewProps, View } from "../surface/view.js";
 import { Size } from "../types.js";
 import { Attribute } from "./attribute.js";
 import { Geometry } from "./geometry.js";
@@ -295,6 +296,7 @@ export class WebGLRenderer {
   render(
     scene: Scene,
     target: RenderTarget | RenderTarget[] | null = null,
+    view?: View<IViewProps>,
     stateChange?: (glState: GLState, modelId: string) => void
   ) {
     // Context must be established to render
@@ -339,8 +341,17 @@ export class WebGLRenderer {
         // Loop through all of the models of the scene and process them for
         // rendering
         scene.models.forEach((model: Model) => {
-          this.renderModel(model, toRemove, stateChange);
+          this.renderModel(view, model, toRemove, stateChange);
         });
+
+        // After rendering, we can check to see if the result should be blitted
+        // to a target texture.
+        if (
+          renderTarget.buffers.blit?.color ||
+          renderTarget.buffers.blit?.depth
+        ) {
+          this.glProxy.blitFramebuffer(renderTarget);
+        }
       }
     }
 
@@ -356,8 +367,14 @@ export class WebGLRenderer {
       // Loop through all of the models of the scene and process them for
       // rendering
       scene.models.forEach((model: Model) => {
-        this.renderModel(model, toRemove, stateChange);
+        this.renderModel(view, model, toRemove, stateChange);
       });
+
+      // After rendering, we can check to see if the result should be blitted
+      // to a target texture.
+      if (target?.buffers.blit?.color || target?.buffers.blit?.depth) {
+        this.glProxy.blitFramebuffer(target);
+      }
     }
 
     // Clear out any failed models from the scene
@@ -370,6 +387,7 @@ export class WebGLRenderer {
    * Renders the specified model
    */
   private renderModel(
+    view: View<IViewProps> | undefined,
     model: Model,
     toRemove: Model[],
     stateChange?: (glState: GLState, modelId: string) => void
@@ -379,6 +397,11 @@ export class WebGLRenderer {
 
     // Specify we want a new material state to be in effect
     const materialStatus = this.glState.useMaterial(material);
+
+    // Apply a view's material settings overrides if any
+    if (view?.props.materialSettings) {
+      this.glState.syncMaterial(view.props.materialSettings);
+    }
 
     // Let's put the material's program in use first so we can have the
     // attribute information available to us.

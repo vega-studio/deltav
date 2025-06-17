@@ -208,7 +208,7 @@ export class CubeLayer<
             void main() {
               float isBorder = float(_texCoord.x <= 0.05 || _texCoord.x > 0.95 || _texCoord.y < 0.05 || _texCoord.y > 0.95);
 
-              gl_FragColor = mix(
+              $\{out: color} = mix(
                 _color,
                 _glow,
                 isBorder
@@ -277,7 +277,7 @@ export class CubeLayer<
 
   getMaterialOptions() {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      cullSide: GLSettings.Material.CullSide.CCW,
+      cullSide: GLSettings.Material.CullSide.NONE,
     });
   }
 }

@@ -186,6 +186,7 @@ export class CubeLayer<
         varying vec2 _texCoord;
         varying vec4 _color;
         varying vec4 _glow;
+        varying float _depth;
 
         void main() {
           vec4 pos = vec4(position * size, 1.0);
@@ -195,6 +196,9 @@ export class CubeLayer<
           _color = color;
 
           gl_Position = clipSpace(world.xyz);
+
+          float ndcDepth = gl_Position.z / gl_Position.w;
+          _depth = ndcDepth * 0.5 + 0.5;
         }
       `,
       fs: [
@@ -204,11 +208,12 @@ export class CubeLayer<
             varying vec2 _texCoord;
             varying vec4 _color;
             varying vec4 _glow;
+            varying float _depth;
 
             void main() {
               float isBorder = float(_texCoord.x <= 0.05 || _texCoord.x > 0.95 || _texCoord.y < 0.05 || _texCoord.y > 0.95);
 
-              gl_FragColor = mix(
+              $\{out: color} = mix(
                 _color,
                 _glow,
                 isBorder
@@ -277,7 +282,7 @@ export class CubeLayer<
 
   getMaterialOptions() {
     return Object.assign({}, CommonMaterialOptions.transparentShapeBlending, {
-      cullSide: GLSettings.Material.CullSide.CCW,
+      cullSide: GLSettings.Material.CullSide.NONE,
     });
   }
 }

@@ -1,7 +1,7 @@
 import { Instance } from "../../../../instance-provider";
 import { IRenderTextureResource } from "../../../../resources";
 import { ILayerProps, Layer } from "../../../../surface";
-import { Color, IShaderInitialization, IUniform, type OutputFragmentShaderSource } from "../../../../types.js";
+import { Color, IShaderInitialization, IUniform } from "../../../../types.js";
 export declare class PostProcessInstance extends Instance {
     tint: Color;
     constructor();
@@ -20,7 +20,10 @@ export interface IPostProcessLayer extends ILayerProps<PostProcessInstance> {
      * This is the fragment shader that will handle the operation to perform
      * computations against all of the input shaders.
      */
-    fs: OutputFragmentShaderSource;
+    fs: {
+        source: string;
+        outputType: number;
+    }[];
     /**
      * Additional uniforms to inject into the program.
      */

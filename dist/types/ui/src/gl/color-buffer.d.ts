@@ -10,6 +10,11 @@ export type ColorBufferOptions = Omit<Partial<ColorBuffer>, "destroy">;
  */
 export declare class ColorBuffer {
     /**
+     * A unique identifier of this object.
+     */
+    get uid(): number;
+    private _uid;
+    /**
      * Indicates this ColorBuffer has been destroyed, meaning it is useless and
      * invalid to use within the application.
      */
@@ -46,6 +51,9 @@ export declare class ColorBuffer {
     get size(): ColorBuffer["_size"];
     set size(val: ColorBuffer["_size"]);
     private _size;
+    get multiSample(): ColorBuffer["_multiSample"];
+    set multiSample(val: ColorBuffer["_multiSample"]);
+    private _multiSample;
     /**
      * Default ctor
      */

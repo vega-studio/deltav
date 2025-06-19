@@ -2,7 +2,7 @@ import React from "react";
 import { IView2DProps } from "../../../2d";
 import { IRenderTextureResource } from "../../../resources";
 import { ILayerMaterialOptions, IUniform, type OutputFragmentShaderSource } from "../../../types.js";
-import { IPartialViewJSX } from "../scene/view-jsx.js";
+import { IPartialViewJSX, type IViewJSX } from "../scene/view-jsx.js";
 import { PostProcessLayer } from "./layer/post-process-layer.js";
 export interface IPostProcessJSX {
     /**
@@ -20,31 +20,7 @@ export interface IPostProcessJSX {
     /**
      * Specify a target output buffer or buffer chain for this process.
      */
-    output?: {
-        /**
-         * Specify output targets for the render/color buffers this view wants to write to.
-         * Use the name of the Resource that will be used to be written to.
-         */
-        buffers: Record<number, string | undefined>;
-        /**
-         * Set to true to include a depth buffer the system will generate for you.
-         * Use the name of the Resource to use it if you wish to target an output
-         * target texture.
-         */
-        depth: string | boolean;
-    } | {
-        /**
-         * Specify output targets for the render/color buffers this view wants to write to.
-         * Use the name of the Resource that will be used to be written to.
-         */
-        buffers: Record<number, string | undefined>;
-        /**
-         * Set to true to include a depth buffer the system will generate for you.
-         * Use the name of the Resource to use it if you wish to target an output
-         * target texture.
-         */
-        depth: string | boolean;
-    }[];
+    output?: IViewJSX<IView2DProps>["output"];
     /**
      * Custom material options to apply to the layer to aid in controlling
      * blending etc.

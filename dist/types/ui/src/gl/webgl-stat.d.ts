@@ -28,6 +28,7 @@ export declare class WebGLStat {
         half: boolean;
         full: boolean;
     };
+    static MSAA_MAX_SAMPLES: number;
     /**
      * Max uniform buffers that can be bound at the same time (across vertex and
      * fragment shaders)

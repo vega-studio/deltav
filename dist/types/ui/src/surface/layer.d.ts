@@ -1,7 +1,7 @@
 import { GLSettings } from "../gl/index.js";
 import { Instance } from "../instance-provider/index.js";
 import { ResourceRouter } from "../resources/index.js";
-import { type IIndexBufferInternal, IInstanceAttribute, IInstanceProvider, IInstancingUniform, ILayerEasingManager, ILayerMaterialOptions, ILayerRef, INonePickingMetrics, IPickInfo, IShaderInitialization, type IShaderInputInstancing, ISinglePickingMetrics, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, OutputFragmentShader, PickType, StreamChangeStrategy } from "../types.js";
+import { type IIndexBufferInternal, IInstanceAttribute, IInstanceProvider, IInstancingUniform, ILayerEasingManager, ILayerMaterialOptions, ILayerRef, INonePickingMetrics, IPickInfo, IShaderInitialization, type IShaderInputInstancing, ISinglePickingMetrics, IUniformInternal, IVertexAttribute, IVertexAttributeInternal, LayerBufferType, OutputFragmentShader, type OutputFragmentShaderSource, PickType, StreamChangeStrategy } from "../types.js";
 import { IdentifyByKey, IdentifyByKeyOptions } from "../util/identify-by-key.js";
 import { BufferManagerBase, IBufferLocation } from "./buffer-management/buffer-manager-base.js";
 import { InstanceDiffManager } from "./buffer-management/instance-diff-manager.js";
@@ -156,6 +156,13 @@ export interface ILayerProps<TInstance extends Instance> extends IdentifyByKeyOp
             expectedInstanceCount?: number;
         };
     };
+    /**
+     * If you have an understanding about the layer in use, you can provide
+     * fragment output overrides or additions to the layer's fragment shader. If
+     * you specify an output type that already exists, this provided source will
+     * override the existing source.
+     */
+    fs?: OutputFragmentShaderSource;
     /**
      * Executes when the mouse is down on instances (Picking type must be set)
      */

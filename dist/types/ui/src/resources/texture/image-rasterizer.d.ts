@@ -21,5 +21,5 @@ export declare class ImageRasterizer {
     /**
      * This resizes the input image by the provided scale.
      */
-    static resizeImage(image: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas, scale: number): Promise<ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas>;
+    static resizeImage(image: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas, scale: number): Promise<HTMLCanvasElement | ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | OffscreenCanvas>;
 }

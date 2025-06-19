@@ -1,3 +1,10 @@
+## 5.0.3
+
+## Fixed
+
+- [`FIXED`]: Working to improve on the Order Independent Alpha Blending story.
+- [`FIXED`]: Pipelines corrected and enhanced for sharing resources more reliably especially around RBOs. A new demonstration of this has been added MSAA WBOIT showcases this, providing antialiasing and order independent alpha blending.
+
 ## 5.0.2
 
 ## Fixed

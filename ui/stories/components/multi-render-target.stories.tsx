@@ -1140,7 +1140,12 @@ export const MSAA_Blit_To_Texture: StoryFn = (() => {
   );
 }).bind({});
 
-export const MSAA_WBOIT: StoryFn = (() => {
+/**
+ * An implementation of the blog post described at this link:
+ * By Morgan McGuire
+ * https://casual-effects.blogspot.com/2015/03/colored-blended-order-independent.html
+ */
+export const MSAA_FastColoredTransparency: StoryFn = (() => {
   const cubeProvider = React.useRef(
     new InstanceProviderWithList<CubeInstance>()
   );
@@ -1162,9 +1167,9 @@ export const MSAA_WBOIT: StoryFn = (() => {
 
       // Create multiple semi-transparent cubes
       const colors: Vec4[] = [
-        [1.0, 0.3, 0.3, 0.1],
-        [0.3, 1.0, 0.3, 0.4],
-        [0.3, 0.3, 1.0, 0.3],
+        [1.0, 0.3, 0.3, 0.9999],
+        [0.3, 1.0, 0.3, 0.6],
+        [0.3, 0.3, 1.0, 0.9],
       ];
 
       const offsets: Vec3[] = [
@@ -1367,7 +1372,7 @@ export const MSAA_WBOIT: StoryFn = (() => {
           // z = (2.0 * near) / (far + near - z * (far - near));
 
           // 3) Nonlinear boost for near contrast
-          float d = pow(z, 20.0);
+          float d = pow(z, 30.0);
 
           // 4) Fake fancy color: purple -> pink -> orange -> yellow
           vec3 color = vec3(0.0);
@@ -1464,7 +1469,10 @@ export const MSAA_WBOIT: StoryFn = (() => {
                 outputType: FragmentOutputType.ACCUMULATION1,
                 source: `
                   void main() {
-                    $\{out: colorAccum} = vec4(color.rgb * color.a, 1.0);
+                    float depthWeight = mix(10.0, 1.0, _depth);
+                    float weight = color.a;
+                    float depthWeightedColor = pow(weight, depthWeight);
+                    $\{out: colorAccum} = vec4(color.rgb * weight, weight);
                   }
                 `,
               },
@@ -1472,7 +1480,7 @@ export const MSAA_WBOIT: StoryFn = (() => {
                 outputType: FragmentOutputType.COEFFICIENT1,
                 source: `
                   void main() {
-                    $\{out: revealage} = vec4(1.0 - color.a);
+                    $\{out: revealage} = vec4(1.0 - weight);
                   }
                 `,
               },
@@ -1507,16 +1515,19 @@ export const MSAA_WBOIT: StoryFn = (() => {
         shader: `
           void main() {
             vec3 opaqueColor = texture(opaque, texCoord).rgb;
-            vec4 accumColor = texture(accum, texCoord);
-            float alphaAccum = accumColor.a;
+            vec4 sumOfColors = texture(accum, texCoord);
+            float sumOfWeights = sumOfColors.a;
 
-            // Invert sign for revealage
-            float rev = texture(revealage, texCoord).r;
+            if (sumOfWeights < 0.0001) {
+              $\{out: fragColor} = vec4(opaqueColor, 1.0);
+              return;
+            }
 
-            vec3 trans = accumColor.rgb / max(alphaAccum, 0.0001);
+            float alpha = 1.0 - texture(revealage, texCoord).r;
+            opaqueColor = mix(opaqueColor, sumOfColors.rgb / sumOfWeights, alpha);
+            // opaqueColor = sumOfColors.rgb / sumOfWeights * alpha + opaqueColor * (1.0 - alpha);
 
-            vec3 final = mix(opaqueColor, trans, rev);
-            $\{out: fragColor} = vec4(final, 1.0);
+            _FragColor = vec4(opaqueColor, 1.0);
           }
         `,
       })}

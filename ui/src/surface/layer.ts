@@ -32,6 +32,7 @@ import {
   IVertexAttributeInternal,
   LayerBufferType,
   OutputFragmentShader,
+  type OutputFragmentShaderSource,
   PickType,
   StreamChangeStrategy,
   UniformIOValue,
@@ -235,7 +236,7 @@ export interface ILayerProps<TInstance extends Instance>
    * you specify an output type that already exists, this provided source will
    * override the existing source.
    */
-  fs?: { source: string; outputType: number }[];
+  fs?: OutputFragmentShaderSource;
 
   // ---- EVENTS ----
   /**
@@ -706,7 +707,7 @@ export class Layer<
     views: View<IViewProps>[]
   ) {
     // If the fragment is just a string, then it's output source is the default
-    // COLOR target. THis also simplifies our data type to guarantee a list.
+    // COLOR target. This also simplifies our data type to guarantee a list.
     if (isString(shaderIO.fs)) {
       shaderIO.fs = [
         {
@@ -716,17 +717,30 @@ export class Layer<
       ];
     }
 
-    if (this.props.fs) {
-      for (let i = 0, iMax = this.props.fs.length; i < iMax; ++i) {
-        const { outputType, source } = this.props.fs[i];
-        const index = shaderIO.fs.findIndex(
-          (layerOutput) => layerOutput.outputType === outputType
-        );
+    const propsFS = this.props.fs;
 
-        if (index > -1) {
-          shaderIO.fs[index] = { outputType, source };
-        } else {
-          shaderIO.fs.push({ outputType, source });
+    if (propsFS) {
+      if (isString(propsFS)) {
+        const fsSource = propsFS;
+        shaderIO.fs.map((fs) => {
+          if (fs.outputType === FragmentOutputType.COLOR) {
+            fs.source = fsSource;
+          }
+
+          return fs;
+        });
+      } else {
+        for (let i = 0, iMax = propsFS.length; i < iMax; ++i) {
+          const { outputType, source } = propsFS[i];
+          const index = shaderIO.fs.findIndex(
+            (layerOutput) => layerOutput.outputType === outputType
+          );
+
+          if (index > -1) {
+            shaderIO.fs[index] = { outputType, source };
+          } else {
+            shaderIO.fs.push({ outputType, source });
+          }
         }
       }
     }

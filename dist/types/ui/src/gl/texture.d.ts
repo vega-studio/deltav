@@ -99,9 +99,14 @@ export declare class Texture {
     get minFilter(): Texture["_minFilter"];
     set minFilter(val: Texture["_minFilter"]);
     private _minFilter;
-    /** Flag indicates if the texture object needs to have it's data modified */
+    /**
+     * Flag indicates if the texture object needs to have it's data modified
+     */
     needsDataUpload: boolean;
-    /** Flag indicates if the texture object has sub texture updates needed to be applied to it */
+    /**
+     * Flag indicates if the texture object has sub texture updates needed to be
+     * applied to it
+     */
     needsPartialDataUpload: boolean;
     /** Flag indicates if the texture object needs it's settings modified */
     needsSettingsUpdate: boolean;
@@ -114,7 +119,9 @@ export declare class Texture {
     set packAlignment(val: Texture["_packAlignment"]);
     private _packAlignment;
     /**
-     * Tells the input packing to premultiply the alpha values with the other channels as the texture is generated. See:
+     * Tells the input packing to premultiply the alpha values with the other
+     * channels as the texture is generated. See:
+     *
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/pixelStorei
      */
     get premultiplyAlpha(): Texture["_premultiplyAlpha"];
@@ -136,10 +143,10 @@ export declare class Texture {
     set unpackAlignment(val: Texture["_unpackAlignment"]);
     private _unpackAlignment;
     /**
-     * These are the regions that have been requested to be applied to the Texture along
-     * with the data that should be buffered into that region.
+     * These are the regions that have been requested to be applied to the Texture
+     * along with the data that should be buffered into that region.
      */
-    get updateRegions(): [ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | {
+    get updateRegions(): [HTMLCanvasElement | ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | OffscreenCanvas | {
         width: number;
         height: number;
         buffer: ArrayBufferView | null;
@@ -151,14 +158,16 @@ export declare class Texture {
     }][];
     private _updateRegions;
     /**
-     * Specifies sample wrapping for when samples fall outside the 0 - 1 range See:
+     * Specifies sample wrapping for when samples fall outside the 0 - 1 range
+     * See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
     get wrapHorizontal(): Texture["_wrapHorizontal"];
     set wrapHorizontal(val: Texture["_wrapHorizontal"]);
     private _wrapHorizontal;
     /**
-     * Specifies sample wrapping for when samples fall outside the 0 - 1 range. See:
+     * Specifies sample wrapping for when samples fall outside the 0 - 1 range.
+     * See:
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texParameter
      */
     get wrapVertical(): Texture["_wrapVertical"];
@@ -175,6 +184,11 @@ export declare class Texture {
      */
     get isFloatTexture(): boolean;
     constructor(options: TextureOptions);
+    /**
+     * Apply a new settings object to the texture which will trigger updates to
+     * the texture.
+     */
+    applySettings(options: TextureOptions): void;
     /**
      * Frees resources associated with this texture.
      */

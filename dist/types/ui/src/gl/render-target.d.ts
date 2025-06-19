@@ -37,6 +37,14 @@ export interface IRenderTargetOptions {
          * testing.
          */
         stencil?: GLSettings.RenderTarget.StencilBufferFormat | Texture;
+        /**
+         * A target texture that this render target's FBO will be blitted to after
+         * the rendering process has completed.
+         */
+        blit?: {
+            color?: RenderBufferOutputTarget | RenderBufferOutputTarget[];
+            depth?: Texture;
+        };
     };
     /**
      * The height of the render target. This is used when the textures are not
@@ -77,6 +85,10 @@ export declare class RenderTarget {
         color: RenderBufferOutputTarget | RenderBufferOutputTarget[] | undefined;
         depth: ColorBuffer | GLSettings.RenderTarget.DepthBufferFormat | Texture | undefined;
         stencil: GLSettings.RenderTarget.StencilBufferFormat | Texture | undefined;
+        blit: {
+            color?: RenderBufferOutputTarget | RenderBufferOutputTarget[];
+            depth?: Texture;
+        } | undefined;
     };
     private _buffers;
     /**
@@ -121,6 +133,8 @@ export declare class RenderTarget {
     gl?: {
         /** Identifier for the FBO object representing this target */
         fboId: WebGLFramebuffer;
+        /** Identifier for the blit FBO object representing this target */
+        blitFboId?: WebGLFramebuffer;
         /**
          * Each material that is generated has the potential to need a FBO to
          * properly target the buffers it is capable of rendering to.
@@ -144,6 +158,8 @@ export declare class RenderTarget {
         depthBufferId?: WebGLRenderbuffer | Texture;
         /** The stencil buffer this target is rendering into */
         stencilBufferId?: WebGLRenderbuffer | Texture;
+        /** A map of output types to their attachment points */
+        outputTypeToAttachment: Map<number, number>;
         /** The managing GL proxy of this target */
         proxy: GLProxy;
     };
@@ -201,9 +217,9 @@ export declare class RenderTarget {
      */
     isColorTarget(): boolean;
     /**
-     * Cleanses a texture from being used as a buffer
+     * Cleanses a texture or color buffer from being used as an output buffer
      */
-    private removeTextureFromBuffer;
+    private removeBufferFromOutput;
     /**
      * Changes the size of this render target. This is a VERY costly operation. It
      * will delete all existing buffers associated with this target. Change the

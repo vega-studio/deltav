@@ -1323,92 +1323,96 @@ export declare enum FragmentOutputType {
      */
     ALPHA = 13,
     /**
+     * This indicates it will provide Opacity information
+     */
+    OPAQUE = 14,
+    /**
      * This indicates it will provide Beta information
      */
-    BETA = 14,
+    BETA = 15,
     /**
      * This indicates it will provide Gamma information
      */
-    GAMMA = 15,
+    GAMMA = 16,
     /**
      * This indicates it will provide Delta information
      */
-    DELTA = 16,
+    DELTA = 17,
     /**
      * This indicates it will provide some form of accumulation information
      */
-    ACCUMULATION1 = 17,
+    ACCUMULATION1 = 18,
     /**
      * This indicates it will provide some form of accumulation information
      */
-    ACCUMULATION2 = 18,
+    ACCUMULATION2 = 19,
     /**
      * This indicates it will provide some form of accumulation information
      */
-    ACCUMULATION3 = 19,
+    ACCUMULATION3 = 20,
     /**
      * This indicates it will provide some form of accumulation information
      */
-    ACCUMULATION4 = 20,
+    ACCUMULATION4 = 21,
     /**
      * This indicates it will provide Coefficient information
      */
-    COEFFICIENT1 = 21,
+    COEFFICIENT1 = 22,
     /**
      * This indicates it will provide Coefficient information
      */
-    COEFFICIENT2 = 22,
+    COEFFICIENT2 = 23,
     /**
      * This indicates it will provide Coefficient information
      */
-    COEFFICIENT3 = 23,
+    COEFFICIENT3 = 24,
     /**
      * This indicates it will provide Coefficient information
      */
-    COEFFICIENT4 = 24,
+    COEFFICIENT4 = 25,
     /**
      * This indicates it will provide Angular information
      */
-    ANGLE1 = 25,
+    ANGLE1 = 26,
     /**
      * This indicates it will provide Angular information
      */
-    ANGLE2 = 26,
+    ANGLE2 = 27,
     /**
      * This indicates it will provide Angular information
      */
-    ANGLE3 = 27,
+    ANGLE3 = 28,
     /**
      * This indicates it will provide Angular information
      */
-    ANGLE4 = 28,
+    ANGLE4 = 29,
     /**
      * This is the most common information output style. It provides an
      * alternative color per fragment
      */
-    COLOR2 = 29,
+    COLOR2 = 30,
     /**
      * This is the most common information output style. It provides an
      * alternative color per fragment
      */
-    COLOR3 = 30,
+    COLOR3 = 31,
     /**
      * This is the most common information output style. It provides an
      * alternative color per fragment
      */
-    COLOR4 = 31,
+    COLOR4 = 32,
     /**
      * This indicates this will output a fragment to a Glow filter target. Glow
      * targets are used post processing to indicate which texels in the post
      * operation should provide a bloom of a given color.
      */
-    GLOW = 32,
+    GLOW = 33,
     /**
      * This indicates this will output a fragment to a Glow filter target. Blur
      * targets are used post processing to indicate which texels in the post
      * operation should be blurred.
      */
-    BLUR = 33
+    BLUR = 34
 }
 /**
  * Defines a type that can be partially filled

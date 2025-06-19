@@ -1,4 +1,5 @@
 import { Vec4 } from "../math";
+import type { IViewProps, View } from "../surface/view.js";
 import { Size } from "../types.js";
 import { Attribute } from "./attribute.js";
 import { Geometry } from "./geometry.js";
@@ -137,7 +138,7 @@ export declare class WebGLRenderer {
     /**
      * Renders the Scene specified.
      */
-    render(scene: Scene, target?: RenderTarget | RenderTarget[] | null, stateChange?: (glState: GLState, modelId: string) => void): void;
+    render(scene: Scene, target?: RenderTarget | RenderTarget[] | null, view?: View<IViewProps>, stateChange?: (glState: GLState, modelId: string) => void): void;
     /**
      * Renders the specified model
      */

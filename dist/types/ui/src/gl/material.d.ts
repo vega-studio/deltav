@@ -4,7 +4,14 @@ import { GLSettings } from "./gl-settings.js";
 import { RenderTarget } from "./render-target.js";
 import { IMaterialUniform, MaterialUniformType } from "./types.js";
 import type { UniformBuffer } from "./uniform-buffer.js";
+/**
+ * All configuration options for seting a material.
+ */
 export type MaterialOptions = Omit<Partial<Material>, "clone" | "dispose" | "gl">;
+/**
+ * Material settings that changes gl state but not gl object model.
+ */
+export type MaterialSettings = Omit<Partial<Material>, "clone" | "dispose" | "gl" | "name" | "vertexShader" | "fragmentShader">;
 /**
  * For materials, we narrow the definition of a fragment shader mapping. It
  * specifically maps RenderTargets (provided from the view) to the output

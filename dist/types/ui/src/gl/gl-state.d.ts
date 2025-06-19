@@ -2,7 +2,7 @@ import { Vec4 } from "../math/vector.js";
 import { TypeVec } from "../types.js";
 import { GLProxy } from "./gl-proxy.js";
 import { GLSettings } from "./gl-settings.js";
-import { Material } from "./material.js";
+import { Material, type MaterialSettings } from "./material.js";
 import { RenderTarget } from "./render-target.js";
 import { Texture } from "./texture.js";
 import { IExtensions, IMaterialUniform, MaterialUniformType, UseMaterialStatus } from "./types.js";
@@ -45,6 +45,9 @@ export declare class GLState {
     /** Indicates which faces will be culled */
     get cullFace(): GLSettings.Material.CullSide;
     private _cullFace;
+    /** Indicates if culling is enabled */
+    get cullEnabled(): boolean;
+    private _cullEnabled;
     /** The channels in the color buffer a fragment is allowed to write to */
     get colorMask(): TypeVec<boolean>;
     private _colorMask;
@@ -64,7 +67,10 @@ export declare class GLState {
     get ditheringEnabled(): boolean;
     private _ditheringEnabled;
     /** The currently bound frame buffer object. null if nothing bound. */
-    get boundFBO(): WebGLFramebuffer | null;
+    get boundFBO(): {
+        read: WebGLFramebuffer | null;
+        draw: WebGLFramebuffer | null;
+    };
     private _boundFBO;
     /**
      * This is the current render target who's FBO is bound. A null render target
@@ -171,6 +177,10 @@ export declare class GLState {
      */
     bindFBO(id: WebGLFramebuffer | null): void;
     /**
+     * Binds the read and draw framebuffers for READ and DRAW framebuffer targets.
+     */
+    bindFBOTargets(source: WebGLFramebuffer | null, target: WebGLFramebuffer | null): void;
+    /**
      * Sets the provided buffer identifier as the current bound item. This
      * automatically updates all stateful information to track that a texture is
      * now utilizing a texture unit.
@@ -255,7 +265,7 @@ export declare class GLState {
      * This syncs the state of the GL context with the requested state of a
      * material
      */
-    syncMaterial(material: Material): boolean;
+    syncMaterial(material: MaterialSettings): boolean;
     /**
      * Ensures the uniform buffer is bound to a binding point and ensures the
      * program in use links it's declared uniform structures to the binding point

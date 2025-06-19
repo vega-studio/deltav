@@ -72,6 +72,13 @@ export declare class GLProxy {
      */
     compileRenderTarget(target: RenderTarget): boolean;
     /**
+     * After the render targets have been compiled, we need to check to see if any
+     * of those targets are flagged for blitting. If so, we need to make sure the
+     * blit targets are prepared for use by establishing their own framebuffers as
+     * necessary.
+     */
+    private compileBlitTargets;
+    /**
      * Produces a render buffer object intended for a render target for the depth buffer attachment
      */
     private compileDepthBuffer;
@@ -184,4 +191,10 @@ export declare class GLProxy {
      * the current program in use.
      */
     useAttribute(name: string, attribute: Attribute, geometry: Geometry): boolean | undefined;
+    /**
+     * Uses the configuration in the specified render target to perform a blit
+     * from the current framebuffer to the target texture which should be bound to
+     * an FBO.
+     */
+    blitFramebuffer(target: RenderTarget): void;
 }

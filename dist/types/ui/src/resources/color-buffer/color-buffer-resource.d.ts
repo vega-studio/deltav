@@ -37,23 +37,24 @@ export declare function createColorBuffer(options: Omit<IColorBufferResource, "t
  */
 export declare function isColorBufferResource(val: any): val is IColorBufferResource;
 /**
- * This defines a general purpose color buffer resource that can be rendered into.
+ * This defines a general purpose color buffer resource that can be rendered
+ * into.
  */
 export declare class ColorBufferResource extends IdentifyByKey implements IColorBufferResource {
-    /** Set the type of the resource to explicitally be an atlas resource */
+    /** Set the type of the resource to explicitally be a color buffer resource */
     type: ResourceType.COLOR_BUFFER;
-    /** This is the height of the texture */
+    /** This is the internal height of the buffer */
     height: number;
-    /** This is the width of the texture */
+    /** This is the internal width of the buffer */
     width: number;
     /**
-     * This applies any desired settings to the Texture.
+     * This applies any desired settings to the Color Buffer.
      * Some noteable defaults this system sets:
      *  - generateMipMaps is true and
      *  - premultiply alpha is true.
      */
     colorBufferSettings?: ColorBufferOptions;
-    /** The actual texture resource generated */
+    /** The actual color buffer resource generated */
     colorBuffer: ColorBuffer;
     constructor(options: IColorBufferResource, renderer?: WebGLRenderer);
     /**
@@ -63,7 +64,7 @@ export declare class ColorBufferResource extends IdentifyByKey implements IColor
      */
     destroy(): void;
     /**
-     * This generates the colorBuffer object needed for this atlas.
+     * This generates the colorBuffer object needed for this resource.
      */
     private createColorBuffer;
 }

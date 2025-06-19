@@ -64,7 +64,25 @@ export declare namespace GLSettings {
             /** WebGL 2 Format */
             RGBA32I = 26,
             /** WebGL 2 Format */
-            RGBA32UI = 27
+            RGBA32UI = 27,
+            /** WebGL 2 Format WITH extension */
+            R16F = 28,
+            /** WebGL 2 Format WITH extension */
+            R32F = 29,
+            /** WebGL 2 Format WITH extension */
+            RG16F = 30,
+            /** WebGL 2 Format WITH extension */
+            RG32F = 31,
+            /** WebGL 2 Format WITH extension */
+            RGB16F = 32,
+            /** WebGL 2 Format WITH extension */
+            RGB32F = 33,
+            /** WebGL 2 Format WITH extension */
+            RGBA16F = 34,
+            /** WebGL 2 Format WITH extension */
+            RGBA32F = 35,
+            /** WebGL 2 Format WITH extension */
+            R11F_G11F_B10F = 36
         }
         /**
          * Specifies the internal format of the depth buffer for a render target
@@ -406,7 +424,11 @@ export declare namespace GLSettings {
             /** WebGL 2 texel format */
             RGB_INTEGER = 49,
             /** WebGL 2 texel format */
-            RGBA_INTEGER = 50
+            RGBA_INTEGER = 50,
+            /** WebGL 2 texel format */
+            RED = 51,
+            /** WebGL 2 texel format */
+            RG = 52
         }
         /**
          * This specifies hwo the texture data is unpacked when using gl.readPixels. See:

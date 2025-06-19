@@ -86,7 +86,6 @@ export const PostProcessJSX = (props: IPostProcessJSX) => {
           materialSettings: {
             depthTest: false,
             culling: GLSettings.Material.CullSide.NONE,
-            blending: null,
           },
           ...props.view?.config,
         }}

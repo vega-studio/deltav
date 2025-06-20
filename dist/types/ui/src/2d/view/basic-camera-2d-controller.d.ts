@@ -135,6 +135,8 @@ export declare class BasicCamera2DController extends SimpleEventHandler {
      * the top most view.
      */
     private startViewDidStart;
+    /** Set to true to disable this controller from being used. */
+    disabled: boolean;
     constructor(options: IBasicCamera2DControllerOptions);
     /**
      * Corrects camera offset to respect the current bounds and anchor.
@@ -160,6 +162,10 @@ export declare class BasicCamera2DController extends SimpleEventHandler {
      * Returns offset on y-axis due to current bounds and anchor.
      */
     boundsVerticalOffset(targetView: View<IViewProps>, bounds: ICameraBoundsOptions): number;
+    /**
+     * Computes if all conditions are met for this controller to begin modifying
+     * the current camera state.
+     */
     private canStart;
     /**
      * Centers the camera on a position. Must provide a reference view.

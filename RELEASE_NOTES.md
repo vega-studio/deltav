@@ -1,3 +1,9 @@
+## 5.1.1
+
+## Fixed
+
+- [`FIXED`]: Added the ability to disable the basic camera 2d controller from the JSX implementation
+
 ## 5.1.0
 
 ## Added

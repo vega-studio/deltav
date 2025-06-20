@@ -183,6 +183,9 @@ export class BasicCamera2DController extends SimpleEventHandler {
    */
   private startViewDidStart = false;
 
+  /** Set to true to disable this controller from being used. */
+  disabled: boolean = false;
+
   constructor(options: IBasicCamera2DControllerOptions) {
     super({});
 
@@ -443,7 +446,13 @@ export class BasicCamera2DController extends SimpleEventHandler {
     return this.camera.control2D.getOffset()[1];
   }
 
+  /**
+   * Computes if all conditions are met for this controller to begin modifying
+   * the current camera state.
+   */
   private canStart(viewId: string) {
+    if (this.disabled) return false;
+
     return (
       this.startViews.length === 0 ||
       (this.startViews && this.startViews.indexOf(viewId) > -1) ||

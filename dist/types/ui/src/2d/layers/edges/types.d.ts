@@ -14,7 +14,13 @@ export declare enum EdgeType {
     /** Makes a single control point Bezier curve */
     BEZIER = 1,
     /** Makes a two control point bezier curve */
-    BEZIER2 = 2
+    BEZIER2 = 2,
+    /** Makes a thin line with no thickness. High performance */
+    LINE_THIN = 3,
+    /** Makes a bezier curve with no thickness. High performance */
+    BEZIER_THIN = 4,
+    /** Makes a two control point bezier curve with no thickness. High performance */
+    BEZIER2_THIN = 5
 }
 /**
  * This is the broadphase control for edges to help handle quad tree adjustments for picking. If the edge scale type

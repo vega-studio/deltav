@@ -101,6 +101,7 @@ export class LineSweep {
 
     for (let i = 0, iMax = segments.length; i < iMax; ++i) {
       const bounds = segments[i].getRoughYBounds();
+      if (!bounds) continue;
       minY = Math.min(minY, bounds[0]);
       maxY = Math.max(maxY, bounds[1]);
     }

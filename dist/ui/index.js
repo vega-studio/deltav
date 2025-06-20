@@ -20038,7 +20038,7 @@ var L = /* @__PURE__ */ ((i) => (i[i.BottomLeft = 0] = "BottomLeft", i[i.BottomM
 class Tm extends hr {
   constructor(e) {
     super({}), this._uid = P(), this.isPanning = !1, this.isScaling = !1, this.panFilter = (t, n, s) => t, this.scaleFilter = (t, n, s) => t, this.startViews = [], this.optimizedViews = /* @__PURE__ */ new Set(), this.cameraImmediateAnimation = Xo.immediate(0), this.targetTouches = /* @__PURE__ */ new Set(), this.onRangeChanged = (t, n) => {
-    }, this.startViewDidStart = !1, this.applyBounds = () => {
+    }, this.startViewDidStart = !1, this.disabled = !1, this.applyBounds = () => {
       if (this.bounds && this.camera) {
         const t = this.getView(this.bounds.view);
         this.applyScaleBounds(), t && (this.camera.control2D.getOffset()[0] = this.boundsHorizontalOffset(
@@ -20137,8 +20137,12 @@ class Tm extends hr {
     ]);
     return s[1] - n[1] + t.screenPadding.top + t.screenPadding.bottom - e.screenBounds.height < 0 ? this.anchoredByBoundsVertical(e, t) : s[1] < e.screenBounds.bottom - t.screenPadding.bottom ? -t.worldBounds.bottom + (e.screenBounds.height - t.screenPadding.bottom) / this.camera.control2D.getScale()[1] : n[1] > e.screenBounds.top + t.screenPadding.top ? -t.worldBounds.top + t.screenPadding.top / this.camera.control2D.getScale()[0] : this.camera.control2D.getOffset()[1];
   }
+  /**
+   * Computes if all conditions are met for this controller to begin modifying
+   * the current camera state.
+   */
   canStart(e) {
-    return this.startViews.length === 0 || this.startViews && this.startViews.indexOf(e) > -1 || this.startViewDidStart && this.ignoreCoverViews;
+    return this.disabled ? !1 : this.startViews.length === 0 || this.startViews && this.startViews.indexOf(e) > -1 || this.startViewDidStart && this.ignoreCoverViews;
   }
   /**
    * Centers the camera on a position. Must provide a reference view.
@@ -26958,7 +26962,7 @@ const ms = K.createContext(void 0), Lx = (i) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "5.0.3",
+      "data-deltav-version": "5.1.0",
       className: `SurfaceJSX ${i.className || ""}`,
       ...i.containerProps,
       children: /* @__PURE__ */ _e.jsx("canvas", { ref: t, children: /* @__PURE__ */ _e.jsx(
@@ -26996,12 +27000,17 @@ const Mb = (i) => (Et({
   }
 }), /* @__PURE__ */ _e.jsx(yt, { tagName: "SimpleEventHandler", ...i }));
 Mb.surfaceJSXType = Me.EVENT_MANAGER;
-const Sb = (i) => (Et({
-  didMount() {
-    var e;
-    (e = i.resolver) == null || e.resolve(new Tm(i.config));
-  }
-}), /* @__PURE__ */ _e.jsx(yt, { tagName: "BasicCamera2DController", ...i }));
+const Sb = (i) => {
+  const e = K.useRef(null);
+  return Et({
+    didMount() {
+      var t;
+      e.current = new Tm(i.config), (t = i.resolver) == null || t.resolve(e.current);
+    }
+  }), K.useEffect(() => {
+    e.current && (e.current.disabled = i.disabled ?? !1);
+  }, [i.disabled]), /* @__PURE__ */ _e.jsx(yt, { tagName: "BasicCamera2DController", ...i });
+};
 Sb.surfaceJSXType = Me.EVENT_MANAGER;
 const Cb = (i) => (Et({
   didMount() {

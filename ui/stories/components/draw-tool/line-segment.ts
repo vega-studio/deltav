@@ -380,6 +380,7 @@ export class LineSegments {
 
   getPoint(t: number) {
     switch (this.type) {
+      case EdgeType.LINE_THIN:
       case EdgeType.LINE: {
         return add2(
           this.edge.start,
@@ -396,6 +397,7 @@ export class LineSegments {
        *   return (1.0 - t) * (1.0 - t) * p1 + 2.0 * t * (1.0 - t) * c1 + t * t * p2;
        * }
        */
+      case EdgeType.BEZIER_THIN:
       case EdgeType.BEZIER: {
         const t_1 = 1 - t;
         return add2(
@@ -414,6 +416,7 @@ export class LineSegments {
        *   return pow(t1, 3.0) * p1 + 3.0 * t * pow(t1, 2.0) * c1 + 3.0 * pow(t, 2.0) * t1 * c2 + pow(t, 3.0) * p2;
        * }
        */
+      case EdgeType.BEZIER2_THIN:
       case EdgeType.BEZIER2: {
         const t_1 = 1 - t;
         return add2(

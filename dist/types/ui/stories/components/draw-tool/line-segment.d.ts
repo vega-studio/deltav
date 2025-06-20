@@ -46,7 +46,7 @@ export declare class LineSegments {
      * the specified t intervals along this edge.
      */
     split(tVals: number[]): LineSegments[];
-    getRoughYBounds(): number[];
+    getRoughYBounds(): number[] | undefined;
     getPoint(t: number): Vec2;
     /**
      * This takes a segment and returns the start and end t value of the segment.

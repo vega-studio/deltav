@@ -1,3 +1,13 @@
+## 5.1.0
+
+## Added
+
+- [`ADDED`]: EdgeLayer now supports gl line strip for thin lines which can be a performance boost
+
+## Fixed
+
+- [`FIXED`]: In optimizing the default behavior of the PostProcessJSX, removing blending was a little too aggressive as blending is a fairly common default to have rather than to not have
+
 ## 5.0.3
 
 ## Fixed

@@ -15,10 +15,7 @@ import {
   EdgeType,
   InstanceProvider,
   LayerJSX,
-  onAnimationLoop,
-  onFrame,
   PromiseResolver,
-  stopAnimationLoop,
   subtract2,
   Surface,
   SurfaceJSX,
@@ -239,44 +236,105 @@ function parseInstructions(d: string[]) {
 }
 
 export const Basic: StoryFn = (() => {
-  const edgeProvider = React.useRef<InstanceProvider<EdgeInstance>>(null);
+  const lineProvider = React.useRef<InstanceProvider<EdgeInstance>>(null);
+  const bezierProvider = React.useRef<InstanceProvider<EdgeInstance>>(null);
+  const bezier2Provider = React.useRef<InstanceProvider<EdgeInstance>>(null);
+  const lineThinProvider = React.useRef<InstanceProvider<EdgeInstance>>(null);
+  const bezierThinProvider = React.useRef<InstanceProvider<EdgeInstance>>(null);
+  const bezier2ThinProvider =
+    React.useRef<InstanceProvider<EdgeInstance>>(null);
   const ready = React.useRef(new PromiseResolver<Surface>());
-  const animationDuration = 6000;
+
   useLifecycle({
     async didMount() {
       const surface = await ready.current.promise;
-      const provider = edgeProvider.current as InstanceProvider<EdgeInstance>;
+      const lines = lineProvider.current;
+      const beziers = bezierProvider.current;
+      const bezier2s = bezier2Provider.current;
+      const lineThins = lineThinProvider.current;
+      const bezierThins = bezierThinProvider.current;
+      const bezier2Thins = bezier2ThinProvider.current;
+
       const size = surface.getViewSize("main");
       if (!size) {
         console.warn("Invalid View Size", surface);
         return;
       }
-      const loopId = onAnimationLoop(async (_t: number) => {
-        if (!size) return;
-        // Add a single EdgeInstance if not already added
-        const edge = provider?.add(
-          new EdgeInstance({
-            control: [
-              [size.width / 2, size.height / 2],
-              [size.width / 2, size.height / 2],
-            ],
-            depth: 0,
-            end: [size.width / 2, size.height / 2 + 50],
-            start: [size.width / 2, size.height / 2 - 50],
-            thickness: [10, 10],
-            startColor: [1, 0, 1, 1],
-            endColor: [1, 1, 0.5, 1],
-          })
-        );
-        // Clean up
-        onFrame(() => {
-          provider.remove(edge!); // Non-null assertion
-        }, animationDuration);
-      }, 1);
-      return () => {
-        // Remove instances when the component unmounts
-        stopAnimationLoop(loopId);
-      };
+
+      lines?.add(
+        new EdgeInstance({
+          control: [
+            [size.width / 2, size.height / 2],
+            [size.width / 2, size.height / 2],
+          ],
+          depth: 0,
+          end: [size.width / 2 - 200, size.height / 2 + 50],
+          start: [size.width / 2 - 200, size.height / 2 - 50],
+          thickness: [10, 5],
+          startColor: [1, 0, 1, 1],
+          endColor: [1, 1, 0.5, 1],
+        })
+      );
+      beziers?.add(
+        new EdgeInstance({
+          control: [[size.width / 2 - 100, size.height / 2]],
+          depth: 0,
+          end: [size.width / 2 - 170, size.height / 2 + 50],
+          start: [size.width / 2 - 170, size.height / 2 - 50],
+          thickness: [10, 5],
+          startColor: [1, 0, 1, 1],
+          endColor: [1, 1, 0.5, 1],
+        })
+      );
+      bezier2s?.add(
+        new EdgeInstance({
+          control: [
+            [size.width / 2 - 150, size.height / 2],
+            [size.width / 2 - 50, size.height / 2],
+          ],
+          depth: 0,
+          end: [size.width / 2 - 100, size.height / 2 + 50],
+          start: [size.width / 2 - 100, size.height / 2 - 50],
+          thickness: [10, 5],
+          startColor: [1, 0, 1, 1],
+          endColor: [1, 1, 0.5, 1],
+        })
+      );
+      lineThins?.add(
+        new EdgeInstance({
+          depth: 0,
+          end: [size.width / 2 - 50, size.height / 2 + 50],
+          start: [size.width / 2 - 50, size.height / 2 - 50],
+          thickness: [1, 1],
+          startColor: [1, 0, 1, 1],
+          endColor: [1, 1, 0.5, 1],
+        })
+      );
+      bezierThins?.add(
+        new EdgeInstance({
+          depth: 0,
+          control: [[size.width / 2 + 50, size.height / 2]],
+          end: [size.width / 2 - 0, size.height / 2 + 50],
+          start: [size.width / 2 - 0, size.height / 2 - 50],
+          thickness: [1, 1],
+          startColor: [1, 0, 1, 1],
+          endColor: [1, 1, 0.5, 1],
+        })
+      );
+      bezier2Thins?.add(
+        new EdgeInstance({
+          depth: 0,
+          control: [
+            [size.width / 2 + 0, size.height / 2],
+            [size.width / 2 + 100, size.height / 2],
+          ],
+          end: [size.width / 2 + 50, size.height / 2 + 50],
+          start: [size.width / 2 + 50, size.height / 2 - 50],
+          thickness: [1, 1],
+          startColor: [1, 0, 1, 1],
+          endColor: [1, 1, 0.5, 1],
+        })
+      );
     },
   });
   return (
@@ -297,18 +355,51 @@ export const Basic: StoryFn = (() => {
         }}
       />
       <LayerJSX
+        name="line"
         type={EdgeLayer}
-        providerRef={edgeProvider}
+        providerRef={lineProvider}
         config={{
           type: EdgeType.LINE,
-          // Animation for properties using easing method over 2000 milliseconds
-          animate: {
-            start: AutoEasingMethod.easeInCubic(2000),
-            end: AutoEasingMethod.easeInCubic(2000),
-            thickness: AutoEasingMethod.easeInCubic(2000),
-            startColor: AutoEasingMethod.easeInCubic(2000),
-            endColor: AutoEasingMethod.easeInCubic(2000),
-          },
+        }}
+      />
+      <LayerJSX
+        name="bezier"
+        type={EdgeLayer}
+        providerRef={bezierProvider}
+        config={{
+          type: EdgeType.BEZIER,
+        }}
+      />
+      <LayerJSX
+        name="bezier2"
+        type={EdgeLayer}
+        providerRef={bezier2Provider}
+        config={{
+          type: EdgeType.BEZIER2,
+        }}
+      />
+      <LayerJSX
+        name="lineThin"
+        type={EdgeLayer}
+        providerRef={lineThinProvider}
+        config={{
+          type: EdgeType.LINE_THIN,
+        }}
+      />
+      <LayerJSX
+        name="bezierThin"
+        type={EdgeLayer}
+        providerRef={bezierThinProvider}
+        config={{
+          type: EdgeType.BEZIER_THIN,
+        }}
+      />
+      <LayerJSX
+        name="bezier2Thin"
+        type={EdgeLayer}
+        providerRef={bezier2ThinProvider}
+        config={{
+          type: EdgeType.BEZIER2_THIN,
         }}
       />
     </SurfaceJSX>

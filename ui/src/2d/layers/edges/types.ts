@@ -16,6 +16,12 @@ export enum EdgeType {
   BEZIER,
   /** Makes a two control point bezier curve */
   BEZIER2,
+  /** Makes a thin line with no thickness. High performance */
+  LINE_THIN,
+  /** Makes a bezier curve with no thickness. High performance */
+  BEZIER_THIN,
+  /** Makes a two control point bezier curve with no thickness. High performance */
+  BEZIER2_THIN,
 }
 
 /**

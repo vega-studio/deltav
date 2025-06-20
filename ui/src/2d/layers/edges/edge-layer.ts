@@ -1,3 +1,4 @@
+import { GLSettings } from "../../../gl/gl-settings.js";
 import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
 import {
@@ -13,11 +14,13 @@ import { CommonMaterialOptions, shaderTemplate } from "../../../util";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
 import { EdgeInstance } from "./edge-instance.js";
 import edgeFS from "./shader/edge-layer.fs";
-import baseVS from "./shader/edge-layer.vs";
+import worldVS from "./shader/edge-layer.vs";
 import bezierVS from "./shader/edge-layer-bezier.vs";
 import bezier2VS from "./shader/edge-layer-bezier2.vs";
 import lineVS from "./shader/edge-layer-line.vs";
 import screenVS from "./shader/edge-layer-screen-curve.vs";
+import screenThinVS from "./shader/edge-layer-screen-curve-thin.vs";
+import worldThinVS from "./shader/edge-layer-thin.vs";
 import { EdgeBroadphase, EdgeScaleType, EdgeType } from "./types.js";
 
 export interface IEdgeLayerProps<T extends EdgeInstance>
@@ -63,10 +66,40 @@ function toInstanceIOValue(value: [number, number][]): InstanceIOValue {
 }
 
 /** This picks the appropriate shader for the edge type desired */
-const pickVS = {
+const pickInterpolationVS = {
   [EdgeType.LINE]: lineVS,
   [EdgeType.BEZIER]: bezierVS,
   [EdgeType.BEZIER2]: bezier2VS,
+  [EdgeType.LINE_THIN]: lineVS,
+  [EdgeType.BEZIER_THIN]: bezierVS,
+  [EdgeType.BEZIER2_THIN]: bezier2VS,
+};
+
+const pickScreenVS = {
+  [EdgeType.LINE]: screenVS,
+  [EdgeType.BEZIER]: screenVS,
+  [EdgeType.BEZIER2]: screenVS,
+  [EdgeType.LINE_THIN]: screenThinVS,
+  [EdgeType.BEZIER_THIN]: screenThinVS,
+  [EdgeType.BEZIER2_THIN]: screenThinVS,
+};
+
+const pickWorldVS = {
+  [EdgeType.LINE]: worldVS,
+  [EdgeType.BEZIER]: worldVS,
+  [EdgeType.BEZIER2]: worldVS,
+  [EdgeType.LINE_THIN]: worldThinVS,
+  [EdgeType.BEZIER_THIN]: worldThinVS,
+  [EdgeType.BEZIER2_THIN]: worldThinVS,
+};
+
+const drawMode = {
+  [EdgeType.LINE]: GLSettings.Model.DrawMode.TRIANGLE_STRIP,
+  [EdgeType.BEZIER]: GLSettings.Model.DrawMode.TRIANGLE_STRIP,
+  [EdgeType.BEZIER2]: GLSettings.Model.DrawMode.TRIANGLE_STRIP,
+  [EdgeType.LINE_THIN]: GLSettings.Model.DrawMode.LINE_STRIP,
+  [EdgeType.BEZIER_THIN]: GLSettings.Model.DrawMode.LINE_STRIP,
+  [EdgeType.BEZIER2_THIN]: GLSettings.Model.DrawMode.LINE_STRIP,
 };
 
 /**
@@ -120,25 +153,38 @@ export class EdgeLayer<
     const MAX_SEGMENTS = type === EdgeType.LINE ? 2 : smoothness;
 
     // Calculate the normals and interpolations for our vertices
-    const vertexToNormal: { [key: number]: number } = {
-      0: 1,
-      [MAX_SEGMENTS * 2 + 2]: -1,
-    };
+    const vertexToNormal = new Array(MAX_SEGMENTS * 2 + 2);
+    vertexToNormal[0] = 1;
+    vertexToNormal[MAX_SEGMENTS * 2 + 2] = -1;
 
-    const vertexInterpolation: { [key: number]: number } = {
-      0: 0,
-      [MAX_SEGMENTS * 2 + 2]: 1,
-    };
+    const vertexInterpolation = new Array(MAX_SEGMENTS * 2 + 2);
+    vertexInterpolation[0] = 0;
+    vertexInterpolation[MAX_SEGMENTS * 2 + 2] = 1;
 
-    let sign = 1;
-    for (let i = 0; i < MAX_SEGMENTS * 2; ++i) {
-      vertexToNormal[i + 1] = sign;
-      vertexInterpolation[i + 1] = Math.floor(i / 2) / (MAX_SEGMENTS - 1);
-      sign *= -1;
+    switch (type) {
+      case EdgeType.LINE:
+      case EdgeType.BEZIER:
+      case EdgeType.BEZIER2: {
+        let sign = 1;
+        for (let i = 0; i < MAX_SEGMENTS * 2; ++i) {
+          vertexToNormal[i + 1] = sign;
+          vertexInterpolation[i + 1] = Math.floor(i / 2) / (MAX_SEGMENTS - 1);
+          sign *= -1;
+        }
+        break;
+      }
+      case EdgeType.LINE_THIN:
+      case EdgeType.BEZIER_THIN:
+      case EdgeType.BEZIER2_THIN:
+        for (let i = 0; i < vertexToNormal.length; ++i) {
+          vertexToNormal[i] = 1;
+          vertexInterpolation[i] = i / (vertexToNormal.length - 1);
+        }
+        break;
     }
 
     const templateOptions = {
-      interpolation: pickVS[type],
+      interpolation: pickInterpolationVS[type],
     };
 
     const vs = shaderTemplate({
@@ -147,7 +193,10 @@ export class EdgeLayer<
         name: "Edge Layer",
         values: ["interpolation"],
       },
-      shader: scaleType === EdgeScaleType.NONE ? baseVS : screenVS,
+      shader:
+        scaleType === EdgeScaleType.NONE
+          ? pickWorldVS[type]
+          : pickScreenVS[type],
 
       // We do not want to remove any other templating options present
       onToken: (token, replace) => {
@@ -160,6 +209,7 @@ export class EdgeLayer<
     });
 
     return {
+      drawMode: drawMode[type],
       fs: [
         {
           outputType: FragmentOutputType.COLOR,
@@ -202,7 +252,7 @@ export class EdgeLayer<
           size: InstanceAttributeSize.ONE,
           update: (o) => [o.depth],
         },
-        type === EdgeType.LINE
+        type === EdgeType.LINE || type === EdgeType.LINE_THIN
           ? {
               easing: animateControl,
               name: EdgeLayer.attributeNames.control,
@@ -210,7 +260,7 @@ export class EdgeLayer<
               update: (_o) => [0, 0, 0, 0],
             }
           : null,
-        type === EdgeType.BEZIER
+        type === EdgeType.BEZIER || type === EdgeType.BEZIER_THIN
           ? {
               easing: animateControl,
               name: EdgeLayer.attributeNames.control,
@@ -218,7 +268,7 @@ export class EdgeLayer<
               update: (o) => [o.control[0][0], o.control[0][1], 0, 0],
             }
           : null,
-        type === EdgeType.BEZIER2
+        type === EdgeType.BEZIER2 || type === EdgeType.BEZIER2_THIN
           ? {
               easing: animateControl,
               name: EdgeLayer.attributeNames.control,
@@ -251,11 +301,11 @@ export class EdgeLayer<
             // The side of the quad
             vertexInterpolation[vertex],
             // The number of vertices
-            MAX_SEGMENTS * 2,
+            vertexToNormal.length,
           ],
         },
       ],
-      vertexCount: MAX_SEGMENTS * 2 + 2,
+      vertexCount: vertexToNormal.length,
       vs: vs.shader,
     };
   }

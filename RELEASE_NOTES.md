@@ -1,3 +1,9 @@
+## 5.1.2
+
+## Fixed
+
+- [`FIXED`]: Added the ColorRenderBuffer to the output for the library
+
 ## 5.1.1
 
 ## Fixed

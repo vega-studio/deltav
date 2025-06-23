@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git@github.com:vega-studio/deltav.git"
   },
-  "version": "5.1.1",
+  "version": "5.1.2",
   "main": "./dist/ui/index.js",
   "types": "./dist/types/ui/index.d.ts",
   "license": "MIT",

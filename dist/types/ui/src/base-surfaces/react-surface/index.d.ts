@@ -10,6 +10,7 @@ export * from "./resource/texture-jsx.jsx";
 export * from "./resource/font-jsx.jsx";
 export * from "./resource/atlas-jsx.jsx";
 export * from "./resource/as-resource.js";
+export * from "./resource/color-buffer-jsx.jsx";
 export * from "./scene/layer-jsx.jsx";
 export * from "./scene/view-jsx.jsx";
 export * from "./scene/scene-jsx.jsx";

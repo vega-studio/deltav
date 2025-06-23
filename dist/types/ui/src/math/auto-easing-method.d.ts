@@ -11,11 +11,13 @@ export declare enum AutoEasingLoopStyle {
     REFLECT = 3
 }
 /**
- * This defines a GPU enabled easing method that will be executed on the GPU to maneuver
- *
+ * This defines a GPU enabled easing method that will be executed on the GPU
  */
 export interface IAutoEasingMethod<T extends InstanceIOValue> {
-    /** An easing method that should produce IDENTICAL values to the values of the gpu easing method using the exact same parameters */
+    /**
+     * An easing method that should produce IDENTICAL values to the values of the
+     * gpu easing method using the exact same parameters
+     */
     cpu(start: T, end: T, t: number, out?: T): T;
     /** This adds a delay to the starting time of an easing change */
     delay: number;
@@ -23,7 +25,8 @@ export interface IAutoEasingMethod<T extends InstanceIOValue> {
     duration: number;
     /**
      * An easing method written in shader language that should produce IDENTICAL
-     * values to the values of the cpu easing method using the exact same parameters.
+     * values to the values of the cpu easing method using the exact same
+     * parameters.
      */
     gpu: string;
     /**
@@ -31,10 +34,11 @@ export interface IAutoEasingMethod<T extends InstanceIOValue> {
      */
     loop: AutoEasingLoopStyle;
     /**
-     * This shall be the name of the easing method as it appears in the spu shader.
-     * BE WARNED: This name is used to dedup the methods created on the shader. So,
-     * if you use the same name as another ease method used on a single layer, you run
-     * the risk of one overriding the other with an undefined chance of who wins.
+     * This shall be the name of the easing method as it appears in the spu
+     * shader. BE WARNED: This name is used to dedup the methods created on the
+     * shader. So, if you use the same name as another ease method used on a
+     * single layer, you run the risk of one overriding the other with an
+     * undefined chance of who wins.
      */
     methodName: string;
     /**

@@ -454,6 +454,50 @@ export namespace GLSettings {
       RED = 51,
       /** WebGL 2 texel format */
       RG = 52,
+
+      /** WebGL 2 texel format */
+      R8_SNORM = 53,
+      /** WebGL 2 texel format */
+      R16_SNORM = 54,
+      /** WebGL 2 texel format */
+      R32_SNORM = 55,
+      /** WebGL 2 texel format */
+      R8I = 56,
+      /** WebGL 2 texel format */
+      R16I = 57,
+      /** WebGL 2 texel format */
+      R32I = 58,
+      /** WebGL 2 texel format */
+      R16UI = 59,
+      /** WebGL 2 texel format */
+      R32UI = 60,
+      /** WebGL 2 texel format */
+      RG8_SNORM = 61,
+      /** WebGL 2 texel format */
+      RG8I = 62,
+      /** WebGL 2 texel format */
+      RG16I = 64,
+      /** WebGL 2 texel format */
+      RG32I = 65,
+      /** WebGL 2 texel format */
+      RGB8_SNORM = 66,
+      // /** WebGL 2 texel format */
+      // RGB16_SNORM = 67,
+      // /** WebGL 2 texel format */
+      // RGB32_SNORM = 68,
+      /** WebGL 2 texel format */
+      RGBA8_SNORM = 69,
+      // /** WebGL 2 texel format */
+      // RGBA16_SNORM = 70,
+      // /** WebGL 2 texel format */
+      // RGBA32_SNORM = 71,
+      /** WebGL 2 texel format */
+      RGB10_A2UI = 72,
+
+      /** WebGL 2 texel format */
+      DEPTH24_STENCIL8 = 73,
+      /** WebGL 2 texel format */
+      DEPTH32F_STENCIL8 = 74,
     }
 
     /**

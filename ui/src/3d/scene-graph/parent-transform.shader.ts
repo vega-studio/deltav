@@ -1,4 +1,4 @@
-import { identity4 } from "../../math";
+import { identity4x4 } from "../../math";
 import { ShaderModule } from "../../shaders";
 import { ShaderInjectionTarget, UniformSize } from "../../types.js";
 import { createUniform } from "../../util";
@@ -31,7 +31,7 @@ ShaderModule.register({
       return [];
     }
 
-    const identity = identity4();
+    const identity = identity4x4();
 
     return [
       createUniform({

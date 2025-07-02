@@ -23,9 +23,9 @@ import {
   copy2x2,
   copy3x3,
   copy4x4,
-  identity2,
-  identity3,
-  identity4,
+  identity2x2,
+  identity3x3,
+  identity4x4,
   Mat2x2,
   Mat3x3,
   Mat4x4,
@@ -169,9 +169,25 @@ function assert4(actual: Vec4, expected: Vec4, shouldEqual = true) {
 }
 
 const TO_RADIANS = Math.PI / 180;
-const m4x4: Mat4x4 = identity4();
+const m4x4: Mat4x4 = identity4x4();
 
 describe("Matrix Library", () => {
+  describe("Is Column Major", () => {
+    // Create a row-major translation matrix: +1 X, +2 Y, +3 Z
+    const m = translation4x4(1, 2, 3);
+
+    // Expected column-major layout (transpose of row-major)
+    // prettier-ignore
+    const expected = [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      1, 2, 3, 1
+    ];
+
+    assert.deepEqual(m, expected);
+  });
+
   // #region Compare
   describe("Compare", () => {
     (
@@ -430,35 +446,35 @@ describe("Matrix Library", () => {
 
   describe("Identity", () => {
     it("Should make identity 2x2", () => {
-      const m = identity2();
+      const m = identity2x2();
       assert2x2(m, [1, 0, 0, 1]);
     });
 
     it("Should modify to identity 2x2", () => {
       const m: Mat2x2 = [9, 9, 9, 9];
-      identity2(m);
+      identity2x2(m);
       assert2x2(m, [1, 0, 0, 1]);
     });
 
     it("Should make identity 3x3", () => {
-      const m = identity3();
+      const m = identity3x3();
       assert3x3(m, [1, 0, 0, 0, 1, 0, 0, 0, 1]);
     });
 
     it("Should modify to identity 3x3", () => {
       const m: Mat3x3 = [9, 9, 9, 9, 9, 9, 9, 9, 9];
-      identity3(m);
+      identity3x3(m);
       assert3x3(m, [1, 0, 0, 0, 1, 0, 0, 0, 1]);
     });
 
     it("Should make identity 4x4", () => {
-      const m = identity4();
+      const m = identity4x4();
       assert4x4(m, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
     });
 
     it("Should modify to identity 4x4", () => {
       const m: Mat4x4 = [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9];
-      identity4(m);
+      identity4x4(m);
       assert4x4(m, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
     });
   });
@@ -513,7 +529,7 @@ describe("Matrix Library", () => {
     });
 
     it("Should modify to become a 4x4 translation marix", () => {
-      const m = identity4();
+      const m = identity4x4();
       translation4x4(1, 2, 3, m);
       assert4x4(m, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 3, 1]);
     });
@@ -526,7 +542,7 @@ describe("Matrix Library", () => {
 
     it("Should modify to become 4x4 translation marix from a Vec3", () => {
       const v: Vec3 = [1, 2, 3];
-      const m = identity4();
+      const m = identity4x4();
       translation4x4by3(v, m);
       assert4x4(m, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 3, 1]);
     });
@@ -540,7 +556,7 @@ describe("Matrix Library", () => {
     });
 
     it("Should modify to become a 4x4 scale marix", () => {
-      const m = identity4();
+      const m = identity4x4();
       scale4x4(1, 2, 3, m);
 
       assert4x4(m, [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1]);
@@ -555,7 +571,7 @@ describe("Matrix Library", () => {
 
     it("Should modify to become 4x4 scale marix from a Vec3", () => {
       const v: Vec3 = [1, 2, 3];
-      const m = identity4();
+      const m = identity4x4();
       scale4x4by3(v, m);
       assert4x4(m, [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1]);
     });
@@ -565,24 +581,24 @@ describe("Matrix Library", () => {
     // #region 0 degrees (Identity)
     it("Should produce an identity matrix", () => {
       const m = rotation4x4(0, 0, 0);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to become an identity matrix", () => {
       const m: Mat4x4 = [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9];
       rotation4x4(0, 0, 0, m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should produce an identity matrix from Vec3", () => {
       const m = rotation4x4by3([0, 0, 0]);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to become an identity matrix from Vec3", () => {
       const m: Mat4x4 = [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9];
       rotation4x4by3([0, 0, 0], m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
     // #endregion
 
@@ -811,37 +827,37 @@ describe("Matrix Library", () => {
     it("Should be a 360 degree rotation about the x-axis", () => {
       const m = rotation4x4(360 * TO_RADIANS, 0, 0);
 
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be a 360 degree rotation about the y-axis", () => {
       const m = rotation4x4(0, 360 * TO_RADIANS, 0);
 
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be a 360 degree rotation about the z-axis", () => {
       const m = rotation4x4(0, 0, 360 * TO_RADIANS);
 
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be a 360 degree rotation about the xy-axis", () => {
       const m = rotation4x4(360 * TO_RADIANS, 360 * TO_RADIANS, 0);
 
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be a 360 degree rotation about the xz-axis", () => {
       const m = rotation4x4(360 * TO_RADIANS, 0, 360 * TO_RADIANS);
 
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be a 360 degree rotation about the yz-axis", () => {
       const m = rotation4x4(0, 360 * TO_RADIANS, 360 * TO_RADIANS);
 
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be a 360 degree rotation about the xyz-axis", () => {
@@ -851,49 +867,49 @@ describe("Matrix Library", () => {
         360 * TO_RADIANS
       );
 
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to a 360 degree rotation about the x-axis", () => {
       rotation4x4(360 * TO_RADIANS, 0, 0, m4x4);
 
-      assert4x4(m4x4, identity4());
+      assert4x4(m4x4, identity4x4());
     });
 
     it("Should modify to a 360 degree rotation about the y-axis", () => {
       rotation4x4(0, 360 * TO_RADIANS, 0, m4x4);
 
-      assert4x4(m4x4, identity4());
+      assert4x4(m4x4, identity4x4());
     });
 
     it("Should modify to a 360 degree rotation about the z-axis", () => {
       rotation4x4(0, 0, 360 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, identity4());
+      assert4x4(m4x4, identity4x4());
     });
 
     it("Should modify to a 360 degree rotation about the xy-axis", () => {
       rotation4x4(360 * TO_RADIANS, 360 * TO_RADIANS, 0, m4x4);
 
-      assert4x4(m4x4, identity4());
+      assert4x4(m4x4, identity4x4());
     });
 
     it("Should modify to a 360 degree rotation about the xz-axis", () => {
       rotation4x4(360 * TO_RADIANS, 0, 360 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, identity4());
+      assert4x4(m4x4, identity4x4());
     });
 
     it("Should modify to a 360 degree rotation about the yz-axis", () => {
       rotation4x4(0, 360 * TO_RADIANS, 360 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, identity4());
+      assert4x4(m4x4, identity4x4());
     });
 
     it("Should modify to a 360 degree rotation about the xyz-axis", () => {
       rotation4x4(360 * TO_RADIANS, 360 * TO_RADIANS, 360 * TO_RADIANS, m4x4);
 
-      assert4x4(m4x4, identity4());
+      assert4x4(m4x4, identity4x4());
     });
     // #endregion
 
@@ -1676,37 +1692,37 @@ describe("Matrix Library", () => {
 
   describe("Concatenate / Multiply", () => {
     it("Should make a 2x2 identity", () => {
-      const m1 = identity2();
-      const m2 = identity2();
+      const m1 = identity2x2();
+      const m2 = identity2x2();
 
-      assert2x2(multiply2x2(m1, m2), identity2());
+      assert2x2(multiply2x2(m1, m2), identity2x2());
     });
 
     it("Should make a 2x2 identity commutative", () => {
-      const m1 = identity2();
-      const m2 = identity2();
+      const m1 = identity2x2();
+      const m2 = identity2x2();
 
-      assert2x2(multiply2x2(m1, m2), identity2());
+      assert2x2(multiply2x2(m1, m2), identity2x2());
     });
 
     it("Should modify to a 2x2 identity", () => {
-      const m1 = identity2();
-      const m2 = identity2();
+      const m1 = identity2x2();
+      const m2 = identity2x2();
       multiply2x2(m1, m2, m1);
 
-      assert2x2(m1, identity2());
+      assert2x2(m1, identity2x2());
     });
 
     it("Should make the original 2x2", () => {
       const m1: Mat2x2 = [1, 2, 3, 4];
-      const m2 = identity2();
+      const m2 = identity2x2();
 
       assert2x2(multiply2x2(m1, m2), [1, 2, 3, 4]);
     });
 
     it("Should make the original 2x2 commutative", () => {
       const m1: Mat2x2 = [1, 2, 3, 4];
-      const m2 = identity2();
+      const m2 = identity2x2();
 
       assert2x2(multiply2x2(m2, m1), [1, 2, 3, 4]);
     });
@@ -1726,37 +1742,37 @@ describe("Matrix Library", () => {
     });
 
     it("Should make a 3x3 identity", () => {
-      const m1 = identity3();
-      const m2 = identity3();
+      const m1 = identity3x3();
+      const m2 = identity3x3();
 
-      assert3x3(multiply3x3(m1, m2), identity3());
+      assert3x3(multiply3x3(m1, m2), identity3x3());
     });
 
     it("Should make a 3x3 identity commutative", () => {
-      const m1 = identity3();
-      const m2 = identity3();
+      const m1 = identity3x3();
+      const m2 = identity3x3();
 
-      assert3x3(multiply3x3(m2, m1), identity3());
+      assert3x3(multiply3x3(m2, m1), identity3x3());
     });
 
     it("Should modify to a 3x3 identity", () => {
-      const m1 = identity3();
-      const m2 = identity3();
+      const m1 = identity3x3();
+      const m2 = identity3x3();
       multiply3x3(m1, m2, m1);
 
-      assert3x3(m1, identity3());
+      assert3x3(m1, identity3x3());
     });
 
     it("Should make the original 3x3", () => {
       const m1: Mat3x3 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-      const m2 = identity3();
+      const m2 = identity3x3();
 
       assert3x3(multiply3x3(m1, m2), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
     it("Should make the original 3x3 commutative", () => {
       const m1: Mat3x3 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-      const m2 = identity3();
+      const m2 = identity3x3();
 
       assert3x3(multiply3x3(m2, m1), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
@@ -1776,32 +1792,32 @@ describe("Matrix Library", () => {
     });
 
     it("Should make a 4x4 identity", () => {
-      const m1 = identity4();
-      const m2 = identity4();
+      const m1 = identity4x4();
+      const m2 = identity4x4();
 
-      assert4x4(multiply4x4(m1, m2), identity4());
+      assert4x4(multiply4x4(m1, m2), identity4x4());
     });
 
     it("Should make a 4x4 identity commutative", () => {
-      const m1 = identity4();
-      const m2 = identity4();
+      const m1 = identity4x4();
+      const m2 = identity4x4();
 
-      assert4x4(multiply4x4(m2, m1), identity4());
+      assert4x4(multiply4x4(m2, m1), identity4x4());
     });
 
     it("Should modify to a 4x4 identity", () => {
-      const m1 = identity4();
-      const m2 = identity4();
+      const m1 = identity4x4();
+      const m2 = identity4x4();
       multiply4x4(m1, m2, m1);
 
-      assert4x4(m1, identity4());
+      assert4x4(m1, identity4x4());
     });
 
     it("Should make the original 4x4", () => {
       const m1: Mat4x4 = [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
       ];
-      const m2 = identity4();
+      const m2 = identity4x4();
 
       assert4x4(
         multiply4x4(m1, m2),
@@ -1813,7 +1829,7 @@ describe("Matrix Library", () => {
       const m1: Mat4x4 = [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
       ];
-      const m2 = identity4();
+      const m2 = identity4x4();
 
       assert4x4(
         multiply4x4(m2, m1),
@@ -1858,14 +1874,14 @@ describe("Matrix Library", () => {
 
   describe("Transform Vectors", () => {
     it("Should multiply matrix 2x2 with Vec2 and produce same Vec2", () => {
-      const m = identity2();
+      const m = identity2x2();
       const v: Vec2 = [1, 2];
 
       assert2(transform2(m, v), [1, 2]);
     });
 
     it("Should multiply matrix 2x2 with Vec2 and modify to same Vec2", () => {
-      const m = identity2();
+      const m = identity2x2();
       const v: Vec2 = [1, 2];
       transform2(m, v, v);
 
@@ -1888,14 +1904,14 @@ describe("Matrix Library", () => {
     });
 
     it("Should multiply matrix 3x3 with Vec3 and produce same Vec3", () => {
-      const m = identity3();
+      const m = identity3x3();
       const v: Vec3 = [1, 2, 3];
 
       assert3(transform3(m, v), [1, 2, 3]);
     });
 
     it("Should multiply matrix 3x3 with Vec3 and modify to same Vec3", () => {
-      const m = identity3();
+      const m = identity3x3();
       const v: Vec3 = [1, 2, 3];
       transform3(m, v, v);
 
@@ -1918,14 +1934,14 @@ describe("Matrix Library", () => {
     });
 
     it("Should multiply matrix 4x4 with Vec4 and produce same Vec4", () => {
-      const m = identity4();
+      const m = identity4x4();
       const v: Vec4 = [1, 2, 3, 4];
 
       assert4(transform4(m, v), [1, 2, 3, 4]);
     });
 
     it("Should multiply matrix 4x4 with Vec4 and modify to same Vec4", () => {
-      const m = identity4();
+      const m = identity4x4();
       const v: Vec4 = [1, 2, 3, 4];
       transform4(m, v, v);
 
@@ -1955,24 +1971,24 @@ describe("Matrix Library", () => {
   describe("Translation Transforms", () => {
     it("Should be identity", () => {
       const m = translation4x4(0, 0, 0);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to identity", () => {
       const m: Mat4x4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       translation4x4(0, 0, 0, m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be identity by Vec3", () => {
       const m = translation4x4by3([0, 0, 0]);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to identity by Vec3", () => {
       const m: Mat4x4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       translation4x4by3([0, 0, 0], m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should not translate", () => {
@@ -2051,24 +2067,24 @@ describe("Matrix Library", () => {
   describe("Scaling Transforms", () => {
     it("Should be identity", () => {
       const m = scale4x4(1, 1, 1);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to identity", () => {
-      const m: Mat4x4 = identity4();
+      const m: Mat4x4 = identity4x4();
       scale4x4(1, 1, 1, m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be identity by Vec3", () => {
       const m = scale4x4by3([1, 1, 1]);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to identity by Vec3", () => {
-      const m: Mat4x4 = identity4();
+      const m: Mat4x4 = identity4x4();
       scale4x4by3([1, 1, 1], m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should scale x only", () => {
@@ -2129,24 +2145,24 @@ describe("Matrix Library", () => {
   describe("Rotation Transforms (Right hand rule)", () => {
     it("Should be identity", () => {
       const m = rotation4x4(0, 0, 0);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to identity", () => {
-      const m: Mat4x4 = identity4();
+      const m: Mat4x4 = identity4x4();
       rotation4x4(0, 0, 0, m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should be identity by Vec3", () => {
       const m = rotation4x4by3([0, 0, 0]);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should modify to identity by Vec3", () => {
-      const m: Mat4x4 = identity4();
+      const m: Mat4x4 = identity4x4();
       rotation4x4by3([0, 0, 0], m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should rotate x only 90 degrees (w = 1)", () => {
@@ -2210,53 +2226,53 @@ describe("Matrix Library", () => {
 
   describe("Shear transforms", () => {
     it("Should produce identity 2x2", () => {
-      assert2x2(shearX2x2(0), identity2());
+      assert2x2(shearX2x2(0), identity2x2());
     });
 
     it("Should produce identity 4x4", () => {
-      assert4x4(shearX4x4(0, 0), identity4());
+      assert4x4(shearX4x4(0, 0), identity4x4());
     });
 
     it("Should modify to identity 2x2", () => {
       const m: Mat2x2 = [0, 0, 0, 0];
       shearX2x2(0, m);
-      assert2x2(m, identity2());
+      assert2x2(m, identity2x2());
     });
 
     it("Should modify to identity 4x4", () => {
       const m: Mat4x4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       shearX4x4(0, 0, m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should produce identity 2x2", () => {
-      assert2x2(shearY2x2(0), identity2());
+      assert2x2(shearY2x2(0), identity2x2());
     });
 
     it("Should produce identity 4x4", () => {
-      assert4x4(shearY4x4(0, 0), identity4());
+      assert4x4(shearY4x4(0, 0), identity4x4());
     });
 
     it("Should modify to identity 2x2", () => {
       const m: Mat2x2 = [0, 0, 0, 0];
       shearY2x2(0, m);
-      assert2x2(m, identity2());
+      assert2x2(m, identity2x2());
     });
 
     it("Should modify to identity 4x4", () => {
       const m: Mat4x4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       shearY4x4(0, 0, m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     it("Should produce identity 4x4", () => {
-      assert4x4(shearZ4x4(0, 0), identity4());
+      assert4x4(shearZ4x4(0, 0), identity4x4());
     });
 
     it("Should modify to identity 4x4", () => {
       const m: Mat4x4 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       shearZ4x4(0, 0, m);
-      assert4x4(m, identity4());
+      assert4x4(m, identity4x4());
     });
 
     // #region 45 degrees
@@ -2608,7 +2624,7 @@ describe("Matrix Library", () => {
     });
 
     it("Should concat multiple operations and modify", () => {
-      const m = identity4();
+      const m = identity4x4();
       const v: Vec4 = [1, 1, 1, 1];
 
       concat4x4(

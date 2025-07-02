@@ -149,7 +149,6 @@ export class Control2D {
    */
   setId(id: number) {
     this._id = id;
-    this.camera.needsViewDrawn = true;
   }
 
   /**
@@ -168,7 +167,6 @@ export class Control2D {
     // The total animation end time will be the max end time of all animateable properties
     this.updateEndTime();
     // Flag the view for a redraw
-    this.camera.needsViewDrawn = true;
 
     // Broadcast change
     if (this.onViewChange) {
@@ -220,7 +218,6 @@ export class Control2D {
     // Update end animation time
     this.updateEndTime();
     // Flag this as needing a redraw so all views using it will update.
-    this.camera.needsViewDrawn = true;
 
     // Broadcast change
     if (this.onViewChange) {
@@ -233,12 +230,7 @@ export class Control2D {
    * Resolves all flags indicating updates needed.
    */
   resolve() {
-    this.camera.needsViewDrawn = false;
     this.needsBroadcast = false;
-  }
-
-  update() {
-    this.camera.needsViewDrawn = true;
   }
 
   private updateEndTime() {

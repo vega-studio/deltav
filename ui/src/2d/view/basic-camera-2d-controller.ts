@@ -507,8 +507,6 @@ export class BasicCamera2DController extends SimpleEventHandler {
     this.onRangeChanged(this.camera, relativeView.projection);
     // Add additional correction for bounds
     this.applyBounds();
-    // Indicate the camera needs a refresh
-    this.camera.control2D.update();
   }
 
   /**
@@ -550,8 +548,6 @@ export class BasicCamera2DController extends SimpleEventHandler {
     // Add additional correction for bounds
     this.applyBounds();
 
-    // Make sure the camera updates
-    this.camera.control2D.update();
     // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
     // to the end
     this.camera.control2D.animation = this.cameraImmediateAnimation;
@@ -858,11 +854,16 @@ export class BasicCamera2DController extends SimpleEventHandler {
    * Applies a scaling effect to the camera for mouse wheel events
    */
   handleWheel(e: IMouseInteraction) {
-    // Every mouse wheel event must look to see if it's over a valid covered start view
+    // Every mouse wheel event must look to see if it's over a valid covered
+    // start view
     this.findCoveredStartView(e);
 
     if (this.canStart(e.target.view.id)) {
-      if (this.wheelShouldScroll) {
+      // When in wheel scroll mode, the wheel will pan the camera instead of
+      // zoom, BUT as a convention for browsers, when the ctrl key is registered
+      // as down, the browser is detecting the user wants to zoom. This ctrl key
+      // down also is the convention that the user is pinching on a track pad.
+      if (this.wheelShouldScroll && !e.mouse.event.ctrlKey) {
         const deltaPosition: [number, number] = [
           -e.mouse.wheel.delta[0],
           e.mouse.wheel.delta[1],

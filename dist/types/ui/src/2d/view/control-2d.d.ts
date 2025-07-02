@@ -92,6 +92,5 @@ export declare class Control2D {
      * Resolves all flags indicating updates needed.
      */
     resolve(): void;
-    update(): void;
     private updateEndTime;
 }

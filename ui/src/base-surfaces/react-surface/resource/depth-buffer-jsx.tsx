@@ -10,7 +10,7 @@ import { CustomTag } from "../custom-tag.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
 import { IResourceJSX } from "./as-resource.js";
 
-export interface IColorBufferPropsJSX extends Partial<IResourceJSX> {
+export interface IDepthBufferPropsJSX extends Partial<IResourceJSX> {
   /**
    * The identifier for the resource.
    */
@@ -20,20 +20,21 @@ export interface IColorBufferPropsJSX extends Partial<IResourceJSX> {
 /**
  * Props for TextureJSX
  */
-type IColorBufferJSX = IColorBufferPropsJSX &
+type IDepthBufferJSX = IDepthBufferPropsJSX &
   Omit<IColorBufferResource, "type" | "key" | "colorBufferSettings"> & {
     config: Omit<
       NonNullable<IColorBufferResource["colorBufferSettings"]>,
       "internalFormat"
     > & {
-      internalFormat: GLSettings.RenderTarget.ColorBufferFormat;
+      internalFormat: GLSettings.RenderTarget.DepthBufferFormat;
     };
   };
 
 /**
- * Generates a texture Resource that can be used by the name provided.
+ * Generates a Buffer Resource that can be used by the name provided. This is
+ * specialized for depth buffers.
  */
-export const ColorBufferJSX = (props: IColorBufferJSX) => {
+export const DepthBufferJSX = (props: IDepthBufferJSX) => {
   useLifecycle({
     didMount() {
       props.resolver?.resolve(
@@ -50,4 +51,4 @@ export const ColorBufferJSX = (props: IColorBufferJSX) => {
   return <CustomTag tagName="ColorBuffer" {...props} />;
 };
 
-ColorBufferJSX.surfaceJSXType = SurfaceJSXType.RESOURCE;
+DepthBufferJSX.surfaceJSXType = SurfaceJSXType.RESOURCE;

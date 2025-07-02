@@ -4,9 +4,10 @@ import {
   copy4x4,
   decomposeRotation,
   forward3,
-  identity3,
-  identity4,
+  identity3x3,
+  identity4x4,
   inverse3,
+  inverse4x4,
   length4Components,
   lookAtQuat,
   M3R,
@@ -100,7 +101,7 @@ export class Transform extends TreeNode<Transform> {
     this.update();
     return this._matrix.value;
   }
-  private _matrix: UpdateProp<Mat4x4> = { value: identity4() };
+  private _matrix: UpdateProp<Mat4x4> = { value: identity4x4() };
 
   /**
    * This is the local matrix which represents the transform this Transform
@@ -124,10 +125,29 @@ export class Transform extends TreeNode<Transform> {
     this.hasViewMatrix = true;
     if (this._viewMatrix === void 0) this.invalidate();
     this.update();
-    if (this._viewMatrix === void 0) return identity4();
+    if (this._viewMatrix === void 0) return identity4x4();
     return this._viewMatrix.value;
   }
   private _viewMatrix?: UpdateProp<Mat4x4>;
+
+  /**
+   * Returns the computed inverse of the view matrix.
+   * WARN: If the view matrix is incapable of being inverted, the identity matrix
+   * will be returned.
+   */
+  get inverseViewMatrix(): Mat4x4 {
+    // Getting the current view matrix will invalidate the inverse matrix if
+    // updates have occurred.
+    const viewMatrix = this.viewMatrix;
+
+    // No inverse matrix, it must be recomputed.
+    if (!this._invserseViewMatrix) {
+      this._invserseViewMatrix = inverse4x4(viewMatrix) ?? identity4x4();
+    }
+
+    return this._invserseViewMatrix;
+  }
+  private _invserseViewMatrix?: Mat4x4;
 
   /**
    * This excludes any parent transform information and is the view matrix
@@ -144,7 +164,7 @@ export class Transform extends TreeNode<Transform> {
     this.hasViewMatrix = true;
     if (this._localViewMatrix === void 0) this.invalidate();
     this.update();
-    if (this._localViewMatrix === void 0) return identity4();
+    if (this._localViewMatrix === void 0) return identity4x4();
     return this._localViewMatrix.value;
   }
   private _localViewMatrix?: UpdateProp<Mat4x4>;
@@ -168,7 +188,9 @@ export class Transform extends TreeNode<Transform> {
   }
   set localTransform(val: Mat4x4 | undefined) {
     if (val) {
-      if (!this._localTransform) this._localTransform = { value: identity4() };
+      if (!this._localTransform) {
+        this._localTransform = { value: identity4x4() };
+      }
       copy4x4(val, this._localTransform.value);
       this._localTransform.didUpdate = true;
     } else {
@@ -202,7 +224,7 @@ export class Transform extends TreeNode<Transform> {
   set localViewTransform(val: Mat4x4 | undefined) {
     if (val) {
       if (!this._localViewTransform) {
-        this._localViewTransform = { value: identity4() };
+        this._localViewTransform = { value: identity4x4() };
       }
       copy4x4(val, this._localViewTransform.value);
       this._localViewTransform.didUpdate = true;
@@ -252,7 +274,7 @@ export class Transform extends TreeNode<Transform> {
   private _localRotation: UpdateProp<Quaternion> = {
     value: this._rotation.value,
   };
-  private localRotationMatrix = identity3();
+  private localRotationMatrix = identity3x3();
 
   /**
    * The scale of the Transform in world space. When there is no parent,
@@ -495,13 +517,13 @@ export class Transform extends TreeNode<Transform> {
    */
   private divideMemory() {
     this._forward.value = forward3();
-    this._matrix.value = identity4();
+    this._matrix.value = identity4x4();
     this._rotation.value = oneQuat();
     this._scale.value = [1, 1, 1];
     this._position.value = [0, 0, 0];
 
     if (this.hasViewMatrix && this._viewMatrix && this._localViewMatrix) {
-      this._viewMatrix.value = identity4();
+      this._viewMatrix.value = identity4x4();
     }
   }
 
@@ -644,8 +666,11 @@ export class Transform extends TreeNode<Transform> {
       updateWorldMatrix = true;
 
       if (this.hasViewMatrix) {
+        // Updating the view matirx invalidates the inverse view matrix
+        this._invserseViewMatrix = void 0;
+
         if (this._viewMatrix === void 0) {
-          this._viewMatrix = { value: identity4() };
+          this._viewMatrix = { value: identity4x4() };
         }
 
         // If the localViewMatrix has not been initialized, do it now
@@ -655,7 +680,7 @@ export class Transform extends TreeNode<Transform> {
           // space, otherwise local and complete view matrix share the same
           // matrix.
           if (this.parent) {
-            this._localViewMatrix = { value: identity4() };
+            this._localViewMatrix = { value: identity4x4() };
           } else {
             this._localViewMatrix = { value: this._viewMatrix.value };
           }

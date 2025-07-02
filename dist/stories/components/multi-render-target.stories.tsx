@@ -12,6 +12,7 @@ import {
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  DepthBufferJSX,
   DrawJSX,
   EasingUtil,
   FragmentOutputType,
@@ -999,7 +1000,8 @@ export const MSAA_Blit_To_Texture: StoryFn = (() => {
         name="color"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
-        colorBufferSettings={{
+        config={{
+          internalFormat: GLSettings.RenderTarget.ColorBufferFormat.RGBA8,
           multiSample: 2,
         }}
       />
@@ -1007,15 +1009,16 @@ export const MSAA_Blit_To_Texture: StoryFn = (() => {
         name="glow"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
-        colorBufferSettings={{
+        config={{
+          internalFormat: GLSettings.RenderTarget.ColorBufferFormat.RGBA8,
           multiSample: 2,
         }}
       />
-      <ColorBufferJSX
+      <DepthBufferJSX
         name="depth"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
-        colorBufferSettings={{
+        config={{
           internalFormat:
             GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT24,
           multiSample: 2,
@@ -1248,16 +1251,16 @@ export const MSAA_FastColoredTransparency: StoryFn = (() => {
         name="opaque"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
-        colorBufferSettings={{
+        config={{
           internalFormat: GLSettings.RenderTarget.ColorBufferFormat.RGB8,
           multiSample: 2,
         }}
       />
-      <ColorBufferJSX
+      <DepthBufferJSX
         name="opaque-depth"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
-        colorBufferSettings={{
+        config={{
           internalFormat:
             GLSettings.RenderTarget.DepthBufferFormat.DEPTH_COMPONENT24,
           multiSample: 2,
@@ -1267,7 +1270,7 @@ export const MSAA_FastColoredTransparency: StoryFn = (() => {
         name="accumulation"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
-        colorBufferSettings={{
+        config={{
           internalFormat: GLSettings.RenderTarget.ColorBufferFormat.RGBA16F,
           multiSample: 2,
         }}
@@ -1276,7 +1279,7 @@ export const MSAA_FastColoredTransparency: StoryFn = (() => {
         name="revealage"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
-        colorBufferSettings={{
+        config={{
           internalFormat: GLSettings.RenderTarget.ColorBufferFormat.R16F,
           multiSample: 2,
         }}

@@ -2,8 +2,8 @@ import {
   apply2,
   apply3,
   decomposeRotation,
-  identity2,
-  identity4,
+  identity2x2,
+  identity4x4,
   length4Components,
   Mat4x4,
   multiply4x4,
@@ -67,7 +67,7 @@ export class Transform2D extends TreeNode<Transform2D> {
    * This is the culminated matrix for world space which includes this
    * Transform's changes plus it's parent's changes.
    */
-  private _matrix: UpdateProp<Mat4x4> = { value: identity4() };
+  private _matrix: UpdateProp<Mat4x4> = { value: identity4x4() };
   /**
    * This is the local matrix which represents the transform this Transform
    * performs which does NOT include the parent transforms to this transform.
@@ -138,7 +138,7 @@ export class Transform2D extends TreeNode<Transform2D> {
   private _localRotation: UpdateProp<number> = {
     value: 0,
   };
-  private localRotationMatrix = identity2();
+  private localRotationMatrix = identity2x2();
 
   /**
    * The scale of the Transform in world space. When there is no parent,

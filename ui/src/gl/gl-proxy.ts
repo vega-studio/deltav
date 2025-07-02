@@ -1383,11 +1383,14 @@ export class GLProxy {
       instancing = this.extensions.instancing;
     }
 
-    // Optimization: Don't draw valid draw buffers when a render target is
+    // Optimization: Don't draw invalid draw buffers when a render target is
     // established and MRT is enabled
     if (WebGLStat.MRT || WebGLStat.MRT_EXTENSION) {
       if (this.state.renderTarget) {
-        if (!this.state.drawBuffers.find((target) => target !== this.gl.NONE)) {
+        if (
+          !this.state.renderTarget.buffers.depth &&
+          !this.state.drawBuffers.find((target) => target !== this.gl.NONE)
+        ) {
           return;
         }
       }
@@ -1723,44 +1726,45 @@ export class GLProxy {
   /**
    * This decodes and prints any webgl context error in a  human readable manner.
    */
-  printError() {
+  printError(ignoreNoError = false) {
     const glError = this.gl.getError();
 
     switch (glError) {
       case this.gl.NO_ERROR:
+        if (ignoreNoError) return false;
         console.warn("GL Error: No Error");
-        break;
+        return false;
 
       case this.gl.INVALID_ENUM:
         console.warn("GL Error: INVALID ENUM");
-        break;
+        return true;
 
       case this.gl.INVALID_VALUE:
         console.warn("GL Error: INVALID_VALUE");
-        break;
+        return true;
 
       case this.gl.INVALID_OPERATION:
         console.warn("GL Error: INVALID OPERATION");
-        break;
+        return true;
 
       case this.gl.INVALID_FRAMEBUFFER_OPERATION:
         console.warn("GL Error: INVALID FRAMEBUFFER OPERATION");
-        break;
+        return true;
 
       case this.gl.OUT_OF_MEMORY:
         console.warn("GL Error: OUT OF MEMORY");
-        break;
+        return true;
 
       case this.gl.CONTEXT_LOST_WEBGL:
         console.warn("GL Error: CONTEXT LOST WEBGL");
-        break;
+        return true;
 
       default:
         console.warn(
           "GL Error: GL Context output an unrecognized error value:",
           glError
         );
-        break;
+        return true;
     }
   }
 
@@ -1892,6 +1896,20 @@ export class GLProxy {
           inputImageFormat(gl, texture.type),
           texture.data.buffer
         );
+
+        if (this.printError(true)) {
+          console.error("Failed texImage2D", {
+            internalFormat:
+              GLSettings.Texture.TexelDataType[texture.internalFormat],
+            format: GLSettings.Texture.TexelDataType[texture.format],
+            type: GLSettings.Texture.SourcePixelFormat[texture.type],
+            generateMipMaps: texture.generateMipMaps,
+            minFilter: GLSettings.Texture.TextureMinFilter[texture.minFilter],
+            magFilter: GLSettings.Texture.TextureMagFilter[texture.magFilter],
+            wrapHorizontal: GLSettings.Texture.Wrapping[texture.wrapHorizontal],
+            wrapVertical: GLSettings.Texture.Wrapping[texture.wrapVertical],
+          });
+        }
       } else if (texture.data) {
         if (
           !isPowerOf2(texture.data.width) ||

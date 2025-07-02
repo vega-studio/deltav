@@ -1,3 +1,14 @@
+## 5.2.0
+
+## Added
+
+- [`ADDED`]: BasicCamera2DController better handles wheel panning to simulate common touch pad controls
+- [`ADDED`]: Added more additional math models like planes and frustrums
+
+## Fixed
+
+- [`FIXED`]: Corrected stories to use adjustments to Color and Depth buffer configurations
+
 ## 5.1.2
 
 ## Fixed

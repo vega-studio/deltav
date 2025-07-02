@@ -10,7 +10,7 @@ export declare function drawMode(gl: GLContext, mode: GLSettings.Model.DrawMode)
 /**
  * Decodes the TexelDataType to a GL setting
  */
-export declare function texelFormat(gl: GLContext, format: GLSettings.Texture.TexelDataType): 34836 | 6408 | 34842 | 6406 | 6402 | 34041 | 6409 | 6410 | 6407 | 33321 | 33325 | 33326 | 33330 | 33323 | 33327 | 33328 | 33336 | 33338 | 33340 | 32849 | 35905 | 36194 | 35898 | 35901 | 34843 | 34837 | 36221 | 32856 | 35907 | 32855 | 32857 | 32854 | 36220 | 33189 | 33190 | 36012 | 36208 | 36209 | 36214 | 36215 | 36226 | 36227 | 36232 | 36233 | 36238 | 36239 | 6403 | 33319;
+export declare function texelFormat(gl: GLContext, format: GLSettings.Texture.TexelDataType): 34836 | 6408 | 34842 | 6406 | 6402 | 34041 | 6409 | 6410 | 6407 | 33321 | 33325 | 33326 | 33330 | 33323 | 33327 | 33328 | 33336 | 33338 | 33340 | 32849 | 35905 | 36194 | 35898 | 35901 | 34843 | 34837 | 36221 | 32856 | 35907 | 32855 | 32857 | 32854 | 36220 | 33189 | 33190 | 36012 | 35056 | 36013 | 36208 | 36209 | 36214 | 36215 | 36226 | 36227 | 36232 | 36233 | 36238 | 36239 | 6403 | 33319 | 36244 | 33320 | 36248 | 36249 | 36756 | 33329 | 33331 | 33333 | 33332 | 33334 | 36757 | 33335 | 33337 | 33339 | 36758 | 36759 | 36975;
 /**
  * Decodes the SourcePixelFormat to a GL setting
  */
@@ -29,7 +29,7 @@ export declare function minFilter(gl: GLContext, filter: GLSettings.Texture.Text
  * Takes in any of the render buffer formats, but will default invalid color
  * buffer formats to RGBA4
  */
-export declare function colorBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.ColorBufferFormat | GLSettings.RenderTarget.DepthBufferFormat | GLSettings.RenderTarget.StencilBufferFormat): 34836 | 34842 | 33321 | 33325 | 33326 | 33330 | 33323 | 33327 | 33328 | 33336 | 33338 | 33340 | 32849 | 36194 | 35898 | 34843 | 34837 | 32856 | 35907 | 32855 | 32857 | 32854 | 36220 | 36208 | 36214 | 36226 | 36232 | 36238 | 33329 | 33332 | 33331 | 33334 | 33333 | 33335 | 33337 | 33339 | 36975;
+export declare function colorBufferFormat(gl: GLContext, format: GLSettings.RenderTarget.ColorBufferFormat | GLSettings.RenderTarget.DepthBufferFormat | GLSettings.RenderTarget.StencilBufferFormat): 34836 | 34842 | 33321 | 33325 | 33326 | 33330 | 33323 | 33327 | 33328 | 33336 | 33338 | 33340 | 32849 | 36194 | 35898 | 34843 | 34837 | 32856 | 35907 | 32855 | 32857 | 32854 | 36220 | 36208 | 36214 | 36226 | 36232 | 36238 | 33329 | 33331 | 33333 | 33332 | 33334 | 33335 | 33337 | 33339 | 36975;
 /**
  * Decodes a DepthBufferFormat to valid color depth buffer storage formats.
  *

@@ -4,8 +4,8 @@ import {
   type ReadonlyEulerRotation,
 } from "../types.js";
 import {
-  identity3,
-  identity4,
+  identity3x3,
+  identity4x4,
   M300,
   M301,
   M302,
@@ -1028,7 +1028,7 @@ export function matrix3x3FromUnitQuatModel(
   q: ReadonlyQuaternion,
   m?: Mat3x3
 ): Mat3x3 {
-  m = m || identity3();
+  m = m || identity3x3();
 
   // Calculate coefficients
   const x2 = q[1] + q[1];
@@ -1068,7 +1068,7 @@ export function matrix4x4FromUnitQuatModel(
   q: ReadonlyQuaternion,
   m?: Mat4x4
 ): Mat4x4 {
-  m = m || identity4();
+  m = m || identity4x4();
 
   // calculate coefficients
   const x2 = q[1] + q[1];
@@ -1115,7 +1115,7 @@ export function matrix3x3FromUnitQuatView(
   q: ReadonlyQuaternion,
   m?: Mat3x3
 ): Mat3x3 {
-  m = m || identity3();
+  m = m || identity3x3();
 
   // calculate coefficients
   const x2 = q[1] + q[1];
@@ -1154,7 +1154,7 @@ export function matrix4x4FromUnitQuatView(
   q: ReadonlyQuaternion,
   m?: Mat4x4
 ): Mat4x4 {
-  m = m || identity4();
+  m = m || identity4x4();
 
   // calculate coefficients
   const x2 = q[1] + q[1];
@@ -1479,7 +1479,7 @@ export function lookAtMatrix(
   up: ReadonlyVec3Compat,
   m?: Mat4x4
 ): Mat4x4 {
-  m = m || identity4();
+  m = m || identity4x4();
 
   const z = normalize3([-forward[0], -forward[1], -forward[2]]);
   const x = normalize3(cross3(up, z));

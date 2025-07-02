@@ -60,14 +60,22 @@ export interface IBasicCamera2DControllerOptions {
      */
     panFilter?(offset: [number, number, number], view: View<IViewProps>, allViews: View<IViewProps>[]): [number, number, number];
     /**
-     * This adjusts how fast scaling is applied from the mouse wheel
+     * This adjusts how fast scaling is applied from the mouse wheel.
+     * Default is 1000. Larger slows down.
      */
     scaleFactor?: number;
+    /**
+     * This adjusts how fast zooming is applied from pinch gestures. A nice
+     * default is set for you, but you can override it.
+     *
+     * Default is 100. Larger slows down.
+     */
+    pinchScaleFactor?: number;
     /**
      * This provides a control to filter scaling that will be applied to the camera. The input and
      * output of this will be the delta value to be applied.
      */
-    scaleFilter?(scale: [number, number, number], view: View<IViewProps>, allViews: View<IViewProps>[]): [number, number, number];
+    scaleFilter?(scale: [number, number, number], view: View<IViewProps>, allViews: View<IViewProps>[], isPinch?: boolean): [number, number, number];
     /**
      * This is the view that MUST be the start view from the events.
      * If not provided, then dragging anywhere will adjust the camera.
@@ -108,6 +116,11 @@ export declare class BasicCamera2DController extends SimpleEventHandler {
     private panFilter;
     /** The rate scale is adjusted with the mouse wheel */
     scaleFactor: number;
+    /**
+     * This adjusts how fast zooming is applied from pinch gestures. A nice
+     * default is set for you, but you can override it.
+     */
+    pinchScaleFactor: number;
     /** This is the filter applied to tscaling operations */
     private scaleFilter;
     /** The view that must be the start or focus of the interactions in order for the interactions to occur */

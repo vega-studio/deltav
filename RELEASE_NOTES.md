@@ -1,3 +1,9 @@
+## 5.2.1
+
+## Fixed
+
+- [`FIXED`]: Adjusted pinch scale factor defaults to values that feels more natural
+
 ## 5.2.0
 
 ## Added

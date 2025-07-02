@@ -12,6 +12,7 @@ import {
   CircleInstance,
   CircleLayer,
   ClearFlags,
+  DepthBufferJSX,
   DrawJSX,
   EasingUtil,
   FragmentOutputType,
@@ -1000,6 +1001,7 @@ export const MSAA_Blit_To_Texture: StoryFn = (() => {
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
         config={{
+          internalFormat: GLSettings.RenderTarget.ColorBufferFormat.RGBA8,
           multiSample: 2,
         }}
       />
@@ -1008,10 +1010,11 @@ export const MSAA_Blit_To_Texture: StoryFn = (() => {
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
         config={{
+          internalFormat: GLSettings.RenderTarget.ColorBufferFormat.RGBA8,
           multiSample: 2,
         }}
       />
-      <ColorBufferJSX
+      <DepthBufferJSX
         name="depth"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}
@@ -1253,7 +1256,7 @@ export const MSAA_FastColoredTransparency: StoryFn = (() => {
           multiSample: 2,
         }}
       />
-      <ColorBufferJSX
+      <DepthBufferJSX
         name="opaque-depth"
         width={TextureSize.SCREEN}
         height={TextureSize.SCREEN}

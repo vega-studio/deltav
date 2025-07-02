@@ -123,6 +123,10 @@ export function texelFormat(
             return gl.DEPTH_COMPONENT24;
           case GLSettings.Texture.TexelDataType.DEPTH_COMPONENT32F:
             return gl.DEPTH_COMPONENT32F;
+          case GLSettings.Texture.TexelDataType.DEPTH24_STENCIL8:
+            return gl.DEPTH24_STENCIL8;
+          case GLSettings.Texture.TexelDataType.DEPTH32F_STENCIL8:
+            return gl.DEPTH32F_STENCIL8;
 
           case GLSettings.Texture.TexelDataType.RGBA32UI:
             return gl.RGBA32UI;
@@ -148,6 +152,52 @@ export function texelFormat(
             return gl.RED;
           case GLSettings.Texture.TexelDataType.RG:
             return gl.RG;
+          case GLSettings.Texture.TexelDataType.RED_INTEGER:
+            return gl.RED_INTEGER;
+          case GLSettings.Texture.TexelDataType.RG_INTEGER:
+            return gl.RG_INTEGER;
+          case GLSettings.Texture.TexelDataType.RGB_INTEGER:
+            return gl.RGB_INTEGER;
+          case GLSettings.Texture.TexelDataType.RGBA_INTEGER:
+            return gl.RGBA_INTEGER;
+          case GLSettings.Texture.TexelDataType.R8_SNORM:
+            return gl.R8_SNORM;
+          // case GLSettings.Texture.TexelDataType.R16_SNORM:
+          //   return gl.R16_SNORM;
+          // case GLSettings.Texture.TexelDataType.R32_SNORM:
+          //   return gl.R32_SNORM;
+          case GLSettings.Texture.TexelDataType.R8I:
+            return gl.R8I;
+          case GLSettings.Texture.TexelDataType.R16I:
+            return gl.R16I;
+          case GLSettings.Texture.TexelDataType.R32I:
+            return gl.R32I;
+          case GLSettings.Texture.TexelDataType.R16UI:
+            return gl.R16UI;
+          case GLSettings.Texture.TexelDataType.R32UI:
+            return gl.R32UI;
+          case GLSettings.Texture.TexelDataType.RG8_SNORM:
+            return gl.RG8_SNORM;
+          case GLSettings.Texture.TexelDataType.RG8I:
+            return gl.RG8I;
+          case GLSettings.Texture.TexelDataType.RG16I:
+            return gl.RG16I;
+          case GLSettings.Texture.TexelDataType.RG32I:
+            return gl.RG32I;
+          case GLSettings.Texture.TexelDataType.RGB8_SNORM:
+            return gl.RGB8_SNORM;
+          // case GLSettings.Texture.TexelDataType.RGB16_SNORM:
+          //   return gl.RGB16_SNORM;
+          // case GLSettings.Texture.TexelDataType.RGB32_SNORM:
+          //   return gl.RGB32_SNORM;
+          case GLSettings.Texture.TexelDataType.RGBA8_SNORM:
+            return gl.RGBA8_SNORM;
+          // case GLSettings.Texture.TexelDataType.RGBA16_SNORM:
+          //   return gl.RGBA16_SNORM;
+          // case GLSettings.Texture.TexelDataType.RGBA32_SNORM:
+          //   return gl.RGBA32_SNORM;
+          case GLSettings.Texture.TexelDataType.RGB10_A2UI:
+            return gl.RGB10_A2UI;
 
           default:
             console.warn(

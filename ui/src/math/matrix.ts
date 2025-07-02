@@ -71,6 +71,8 @@ export type ReadonlyMat3x3 = Readonly<Mat3x3>;
  * specifically used to express a matrix in a linear buffer intentionally to
  * reduce allocations and indexing into the array.
  *
+ * Column Major
+ *
  * Use the indexing constant M4<row><column> or M4<Y><X> to access the elements
  * based on column and row. For example, M421 would be the value at row 2
  * (third row) and column 1 (second column).
@@ -288,6 +290,8 @@ export const M433 = 15;
  * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
  * don't expect them to retain any exepcted value.
  *
+ * Column Major
+ *
  * These are here more for
  * nesting operations and providing the nested operation something to use so it
  * doesn't need to allocate memory to operate.
@@ -298,7 +302,7 @@ export const M433 = 15;
  * Again, this is EXTREMELY advanced useage and should NOT be your first
  * inclination to utilize.
  */
-export const M3R: Mat3x3[] = new Array(20).fill(0).map((_) => identity3());
+export const M3R: Mat3x3[] = new Array(20).fill(0).map((_) => identity3x3());
 
 /**
  * Temp Matrix 4x4 registers. Can be used for intermediate operations. These
@@ -315,7 +319,7 @@ export const M3R: Mat3x3[] = new Array(20).fill(0).map((_) => identity3());
  * Again, this is EXTREMELY advanced useage and should NOT be your first
  * inclination to utilize.
  */
-export const M4R: Mat4x4[] = new Array(20).fill(0).map((_) => identity4());
+export const M4R: Mat4x4[] = new Array(20).fill(0).map((_) => identity4x4());
 
 /**
  * It's often much faster to apply values to an existing matrix than to declare
@@ -429,10 +433,10 @@ export function apply4x4(
  * method, nor shall these be used to make two methods operate together.
  */
 
-const TEMP_M30 = identity3();
-const TEMP_M31 = identity3();
-const TEMP_M32 = identity3();
-const TEMP_M33 = identity3();
+const TEMP_M30 = identity3x3();
+const TEMP_M31 = identity3x3();
+const TEMP_M32 = identity3x3();
+const TEMP_M33 = identity3x3();
 
 /**
  * Determinant value of a 2x2 matrix
@@ -595,6 +599,159 @@ export function affineInverse4x4(
 }
 
 /**
+ * Performs a complete inverse calculation of a 4x4 matrix. Very performance
+ * heavy.
+ */
+export function inverse4x4(m: ReadonlyMat4x4, out?: Mat4x4): Mat4x4 | null {
+  const inv: Mat4x4 = out ?? (new Array(16) as unknown as Mat4x4);
+
+  inv[0] =
+    m[5] * m[10] * m[15] -
+    m[5] * m[11] * m[14] -
+    m[9] * m[6] * m[15] +
+    m[9] * m[7] * m[14] +
+    m[13] * m[6] * m[11] -
+    m[13] * m[7] * m[10];
+
+  inv[4] =
+    -m[4] * m[10] * m[15] +
+    m[4] * m[11] * m[14] +
+    m[8] * m[6] * m[15] -
+    m[8] * m[7] * m[14] -
+    m[12] * m[6] * m[11] +
+    m[12] * m[7] * m[10];
+
+  inv[8] =
+    m[4] * m[9] * m[15] -
+    m[4] * m[11] * m[13] -
+    m[8] * m[5] * m[15] +
+    m[8] * m[7] * m[13] +
+    m[12] * m[5] * m[11] -
+    m[12] * m[7] * m[9];
+
+  inv[12] =
+    -m[4] * m[9] * m[14] +
+    m[4] * m[10] * m[13] +
+    m[8] * m[5] * m[14] -
+    m[8] * m[6] * m[13] -
+    m[12] * m[5] * m[10] +
+    m[12] * m[6] * m[9];
+
+  inv[1] =
+    -m[1] * m[10] * m[15] +
+    m[1] * m[11] * m[14] +
+    m[9] * m[2] * m[15] -
+    m[9] * m[3] * m[14] -
+    m[13] * m[2] * m[11] +
+    m[13] * m[3] * m[10];
+
+  inv[5] =
+    m[0] * m[10] * m[15] -
+    m[0] * m[11] * m[14] -
+    m[8] * m[2] * m[15] +
+    m[8] * m[3] * m[14] +
+    m[12] * m[2] * m[11] -
+    m[12] * m[3] * m[10];
+
+  inv[9] =
+    -m[0] * m[9] * m[15] +
+    m[0] * m[11] * m[13] +
+    m[8] * m[1] * m[15] -
+    m[8] * m[3] * m[13] -
+    m[12] * m[1] * m[11] +
+    m[12] * m[3] * m[9];
+
+  inv[13] =
+    m[0] * m[9] * m[14] -
+    m[0] * m[10] * m[13] -
+    m[8] * m[1] * m[14] +
+    m[8] * m[2] * m[13] +
+    m[12] * m[1] * m[10] -
+    m[12] * m[2] * m[9];
+
+  inv[2] =
+    m[1] * m[6] * m[15] -
+    m[1] * m[7] * m[14] -
+    m[5] * m[2] * m[15] +
+    m[5] * m[3] * m[14] +
+    m[13] * m[2] * m[7] -
+    m[13] * m[3] * m[6];
+
+  inv[6] =
+    -m[0] * m[6] * m[15] +
+    m[0] * m[7] * m[14] +
+    m[4] * m[2] * m[15] -
+    m[4] * m[3] * m[14] -
+    m[12] * m[2] * m[7] +
+    m[12] * m[3] * m[6];
+
+  inv[10] =
+    m[0] * m[5] * m[15] -
+    m[0] * m[7] * m[13] -
+    m[4] * m[1] * m[15] +
+    m[4] * m[3] * m[13] +
+    m[12] * m[1] * m[7] -
+    m[12] * m[3] * m[5];
+
+  inv[14] =
+    -m[0] * m[5] * m[14] +
+    m[0] * m[6] * m[13] +
+    m[4] * m[1] * m[14] -
+    m[4] * m[2] * m[13] -
+    m[12] * m[1] * m[6] +
+    m[12] * m[2] * m[5];
+
+  inv[3] =
+    -m[1] * m[6] * m[11] +
+    m[1] * m[7] * m[10] +
+    m[5] * m[2] * m[11] -
+    m[5] * m[3] * m[10] -
+    m[9] * m[2] * m[7] +
+    m[9] * m[3] * m[6];
+
+  inv[7] =
+    m[0] * m[6] * m[11] -
+    m[0] * m[7] * m[10] -
+    m[4] * m[2] * m[11] +
+    m[4] * m[3] * m[10] +
+    m[8] * m[2] * m[7] -
+    m[8] * m[3] * m[6];
+
+  inv[11] =
+    -m[0] * m[5] * m[11] +
+    m[0] * m[7] * m[9] +
+    m[4] * m[1] * m[11] -
+    m[4] * m[3] * m[9] -
+    m[8] * m[1] * m[7] +
+    m[8] * m[3] * m[5];
+
+  inv[15] =
+    m[0] * m[5] * m[10] -
+    m[0] * m[6] * m[9] -
+    m[4] * m[1] * m[10] +
+    m[4] * m[2] * m[9] +
+    m[8] * m[1] * m[6] -
+    m[8] * m[2] * m[5];
+
+  let det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+
+  if (det === 0) {
+    console.warn("Matrix is singular and cannot be inverted");
+    return null;
+  }
+
+  det = 1.0 / det;
+  for (let i = 0; i < 16; i++) inv[i] *= det;
+
+  if (out) {
+    for (let i = 0; i < 16; i++) out[i] = inv[i];
+    return out;
+  }
+
+  return inv;
+}
+
+/**
  * 4 OPS
  */
 export function multiplyScalar2x2(
@@ -645,7 +802,7 @@ export function multiplyScalar4x4(
 /**
  * Convert or produce a 2x2 identity matrix
  */
-export function identity2(out?: Mat2x2): Mat2x2 {
+export function identity2x2(out?: Mat2x2): Mat2x2 {
   // prettier-ignore
   return apply2x2(out,
     1, 0,
@@ -656,7 +813,7 @@ export function identity2(out?: Mat2x2): Mat2x2 {
 /**
  * Convert or produce a 3x3 identity matrix
  */
-export function identity3(out?: Mat3x3): Mat3x3 {
+export function identity3x3(out?: Mat3x3): Mat3x3 {
   // prettier-ignore
   return apply3x3(out,
     1, 0, 0,
@@ -668,7 +825,7 @@ export function identity3(out?: Mat3x3): Mat3x3 {
 /**
  * Convert or produce a 4x4 identity matrix
  */
-export function identity4(out?: Mat4x4): Mat4x4 {
+export function identity4x4(out?: Mat4x4): Mat4x4 {
   // prettier-ignore
   return apply4x4(out,
     1, 0, 0, 0,
@@ -815,8 +972,8 @@ export function multiply4x4(
  * T = A * B * C * E * ... * N
  */
 export function concat4x4(out?: Mat4x4, ...m: ReadonlyMat4x4[]): Mat4x4 {
-  if (m.length <= 0) return identity4();
-  out = out || identity4();
+  if (m.length <= 0) return identity4x4();
+  out = out || identity4x4();
   if (m.length === 1) return copy4x4(m[0], out);
 
   // Get the first multiplication value for the left hand side of the operation
@@ -1053,7 +1210,7 @@ export function shearX2x2(radians: number, out?: Mat2x2): Mat2x2 {
     console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
   }
 
-  out = out || identity2();
+  out = out || identity2x2();
 
   // prettier-ignore
   return apply2x2(out,
@@ -1073,7 +1230,7 @@ export function shearY2x2(radians: number, out?: Mat2x2): Mat2x2 {
     console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
   }
 
-  out = out || identity2();
+  out = out || identity2x2();
 
   // prettier-ignore
   return apply2x2(out,
@@ -1097,7 +1254,7 @@ export function shearX4x4(
     console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
   }
 
-  out = out || identity4();
+  out = out || identity4x4();
   const shearZ = tan(alongZ);
   const shearY = tan(alongY);
 
@@ -1126,7 +1283,7 @@ export function shearY4x4(
     console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
   }
 
-  out = out || identity4();
+  out = out || identity4x4();
   const shearZ = tan(alongZ);
   const shearX = tan(alongX);
 
@@ -1155,7 +1312,7 @@ export function shearZ4x4(
     console.warn("A shear matrix can not have radians >= PI / 2 or <= -PI / 2");
   }
 
-  out = out || identity4();
+  out = out || identity4x4();
   const shearY = tan(alongY);
   const shearX = tan(alongX);
 
@@ -1405,7 +1562,7 @@ export function rotation4x4(x: number, y: number, z: number, out?: Mat4x4) {
         );
       } else {
         // no x, y, z
-        return identity4(out);
+        return identity4x4(out);
       }
     }
   }
@@ -1488,7 +1645,7 @@ export function perspectiveFrustum4x4(
   b: number,
   out?: Mat4x4
 ) {
-  out = out || identity4();
+  out = out || identity4x4();
 
   // This is a column major matrix that should homogenize coordinates to within
   // unit cube if the specified point is within the expressed frustum.

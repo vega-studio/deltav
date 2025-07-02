@@ -42,6 +42,16 @@ ShaderModule.register([
         size: UniformSize.MATRIX4,
         update: () => layer.view.props.camera.viewProjection,
       },
+      {
+        name: "cameraNear",
+        size: UniformSize.ONE,
+        update: () => layer.view.props.camera.projectionOptions.near,
+      },
+      {
+        name: "cameraFar",
+        size: UniformSize.ONE,
+        update: () => layer.view.props.camera.projectionOptions.far,
+      },
       // This injects the model view matrix from the view camera
       {
         name: "view",

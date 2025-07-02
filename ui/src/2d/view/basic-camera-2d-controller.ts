@@ -507,8 +507,6 @@ export class BasicCamera2DController extends SimpleEventHandler {
     this.onRangeChanged(this.camera, relativeView.projection);
     // Add additional correction for bounds
     this.applyBounds();
-    // Indicate the camera needs a refresh
-    this.camera.control2D.update();
   }
 
   /**
@@ -550,8 +548,6 @@ export class BasicCamera2DController extends SimpleEventHandler {
     // Add additional correction for bounds
     this.applyBounds();
 
-    // Make sure the camera updates
-    this.camera.control2D.update();
     // Set the immediate animation AFTER setting so we don't get the offset to immediately jump
     // to the end
     this.camera.control2D.animation = this.cameraImmediateAnimation;

@@ -8,7 +8,7 @@ import { Projection3D } from "../ui/src/3d/view/projection-3d.js";
 import { TO_RADIANS } from "../ui/src/constants.js";
 import {
   compare4x4,
-  identity4,
+  identity4x4,
   Mat4x4,
   multiply4x4,
   projectToScreen,
@@ -456,7 +456,7 @@ describe("View 3D projections", () => {
     it("Should be identity", () => {
       assert4x4(
         matrix4x4FromUnitQuatView(lookAtQuat([0, 0, -1], [0, 1, 0])),
-        identity4()
+        identity4x4()
       );
     });
 

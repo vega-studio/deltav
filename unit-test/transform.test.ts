@@ -4,7 +4,7 @@ import assert from "assert";
 import { Transform } from "../ui/src/3d/scene-graph/transform.js";
 import {
   compare4x4,
-  identity4,
+  identity4x4,
   Mat4x4,
   toString4x4,
   transform4,
@@ -53,18 +53,18 @@ describe("Transforms", () => {
   describe("Matrix", () => {
     it("Should be identity", () => {
       const t = new Transform();
-      assert4x4(t.matrix, identity4());
+      assert4x4(t.matrix, identity4x4());
     });
 
     it("Should be identity after lookAt", () => {
       const t = new Transform();
       t.lookAtLocal([0, 0, -1], [0, 1, 0]);
-      assert4x4(t.matrix, identity4());
+      assert4x4(t.matrix, identity4x4());
     });
 
     it("Should be identity for the view", () => {
       const t = new Transform();
-      assert4x4(t.viewMatrix, identity4());
+      assert4x4(t.viewMatrix, identity4x4());
     });
   });
 

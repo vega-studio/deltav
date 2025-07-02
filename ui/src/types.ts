@@ -867,8 +867,11 @@ export type ILayerMaterialOptions = Partial<
 /**
  * A wrapper to make declaring layer material options easier and clearer
  */
-export function createMaterialOptions(options: ILayerMaterialOptions) {
-  return options;
+export function createMaterialOptions(
+  options: ILayerMaterialOptions,
+  extend?: ILayerMaterialOptions
+) {
+  return Object.assign({}, options, extend);
 }
 
 /**
@@ -1576,6 +1579,12 @@ export enum FragmentOutputType {
    * operation should be blurred.
    */
   BLUR,
+
+  /**
+   * This indicates this will output a fragment to a Moments filter target.
+   * Moments are commonly used in shadow mapping techniques.
+   */
+  MOMENTS,
 }
 
 /**

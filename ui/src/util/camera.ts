@@ -2,11 +2,13 @@ import { Transform } from "../3d/scene-graph/transform.js";
 import {
   compare4x4,
   copy4x4,
-  identity4,
+  identity4x4,
+  inverse4x4,
   Mat4x4,
   multiply4x4,
   orthographic4x4,
   perspective4x4,
+  transform4,
 } from "../math/matrix.js";
 import { compare3, Vec3 } from "../math/vector.js";
 import { shallowCompare } from "./shallow-compare.js";
@@ -23,6 +25,11 @@ export enum CameraProjectionType {
 export interface ICameraOrthographicOptions {
   /** Forced type requirement, indicates orthographic projection */
   type: CameraProjectionType.ORTHOGRAPHIC;
+  /**
+   * When this is true, the camera left, right, top, bottom, near, and far
+   * will automatically adjust to the view bounds.
+   */
+  adjustsToView?: boolean;
 
   /** Left border of the view range */
   left: number;
@@ -90,23 +97,27 @@ export function isPerspective(camera: Camera): camera is IPerspectiveCamera {
 }
 
 /**
- * This class is present to simplify the concepts of Matrix math down to simpler camera concepts. A camera is two things:
- * - An object that can be placed within the world and be a part of a scene graph
+ * This class is present to simplify the concepts of Matrix math down to simpler
+ * camera concepts. A camera is two things:
+ * - An object that can be placed within the world and be a part of a scene
+ *   graph
  * - A mathematical structure that defines the viewing
  */
 export class Camera {
-  /** Provide an identifier for the camera to follow the pattern of most everything in this framework. */
+  /**
+   * Provide an identifier for the camera to follow the pattern of most
+   * everything in this framework.
+   */
   get id() {
     return this._id;
   }
   private _id: number = uid();
 
-  /** This is the calculated timestamp at which this camera is 'at rest' and will no longer trigger updates */
+  /**
+   * This is the calculated timestamp at which this camera is 'at rest' and will
+   * no longer trigger updates
+   */
   animationEndTime = 0;
-  /** Indicates the view's associated with this camera should be redrawn */
-  needsViewDrawn = true;
-  /** Flag indicating the camera needs to broadcast changes applied to it */
-  needsBroadcast = false;
   /** The id of the view to be broadcasted for the sake of a change */
   viewChangeViewId = "";
   /** This is the transform that places the camera within world space */
@@ -116,7 +127,8 @@ export class Camera {
   onChange?(camera: Camera, viewId: string): void;
 
   /**
-   * Performs the broadcast of changes for the camera if the camera needed a broadcast.
+   * Performs the broadcast of changes for the camera if the camera needed a
+   * broadcast.
    */
   broadcast(viewId: string) {
     // Emit changes for the view indicated that this camera affects
@@ -124,8 +136,9 @@ export class Camera {
   }
 
   /**
-   * Quick generation of a camera with properties. None make any sense and should be set appropriately.
-   * ie - View2D handles setting these values correctly for you.
+   * Quick generation of a camera with properties. None make any sense and
+   * should be set appropriately. ie - View2D handles setting these values
+   * correctly for you.
    */
   static makeOrthographic(options?: Partial<ICameraOrthographicOptions>) {
     return new Camera(
@@ -173,11 +186,18 @@ export class Camera {
     this.update(true);
     return this._projection;
   }
-  private _projection: Mat4x4 = identity4();
+  private _projection: Mat4x4 = identity4x4();
 
   /** The computed view transform of the camera. */
   get view() {
     return this.transform.viewMatrix;
+  }
+
+  /**
+   * Gets the computed inverse of the view matrix.
+   */
+  get inverseView() {
+    return this.transform.inverseViewMatrix;
   }
 
   /** Flag indicating the transforms for this camera need updating. */
@@ -197,8 +217,9 @@ export class Camera {
   }
 
   /**
-   * The camera must always look at a position within the world. This in conjunction with 'roll' defines the orientation
-   * of the camera viewing the world.
+   * The camera must always look at a position within the world. This in
+   * conjunction with 'roll' defines the orientation of the camera viewing the
+   * world.
    */
   lookAt(position: Vec3, up?: Vec3) {
     const old: Mat4x4 = copy4x4(this.transform.matrix);
@@ -208,12 +229,13 @@ export class Camera {
   }
 
   /**
-   * This is a scale distortion the camera views the world with. A scale of 2 along an axis, means the camera will view
-   * 2x the amount of the world along that axis (thus having a visual compression if the screen dimensions do
-   * not change).
+   * This is a scale distortion the camera views the world with. A scale of 2
+   * along an axis, means the camera will view 2x the amount of the world along
+   * that axis (thus having a visual compression if the screen dimensions do not
+   * change).
    *
-   * This also has the added benefit of quickly and easily swapping axis directions by simply making the scale -1 for
-   * any of the axis.
+   * This also has the added benefit of quickly and easily swapping axis
+   * directions by simply making the scale -1 for any of the axis.
    */
   get scale() {
     return this.transform.scale;
@@ -225,8 +247,9 @@ export class Camera {
   }
 
   /**
-   * Options used for making the projection of the camera. Set new options to update the projection.
-   * Getting the options returns a copy of the object and is not the internal object itself.
+   * Options used for making the projection of the camera. Set new options to
+   * update the projection. Getting the options returns a copy of the object and
+   * is not the internal object itself.
    */
   get projectionOptions() {
     return this._projectionOptions;
@@ -239,13 +262,29 @@ export class Camera {
   private _projectionOptions: ICameraOptions;
 
   /**
-   * Provides the combined view projection matrices. Applies view first then the projection multiply(P, V).
+   * Provides the combined view projection matrices. Applies view first then the
+   * projection multiply(P, V).
    */
   get viewProjection() {
     this.update(true);
     return this._viewProjection;
   }
-  private _viewProjection: Mat4x4 = identity4();
+  private _viewProjection: Mat4x4 = identity4x4();
+
+  /**
+   * Gets the computed inverse of the view projection matrix. If the view or
+   * projection is modified, the inverse will be invalidated and recomputed.
+   */
+  get inverseViewProjection() {
+    const viewProjection = this.viewProjection;
+
+    if (!this._inverseViewProjection) {
+      this._inverseViewProjection = inverse4x4(viewProjection) ?? identity4x4();
+    }
+
+    return this._inverseViewProjection;
+  }
+  private _inverseViewProjection?: Mat4x4 = void 0;
 
   constructor(options: ICameraOptions) {
     this._projectionOptions = options;
@@ -270,6 +309,7 @@ export class Camera {
       },
       options
     );
+    this._needsUpdate = true;
   }
 
   /**
@@ -287,6 +327,7 @@ export class Camera {
       },
       options
     );
+    this._needsUpdate = true;
   }
 
   /**
@@ -294,8 +335,6 @@ export class Camera {
    */
   resolve() {
     this._needsUpdate = false;
-    this.needsViewDrawn = false;
-    this.needsBroadcast = false;
   }
 
   /**
@@ -303,14 +342,90 @@ export class Camera {
    */
   update(force?: boolean) {
     if (this._needsUpdate || force) {
+      this._inverseViewProjection = void 0;
       this.updateProjection();
-      this._needsUpdate = false;
-      this.needsViewDrawn = true;
     }
   }
 
   /**
-   * Takes the current projection options and produces the projection matrix needed to project elements to the screen.
+   * This makes the projection tightly fit it's frustum to include the points
+   * provided. The points provided are expected to be in WORLD SPACE unelss
+   * otherwise noted.
+   */
+  fitProjectionToPoints(points: Vec3[], pointsAreCameraSpace: boolean = false) {
+    const viewMatrix = this.view;
+
+    const cameraSpacePoints = pointsAreCameraSpace
+      ? points
+      : points.map((p) => {
+          const [x, y, z] = p;
+          const result = transform4(viewMatrix, [x, y, z, 1]);
+          return [result[0], result[1], result[2]] as Vec3;
+        });
+
+    let minX = Infinity,
+      minY = Infinity,
+      minZ = Infinity;
+    let maxX = -Infinity,
+      maxY = -Infinity,
+      maxZ = -Infinity;
+
+    for (const [x, y, z] of cameraSpacePoints) {
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+    }
+
+    if (isOrthographic(this)) {
+      this.projectionOptions = {
+        ...this.projectionOptions,
+        left: minX,
+        right: maxX,
+        bottom: minY,
+        top: maxY,
+        near: minZ,
+        far: maxZ,
+      };
+    } else if (isPerspective(this)) {
+      const width = this.projectionOptions.width;
+      const height = this.projectionOptions.height;
+      const aspect = width / height;
+
+      let maxTanY = 0;
+      let maxTanX = 0;
+
+      for (const [x, y, z] of cameraSpacePoints) {
+        if (z <= 0.01) continue;
+
+        maxTanY = Math.max(maxTanY, Math.abs(y / z));
+        maxTanX = Math.max(maxTanX, Math.abs(x / z));
+      }
+
+      const fovYFromY = 2 * Math.atan(maxTanY);
+      const fovYFromX = 2 * Math.atan(maxTanX / aspect);
+      const newFov = Math.max(fovYFromY, fovYFromX);
+
+      const near = Math.max(0.01, minZ);
+      const far = maxZ;
+
+      this.projectionOptions = {
+        ...this.projectionOptions,
+        near,
+        far,
+        fov: newFov,
+      };
+    }
+
+    this._needsUpdate = true;
+    this.update(true);
+  }
+
+  /**
+   * Takes the current projection options and produces the projection matrix
+   * needed to project elements to the screen.
    */
   updateProjection() {
     if (isOrthographic(this)) {
@@ -339,5 +454,7 @@ export class Camera {
       this.transform.viewMatrix,
       this._viewProjection
     );
+
+    this._needsUpdate = false;
   }
 }

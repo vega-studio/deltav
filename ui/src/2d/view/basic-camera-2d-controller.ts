@@ -201,6 +201,12 @@ export class BasicCamera2DController extends SimpleEventHandler {
   /** Set to true to disable this controller from being used. */
   disabled: boolean = false;
 
+  /**
+   * Set to true to disable drag panning. While drag pannign is disabled, wheel
+   * panning will still work if wheelShouldScroll is true.
+   */
+  disableDragPanning: boolean = false;
+
   constructor(options: IBasicCamera2DControllerOptions) {
     super({});
 
@@ -759,6 +765,10 @@ export class BasicCamera2DController extends SimpleEventHandler {
   handleDrag(e: IMouseInteraction) {
     if (e.start) {
       if (this.canStart(e.start.view.id)) {
+        if (this.disableDragPanning) {
+          return;
+        }
+
         e.target.views.forEach((view) => {
           view.view.optimizeRendering = true;
           this.optimizedViews.add(view.view);
@@ -808,6 +818,10 @@ export class BasicCamera2DController extends SimpleEventHandler {
       const relativeView = firstTouch.start.view;
 
       if (this.isPanning) {
+        if (this.disableDragPanning) {
+          return;
+        }
+
         // Panning the camera will always be immediate
         this.doPan(
           Array.from(allViews.values()),

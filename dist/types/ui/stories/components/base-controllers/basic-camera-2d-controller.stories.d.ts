@@ -6,3 +6,4 @@ declare const _default: {
 };
 export default _default;
 export declare const Basic_Camera_2D_Controller: StoryFn;
+export declare const Basic_Camera_2D_Controller_With_Wheel_Scroll: StoryFn;

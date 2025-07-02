@@ -83,9 +83,17 @@ export interface IBasicCamera2DControllerOptions {
     allViews: View<IViewProps>[]
   ): [number, number, number];
   /**
-   * This adjusts how fast scaling is applied from the mouse wheel
+   * This adjusts how fast scaling is applied from the mouse wheel.
+   * Default is 1000. Larger slows down.
    */
   scaleFactor?: number;
+  /**
+   * This adjusts how fast zooming is applied from pinch gestures. A nice
+   * default is set for you, but you can override it.
+   *
+   * Default is 100. Larger slows down.
+   */
+  pinchScaleFactor?: number;
   /**
    * This provides a control to filter scaling that will be applied to the camera. The input and
    * output of this will be the delta value to be applied.
@@ -93,7 +101,8 @@ export interface IBasicCamera2DControllerOptions {
   scaleFilter?(
     scale: [number, number, number],
     view: View<IViewProps>,
-    allViews: View<IViewProps>[]
+    allViews: View<IViewProps>[],
+    isPinch?: boolean
   ): [number, number, number];
   /**
    * This is the view that MUST be the start view from the events.
@@ -143,12 +152,18 @@ export class BasicCamera2DController extends SimpleEventHandler {
     _allViews: View<IViewProps>[]
   ) => offset;
   /** The rate scale is adjusted with the mouse wheel */
-  scaleFactor: number;
+  scaleFactor: number = 1000.0;
+  /**
+   * This adjusts how fast zooming is applied from pinch gestures. A nice
+   * default is set for you, but you can override it.
+   */
+  pinchScaleFactor: number = 100.0;
   /** This is the filter applied to tscaling operations */
   private scaleFilter = (
     scale: [number, number, number],
     _view: View<IViewProps>,
-    _allViews: View<IViewProps>[]
+    _allViews: View<IViewProps>[],
+    _isPinch?: boolean
   ) => scale;
   /** The view that must be the start or focus of the interactions in order for the interactions to occur */
   startViews: string[] = [];
@@ -194,7 +209,8 @@ export class BasicCamera2DController extends SimpleEventHandler {
     }
 
     this._camera = options.camera;
-    this.scaleFactor = options.scaleFactor || 1000.0;
+    this.scaleFactor = options.scaleFactor || this.scaleFactor;
+    this.pinchScaleFactor = options.pinchScaleFactor || this.pinchScaleFactor;
     this.ignoreCoverViews = options.ignoreCoverViews || false;
     this.twoFingerPan = options.twoFingerPan || false;
 
@@ -520,14 +536,15 @@ export class BasicCamera2DController extends SimpleEventHandler {
     focalPoint: Vec2,
     targetView: View<IViewProps>,
     allViews: View<IViewProps>[],
-    deltaScale: Vec3
+    deltaScale: Vec3,
+    isPinch?: boolean
   ) {
     const beforeZoom = targetView.projection.screenToWorld(focalPoint);
     const currentZoomX = this.camera.control2D.getScale()[0] || 1.0;
     const currentZoomY = this.camera.control2D.getScale()[1] || 1.0;
 
     if (this.scaleFilter) {
-      deltaScale = this.scaleFilter(deltaScale, targetView, allViews);
+      deltaScale = this.scaleFilter(deltaScale, targetView, allViews, isPinch);
     }
 
     this.camera.control2D.getScale()[0] = currentZoomX + deltaScale[0];
@@ -881,9 +898,13 @@ export class BasicCamera2DController extends SimpleEventHandler {
         const currentZoomY = this.camera.control2D.getScale()[1] || 1.0;
         const targetView = this.getTargetView(e);
 
+        const scaleFactor = this.wheelShouldScroll
+          ? this.pinchScaleFactor
+          : this.scaleFactor;
+
         const deltaScale: [number, number, number] = [
-          (e.mouse.wheel.delta[1] / this.scaleFactor) * currentZoomX,
-          (e.mouse.wheel.delta[1] / this.scaleFactor) * currentZoomY,
+          (e.mouse.wheel.delta[1] / scaleFactor) * currentZoomX,
+          (e.mouse.wheel.delta[1] / scaleFactor) * currentZoomY,
           1,
         ];
 
@@ -896,7 +917,8 @@ export class BasicCamera2DController extends SimpleEventHandler {
           e.screen.position,
           targetView,
           e.target.views.map((v) => v.view),
-          deltaScale
+          deltaScale,
+          this.wheelShouldScroll
         );
       }
     }

@@ -20681,7 +20681,7 @@ ve.register([
 var L = /* @__PURE__ */ ((r) => (r[r.BottomLeft = 0] = "BottomLeft", r[r.BottomMiddle = 1] = "BottomMiddle", r[r.BottomRight = 2] = "BottomRight", r[r.Custom = 3] = "Custom", r[r.Middle = 4] = "Middle", r[r.MiddleLeft = 5] = "MiddleLeft", r[r.MiddleRight = 6] = "MiddleRight", r[r.TopLeft = 7] = "TopLeft", r[r.TopMiddle = 8] = "TopMiddle", r[r.TopRight = 9] = "TopRight", r))(L || {}), ar = /* @__PURE__ */ ((r) => (r[r.ALWAYS = 1] = "ALWAYS", r[r.BOUND_MAX = 2] = "BOUND_MAX", r[r.NEVER = 3] = "NEVER", r))(ar || {}), Hm = /* @__PURE__ */ ((r) => (r[r.TOP_LEFT = 0] = "TOP_LEFT", r[r.TOP_MIDDLE = 1] = "TOP_MIDDLE", r[r.TOP_RIGHT = 2] = "TOP_RIGHT", r[r.MIDDLE_LEFT = 3] = "MIDDLE_LEFT", r[r.MIDDLE = 4] = "MIDDLE", r[r.MIDDLE_RIGHT = 5] = "MIDDLE_RIGHT", r[r.BOTTOM_LEFT = 6] = "BOTTOM_LEFT", r[r.BOTTOM_MIDDLE = 7] = "BOTTOM_MIDDLE", r[r.BOTTOM_RIGHT = 8] = "BOTTOM_RIGHT", r))(Hm || {});
 class Xm extends gs {
   constructor(e) {
-    super({}), this._uid = P(), this.isPanning = !1, this.isScaling = !1, this.panFilter = (t, i, n) => t, this.scaleFilter = (t, i, n) => t, this.startViews = [], this.optimizedViews = /* @__PURE__ */ new Set(), this.cameraImmediateAnimation = eo.immediate(0), this.targetTouches = /* @__PURE__ */ new Set(), this.onRangeChanged = (t, i) => {
+    super({}), this._uid = P(), this.isPanning = !1, this.isScaling = !1, this.panFilter = (t, i, n) => t, this.scaleFactor = 1e3, this.pinchScaleFactor = 100, this.scaleFilter = (t, i, n, s) => t, this.startViews = [], this.optimizedViews = /* @__PURE__ */ new Set(), this.cameraImmediateAnimation = eo.immediate(0), this.targetTouches = /* @__PURE__ */ new Set(), this.onRangeChanged = (t, i) => {
     }, this.startViewDidStart = !1, this.disabled = !1, this.applyBounds = () => {
       if (this.bounds && this.camera) {
         const t = this.getView(this.bounds.view);
@@ -20703,7 +20703,7 @@ class Xm extends gs {
       if (i !== this.startViews[0]) return;
       const n = this.surface.getProjections(i);
       n && this.onRangeChanged(t, n);
-    }, e.bounds && this.setBounds(e.bounds), this._camera = e.camera, this.scaleFactor = e.scaleFactor || 1e3, this.ignoreCoverViews = e.ignoreCoverViews || !1, this.twoFingerPan = e.twoFingerPan || !1, e.startView && (Array.isArray(e.startView) ? (this.startViews = e.startView, this._camera.control2D.setViewChangeHandler(
+    }, e.bounds && this.setBounds(e.bounds), this._camera = e.camera, this.scaleFactor = e.scaleFactor || this.scaleFactor, this.pinchScaleFactor = e.pinchScaleFactor || this.pinchScaleFactor, this.ignoreCoverViews = e.ignoreCoverViews || !1, this.twoFingerPan = e.twoFingerPan || !1, e.startView && (Array.isArray(e.startView) ? (this.startViews = e.startView, this._camera.control2D.setViewChangeHandler(
       this.handleCameraViewChange
     )) : (this.startViews = [e.startView], this._camera.control2D.setViewChangeHandler(
       this.handleCameraViewChange
@@ -20820,11 +20820,11 @@ class Xm extends gs {
    * @param targetView The relative view this operation happens in relation to
    * @param deltaScale The amount of scaling per axis that should happen
    */
-  doScale(e, t, i, n) {
-    const s = t.projection.screenToWorld(e), a = this.camera.control2D.getScale()[0] || 1, o = this.camera.control2D.getScale()[1] || 1;
-    this.scaleFilter && (n = this.scaleFilter(n, t, i)), this.camera.control2D.getScale()[0] = a + n[0], this.camera.control2D.getScale()[1] = o + n[1], this.applyScaleBounds();
-    const c = t.projection.screenToWorld(e), l = Re(s, c);
-    this.camera.control2D.getOffset()[0] -= l[0], this.camera.control2D.getOffset()[1] -= l[1], this.applyBounds(), this.onRangeChanged(this.camera, t.projection), this.applyBounds(), this.camera.control2D.animation = this.cameraImmediateAnimation;
+  doScale(e, t, i, n, s) {
+    const a = t.projection.screenToWorld(e), o = this.camera.control2D.getScale()[0] || 1, c = this.camera.control2D.getScale()[1] || 1;
+    this.scaleFilter && (n = this.scaleFilter(n, t, i, s)), this.camera.control2D.getScale()[0] = o + n[0], this.camera.control2D.getScale()[1] = c + n[1], this.applyScaleBounds();
+    const l = t.projection.screenToWorld(e), u = Re(a, l);
+    this.camera.control2D.getOffset()[0] -= u[0], this.camera.control2D.getOffset()[1] -= u[1], this.applyBounds(), this.onRangeChanged(this.camera, t.projection), this.applyBounds(), this.camera.control2D.animation = this.cameraImmediateAnimation;
   }
   /**
    * This filters a set of touches to be touches that had a valid starting view interaction.
@@ -20984,9 +20984,9 @@ class Xm extends gs {
           t
         );
       } else {
-        const t = this.camera.control2D.getScale()[0] || 1, i = this.camera.control2D.getScale()[1] || 1, n = this.getTargetView(e), s = [
-          e.mouse.wheel.delta[1] / this.scaleFactor * t,
-          e.mouse.wheel.delta[1] / this.scaleFactor * i,
+        const t = this.camera.control2D.getScale()[0] || 1, i = this.camera.control2D.getScale()[1] || 1, n = this.getTargetView(e), s = this.wheelShouldScroll ? this.pinchScaleFactor : this.scaleFactor, a = [
+          e.mouse.wheel.delta[1] / s * t,
+          e.mouse.wheel.delta[1] / s * i,
           1
         ];
         if (!n) {
@@ -20996,8 +20996,9 @@ class Xm extends gs {
         this.doScale(
           e.screen.position,
           n,
-          e.target.views.map((a) => a.view),
-          s
+          e.target.views.map((o) => o.view),
+          a,
+          this.wheelShouldScroll
         );
       }
   }
@@ -27616,7 +27617,7 @@ const yn = Z.createContext(void 0), ab = (r) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "5.1.2",
+      "data-deltav-version": "5.2.0",
       className: `SurfaceJSX ${r.className || ""}`,
       ...r.containerProps,
       children: /* @__PURE__ */ de.jsx("canvas", { ref: t, children: /* @__PURE__ */ de.jsx(

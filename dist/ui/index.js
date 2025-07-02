@@ -27626,7 +27626,7 @@ const yn = Z.createContext(void 0), ab = (r) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "5.2.1",
+      "data-deltav-version": "5.3.0",
       className: `SurfaceJSX ${r.className || ""}`,
       ...r.containerProps,
       children: /* @__PURE__ */ de.jsx("canvas", { ref: t, children: /* @__PURE__ */ de.jsx(
@@ -27672,8 +27672,8 @@ const tT = (r) => {
       e.current = new Xm(r.config), (t = r.resolver) == null || t.resolve(e.current);
     }
   }), Z.useEffect(() => {
-    e.current && (e.current.disabled = r.disabled ?? !1);
-  }, [r.disabled]), /* @__PURE__ */ de.jsx(ht, { tagName: "BasicCamera2DController", ...r });
+    e.current && (e.current.disabled = r.disabled ?? !1, e.current.disableDragPanning = r.disableDragPanning ?? !1);
+  }, [r.disabled, r.disableDragPanning]), /* @__PURE__ */ de.jsx(ht, { tagName: "BasicCamera2DController", ...r });
 };
 tT.surfaceJSXType = Me.EVENT_MANAGER;
 const rT = (r) => (ut({

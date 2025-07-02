@@ -1,3 +1,9 @@
+## 5.3.1
+
+## Fixed
+
+- [`FIXED`]: Bubbled disableDragPanning feature through the JSX controller
+
 ## 5.3.0
 
 ## Added

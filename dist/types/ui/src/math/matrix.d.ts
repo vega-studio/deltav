@@ -59,6 +59,8 @@ export type ReadonlyMat3x3 = Readonly<Mat3x3>;
  * specifically used to express a matrix in a linear buffer intentionally to
  * reduce allocations and indexing into the array.
  *
+ * Column Major
+ *
  * Use the indexing constant M4<row><column> or M4<Y><X> to access the elements
  * based on column and row. For example, M421 would be the value at row 2
  * (third row) and column 1 (second column).
@@ -278,6 +280,8 @@ export declare const M433 = 15;
  * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
  * don't expect them to retain any exepcted value.
  *
+ * Column Major
+ *
  * These are here more for
  * nesting operations and providing the nested operation something to use so it
  * doesn't need to allocate memory to operate.
@@ -369,6 +373,11 @@ export declare function affineInverse3x3(mat: ReadonlyMat3x3, out?: Mat3x3): Mat
  */
 export declare function affineInverse4x4(mat: ReadonlyMat4x4, out?: Mat4x4): Mat4x4 | null;
 /**
+ * Performs a complete inverse calculation of a 4x4 matrix. Very performance
+ * heavy.
+ */
+export declare function inverse4x4(m: ReadonlyMat4x4, out?: Mat4x4): Mat4x4 | null;
+/**
  * 4 OPS
  */
 export declare function multiplyScalar2x2(mat: ReadonlyMat2x2, scale: number, out?: Mat2x2): Mat2x2;
@@ -383,15 +392,15 @@ export declare function multiplyScalar4x4(mat: ReadonlyMat4x4, scale: number, ou
 /**
  * Convert or produce a 2x2 identity matrix
  */
-export declare function identity2(out?: Mat2x2): Mat2x2;
+export declare function identity2x2(out?: Mat2x2): Mat2x2;
 /**
  * Convert or produce a 3x3 identity matrix
  */
-export declare function identity3(out?: Mat3x3): Mat3x3;
+export declare function identity3x3(out?: Mat3x3): Mat3x3;
 /**
  * Convert or produce a 4x4 identity matrix
  */
-export declare function identity4(out?: Mat4x4): Mat4x4;
+export declare function identity4x4(out?: Mat4x4): Mat4x4;
 /**
  * Concat two 2x2 matrices. T = left x right
  * 12 OPS

@@ -76,6 +76,13 @@ export declare class Transform extends TreeNode<Transform> {
     get viewMatrix(): Mat4x4;
     private _viewMatrix?;
     /**
+     * Returns the computed inverse of the view matrix.
+     * WARN: If the view matrix is incapable of being inverted, the identity matrix
+     * will be returned.
+     */
+    get inverseViewMatrix(): Mat4x4;
+    private _invserseViewMatrix?;
+    /**
      * This excludes any parent transform information and is the view matrix
      * specific to this transform.
      *

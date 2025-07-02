@@ -11,6 +11,11 @@ export declare enum CameraProjectionType {
 export interface ICameraOrthographicOptions {
     /** Forced type requirement, indicates orthographic projection */
     type: CameraProjectionType.ORTHOGRAPHIC;
+    /**
+     * When this is true, the camera left, right, top, bottom, near, and far
+     * will automatically adjust to the view bounds.
+     */
+    adjustsToView?: boolean;
     /** Left border of the view range */
     left: number;
     /** Right border of the view range */
@@ -56,20 +61,24 @@ export interface IPerspectiveCamera extends Camera {
 export declare function isOrthographic(camera: Camera): camera is IOrthoGraphicCamera;
 export declare function isPerspective(camera: Camera): camera is IPerspectiveCamera;
 /**
- * This class is present to simplify the concepts of Matrix math down to simpler camera concepts. A camera is two things:
- * - An object that can be placed within the world and be a part of a scene graph
+ * This class is present to simplify the concepts of Matrix math down to simpler
+ * camera concepts. A camera is two things:
+ * - An object that can be placed within the world and be a part of a scene
+ *   graph
  * - A mathematical structure that defines the viewing
  */
 export declare class Camera {
-    /** Provide an identifier for the camera to follow the pattern of most everything in this framework. */
+    /**
+     * Provide an identifier for the camera to follow the pattern of most
+     * everything in this framework.
+     */
     get id(): number;
     private _id;
-    /** This is the calculated timestamp at which this camera is 'at rest' and will no longer trigger updates */
+    /**
+     * This is the calculated timestamp at which this camera is 'at rest' and will
+     * no longer trigger updates
+     */
     animationEndTime: number;
-    /** Indicates the view's associated with this camera should be redrawn */
-    needsViewDrawn: boolean;
-    /** Flag indicating the camera needs to broadcast changes applied to it */
-    needsBroadcast: boolean;
     /** The id of the view to be broadcasted for the sake of a change */
     viewChangeViewId: string;
     /** This is the transform that places the camera within world space */
@@ -77,12 +86,14 @@ export declare class Camera {
     /** Handler  */
     onChange?(camera: Camera, viewId: string): void;
     /**
-     * Performs the broadcast of changes for the camera if the camera needed a broadcast.
+     * Performs the broadcast of changes for the camera if the camera needed a
+     * broadcast.
      */
     broadcast(viewId: string): void;
     /**
-     * Quick generation of a camera with properties. None make any sense and should be set appropriately.
-     * ie - View2D handles setting these values correctly for you.
+     * Quick generation of a camera with properties. None make any sense and
+     * should be set appropriately. ie - View2D handles setting these values
+     * correctly for you.
      */
     static makeOrthographic(options?: Partial<ICameraOrthographicOptions>): Camera;
     /**
@@ -96,6 +107,10 @@ export declare class Camera {
     private _projection;
     /** The computed view transform of the camera. */
     get view(): Mat4x4;
+    /**
+     * Gets the computed inverse of the view matrix.
+     */
+    get inverseView(): Mat4x4;
     /** Flag indicating the transforms for this camera need updating. */
     get needsUpdate(): boolean;
     private _needsUpdate;
@@ -103,32 +118,42 @@ export declare class Camera {
     get position(): Vec3;
     set position(val: Vec3);
     /**
-     * The camera must always look at a position within the world. This in conjunction with 'roll' defines the orientation
-     * of the camera viewing the world.
+     * The camera must always look at a position within the world. This in
+     * conjunction with 'roll' defines the orientation of the camera viewing the
+     * world.
      */
     lookAt(position: Vec3, up?: Vec3): void;
     /**
-     * This is a scale distortion the camera views the world with. A scale of 2 along an axis, means the camera will view
-     * 2x the amount of the world along that axis (thus having a visual compression if the screen dimensions do
-     * not change).
+     * This is a scale distortion the camera views the world with. A scale of 2
+     * along an axis, means the camera will view 2x the amount of the world along
+     * that axis (thus having a visual compression if the screen dimensions do not
+     * change).
      *
-     * This also has the added benefit of quickly and easily swapping axis directions by simply making the scale -1 for
-     * any of the axis.
+     * This also has the added benefit of quickly and easily swapping axis
+     * directions by simply making the scale -1 for any of the axis.
      */
     get scale(): Vec3;
     set scale(val: Vec3);
     /**
-     * Options used for making the projection of the camera. Set new options to update the projection.
-     * Getting the options returns a copy of the object and is not the internal object itself.
+     * Options used for making the projection of the camera. Set new options to
+     * update the projection. Getting the options returns a copy of the object and
+     * is not the internal object itself.
      */
     get projectionOptions(): ICameraOptions;
     set projectionOptions(val: ICameraOptions);
     private _projectionOptions;
     /**
-     * Provides the combined view projection matrices. Applies view first then the projection multiply(P, V).
+     * Provides the combined view projection matrices. Applies view first then the
+     * projection multiply(P, V).
      */
     get viewProjection(): Mat4x4;
     private _viewProjection;
+    /**
+     * Gets the computed inverse of the view projection matrix. If the view or
+     * projection is modified, the inverse will be invalidated and recomputed.
+     */
+    get inverseViewProjection(): Mat4x4;
+    private _inverseViewProjection?;
     constructor(options: ICameraOptions);
     /**
      * Sets projection options with the camera as an orthographic projection.
@@ -147,7 +172,14 @@ export declare class Camera {
      */
     update(force?: boolean): void;
     /**
-     * Takes the current projection options and produces the projection matrix needed to project elements to the screen.
+     * This makes the projection tightly fit it's frustum to include the points
+     * provided. The points provided are expected to be in WORLD SPACE unelss
+     * otherwise noted.
+     */
+    fitProjectionToPoints(points: Vec3[], pointsAreCameraSpace?: boolean): void;
+    /**
+     * Takes the current projection options and produces the projection matrix
+     * needed to project elements to the screen.
      */
     updateProjection(): void;
 }

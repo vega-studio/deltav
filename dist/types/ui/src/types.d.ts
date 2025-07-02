@@ -758,7 +758,7 @@ export type ILayerMaterialOptions = Partial<Omit<MaterialOptions, "uniforms" | "
 /**
  * A wrapper to make declaring layer material options easier and clearer
  */
-export declare function createMaterialOptions(options: ILayerMaterialOptions): Partial<Omit<MaterialOptions, "fragmentShader" | "uniforms" | "vertexShader">>;
+export declare function createMaterialOptions(options: ILayerMaterialOptions, extend?: ILayerMaterialOptions): Partial<Omit<MaterialOptions, "fragmentShader" | "uniforms" | "vertexShader">>;
 /**
  * This is the type of picking assigned to a layer. Each mode has performance
  * and functionality tradeoffs.
@@ -1412,7 +1412,12 @@ export declare enum FragmentOutputType {
      * targets are used post processing to indicate which texels in the post
      * operation should be blurred.
      */
-    BLUR = 34
+    BLUR = 34,
+    /**
+     * This indicates this will output a fragment to a Moments filter target.
+     * Moments are commonly used in shadow mapping techniques.
+     */
+    MOMENTS = 35
 }
 /**
  * Defines a type that can be partially filled

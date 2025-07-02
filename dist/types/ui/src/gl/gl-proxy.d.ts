@@ -146,7 +146,7 @@ export declare class GLProxy {
     /**
      * This decodes and prints any webgl context error in a  human readable manner.
      */
-    printError(): void;
+    printError(ignoreNoError?: boolean): boolean;
     /**
      * Breaks down a string into a multiline structure. Helps pretty print some
      * items.

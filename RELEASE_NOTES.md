@@ -1,3 +1,9 @@
+## 5.3.0
+
+## Added
+
+- [`ADDED`]: Added the ability to disable pannign via dragging. This leaves panning via mouse wheel enabled which is a common pattern for touch pads.
+
 ## 5.2.1
 
 ## Fixed

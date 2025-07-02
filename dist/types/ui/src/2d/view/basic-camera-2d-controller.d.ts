@@ -150,6 +150,11 @@ export declare class BasicCamera2DController extends SimpleEventHandler {
     private startViewDidStart;
     /** Set to true to disable this controller from being used. */
     disabled: boolean;
+    /**
+     * Set to true to disable drag panning. While drag pannign is disabled, wheel
+     * panning will still work if wheelShouldScroll is true.
+     */
+    disableDragPanning: boolean;
     constructor(options: IBasicCamera2DControllerOptions);
     /**
      * Corrects camera offset to respect the current bounds and anchor.

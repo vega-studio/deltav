@@ -20682,7 +20682,7 @@ var L = /* @__PURE__ */ ((r) => (r[r.BottomLeft = 0] = "BottomLeft", r[r.BottomM
 class Xm extends gs {
   constructor(e) {
     super({}), this._uid = P(), this.isPanning = !1, this.isScaling = !1, this.panFilter = (t, i, n) => t, this.scaleFactor = 1e3, this.pinchScaleFactor = 100, this.scaleFilter = (t, i, n, s) => t, this.startViews = [], this.optimizedViews = /* @__PURE__ */ new Set(), this.cameraImmediateAnimation = eo.immediate(0), this.targetTouches = /* @__PURE__ */ new Set(), this.onRangeChanged = (t, i) => {
-    }, this.startViewDidStart = !1, this.disabled = !1, this.applyBounds = () => {
+    }, this.startViewDidStart = !1, this.disabled = !1, this.disableDragPanning = !1, this.applyBounds = () => {
       if (this.bounds && this.camera) {
         const t = this.getView(this.bounds.view);
         this.applyScaleBounds(), t && (this.camera.control2D.getOffset()[0] = this.boundsHorizontalOffset(
@@ -20915,13 +20915,17 @@ class Xm extends gs {
    * Applies a panning effect by adjusting the camera's offset.
    */
   handleDrag(e) {
-    e.start && this.canStart(e.start.view.id) && (e.target.views.forEach((t) => {
-      t.view.optimizeRendering = !0, this.optimizedViews.add(t.view);
-    }), this.doPan(
-      e.target.views.map((t) => t.view),
-      e.start.view,
-      e.mouse.deltaPosition
-    ), this.camera.control2D.animation = this.cameraImmediateAnimation);
+    if (e.start && this.canStart(e.start.view.id)) {
+      if (this.disableDragPanning)
+        return;
+      e.target.views.forEach((t) => {
+        t.view.optimizeRendering = !0, this.optimizedViews.add(t.view);
+      }), this.doPan(
+        e.target.views.map((t) => t.view),
+        e.start.view,
+        e.mouse.deltaPosition
+      ), this.camera.control2D.animation = this.cameraImmediateAnimation;
+    }
   }
   /**
    * Applies panning effect from single or multitouch interaction.
@@ -20940,11 +20944,16 @@ class Xm extends gs {
         }
         return o.touch.startTime < a.touch.startTime ? o : a;
       }, t[0]).start.view;
-      if (this.isPanning && (this.doPan(
-        Array.from(i.values()),
-        s,
-        e.multitouch.centerDelta(t)
-      ), this.camera.control2D.animation = this.cameraImmediateAnimation), this.isScaling) {
+      if (this.isPanning) {
+        if (this.disableDragPanning)
+          return;
+        this.doPan(
+          Array.from(i.values()),
+          s,
+          e.multitouch.centerDelta(t)
+        ), this.camera.control2D.animation = this.cameraImmediateAnimation;
+      }
+      if (this.isScaling) {
         const a = e.multitouch.center(t), o = Re(
           t[0].touch.currentPosition,
           a
@@ -27617,7 +27626,7 @@ const yn = Z.createContext(void 0), ab = (r) => {
     "div",
     {
       ref: e,
-      "data-deltav-version": "5.2.0",
+      "data-deltav-version": "5.2.1",
       className: `SurfaceJSX ${r.className || ""}`,
       ...r.containerProps,
       children: /* @__PURE__ */ de.jsx("canvas", { ref: t, children: /* @__PURE__ */ de.jsx(

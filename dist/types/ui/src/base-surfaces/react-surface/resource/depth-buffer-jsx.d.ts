@@ -3,7 +3,7 @@ import type { GLSettings } from "../../../gl/index.js";
 import { type IColorBufferResource } from "../../../resources/color-buffer/color-buffer-resource.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
 import { IResourceJSX } from "./as-resource.js";
-export interface IColorBufferPropsJSX extends Partial<IResourceJSX> {
+export interface IDepthBufferPropsJSX extends Partial<IResourceJSX> {
     /**
      * The identifier for the resource.
      */
@@ -12,16 +12,17 @@ export interface IColorBufferPropsJSX extends Partial<IResourceJSX> {
 /**
  * Props for TextureJSX
  */
-type IColorBufferJSX = IColorBufferPropsJSX & Omit<IColorBufferResource, "type" | "key" | "colorBufferSettings"> & {
+type IDepthBufferJSX = IDepthBufferPropsJSX & Omit<IColorBufferResource, "type" | "key" | "colorBufferSettings"> & {
     config: Omit<NonNullable<IColorBufferResource["colorBufferSettings"]>, "internalFormat"> & {
-        internalFormat: GLSettings.RenderTarget.ColorBufferFormat;
+        internalFormat: GLSettings.RenderTarget.DepthBufferFormat;
     };
 };
 /**
- * Generates a texture Resource that can be used by the name provided.
+ * Generates a Buffer Resource that can be used by the name provided. This is
+ * specialized for depth buffers.
  */
-export declare const ColorBufferJSX: {
-    (props: IColorBufferJSX): React.JSX.Element;
+export declare const DepthBufferJSX: {
+    (props: IDepthBufferJSX): React.JSX.Element;
     surfaceJSXType: SurfaceJSXType;
 };
 export {};

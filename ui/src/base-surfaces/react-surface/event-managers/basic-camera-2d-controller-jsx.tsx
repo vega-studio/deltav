@@ -20,6 +20,12 @@ export interface IBasicCamera2DControllerJSX extends Partial<IEventManagerJSX> {
    * Set to true to disable the controller from being used.
    */
   disabled?: boolean;
+
+  /**
+   * Set to true to disable drag panning. While drag panning is disabled, wheel
+   * panning will still work if wheelShouldScroll is true.
+   */
+  disableDragPanning?: boolean;
 }
 
 /**
@@ -40,8 +46,9 @@ export const BasicCamera2DControllerJSX = (
   React.useEffect(() => {
     if (controller.current) {
       controller.current.disabled = props.disabled ?? false;
+      controller.current.disableDragPanning = props.disableDragPanning ?? false;
     }
-  }, [props.disabled]);
+  }, [props.disabled, props.disableDragPanning]);
 
   return <CustomTag tagName="BasicCamera2DController" {...props} />;
 };

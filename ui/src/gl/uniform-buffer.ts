@@ -149,7 +149,7 @@ export class UniformBuffer {
 
     for (let i = 0, iMax = blockStructure.length; i < iMax; i++) {
       const blockMember = blockStructure[i];
-      // Any array type is Vec4 padding strategy
+      // Any array type is type Vec4 padding strategy
       const size = this.getBlockMemberSize(blockMember);
 
       if (!allowedNextSize.has(size)) {

@@ -4,13 +4,13 @@ import {
   copy4x4,
   identity4x4,
   inverse4x4,
-  Mat4x4,
+  type Mat4x4,
   multiply4x4,
   orthographic4x4,
   perspective4x4,
   transform4,
 } from "../math/matrix.js";
-import { compare3, Vec3 } from "../math/vector.js";
+import { compare3, type Vec3 } from "../math/vector.js";
 import { shallowCompare } from "./shallow-compare.js";
 import { uid } from "./uid.js";
 

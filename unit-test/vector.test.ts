@@ -74,14 +74,14 @@ import {
   toString3,
   toString4,
   up3,
-  Vec1,
-  Vec1Compat,
-  Vec2,
-  Vec2Compat,
-  Vec3,
-  Vec3Compat,
-  Vec4,
-  Vec4Compat,
+  type Vec1,
+  type Vec1Compat,
+  type Vec2,
+  type Vec2Compat,
+  type Vec3,
+  type Vec3Compat,
+  type Vec4,
+  type Vec4Compat,
 } from "../ui/src/math/vector.js";
 
 export function fail1(actual: Vec1Compat, expected: Vec1Compat): string {

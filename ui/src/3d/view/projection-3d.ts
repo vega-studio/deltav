@@ -1,8 +1,8 @@
 import {
-  Mat4x4,
+  type Mat4x4,
   multiply4x4,
   project3As4ToScreen,
-  Ray,
+  type Ray,
   ray,
   rayFromPoints,
   transform4,
@@ -13,8 +13,8 @@ import {
   apply3,
   scale2,
   subtract2,
-  Vec2,
-  Vec3,
+  type Vec2,
+  type Vec3,
   vec3,
   vec4,
 } from "../../math/vector.js";

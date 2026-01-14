@@ -1,12 +1,19 @@
 import { InstanceProvider } from "../../../instance-provider/instance-provider.js";
 import { IAutoEasingMethod } from "../../../math/auto-easing-method.js";
-import { copy2, copy4, dot2, scale2, Vec, Vec2 } from "../../../math/vector.js";
+import {
+  copy2,
+  copy4,
+  dot2,
+  scale2,
+  type Vec,
+  type Vec2,
+} from "../../../math/vector.js";
 import { fontRequest, IFontResourceRequest } from "../../../resources";
 import { KernedLayout } from "../../../resources/text/font-map.js";
 import { ILayerConstructionClass } from "../../../surface/layer.js";
 import { InstanceDiffType, IPickInfo, ResourceType } from "../../../types.js";
 import { createChildLayer, isDefined } from "../../../util";
-import { Anchor, AnchorType, ScaleMode } from "../../types.js";
+import { type Anchor, AnchorType, ScaleMode } from "../../types.js";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
 import { GlyphInstance } from "./glyph-instance.js";
 import { GlyphLayer, IGlyphLayerOptions } from "./glyph-layer.js";

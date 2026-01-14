@@ -1,4 +1,4 @@
-import { Vec } from "../math/vector.js";
+import { type Vec } from "../math/vector.js";
 import { IEasingProps } from "../types.js";
 
 /**

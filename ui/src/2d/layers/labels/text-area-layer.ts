@@ -1,6 +1,12 @@
 import { InstanceProvider } from "../../../instance-provider/instance-provider.js";
 import { IAutoEasingMethod } from "../../../math/auto-easing-method.js";
-import { add2, copy4, scale2, Vec, Vec2 } from "../../../math/vector.js";
+import {
+  add2,
+  copy4,
+  scale2,
+  type Vec,
+  type Vec2,
+} from "../../../math/vector.js";
 import { fontRequest, IFontResourceRequest } from "../../../resources";
 import { ILayerConstructionClass } from "../../../surface/layer.js";
 import { InstanceDiffType, newLineRegEx } from "../../../types.js";

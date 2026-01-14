@@ -5,14 +5,14 @@ import {
   identity2x2,
   identity4x4,
   length4Components,
-  Mat4x4,
+  type Mat4x4,
   multiply4x4,
   oneQuat,
-  Quaternion,
+  type Quaternion,
   rotation2x2,
   SRT4x4_2D,
-  Vec2Compat,
-  Vec3,
+  type Vec2Compat,
+  type Vec3,
 } from "../../math";
 import { UpdateProp } from "../../types.js";
 import { Instance2D } from "./instance-2d.js";
@@ -212,7 +212,7 @@ export class Transform2D extends TreeNode<Transform2D> {
     this._scale.didUpdate = true;
 
     // Use the calculated scale to make a pure rotation matrix from which we can
-    // derive a Quaternion for the world orientation.
+    // derive a type Quaternion for the world orientation.
     // prettier-ignore
     const [a, b, c, d] = this._rotation.value;
     decomposeRotation(this._matrix.value, sx, sy, sz, this._rotation.value);

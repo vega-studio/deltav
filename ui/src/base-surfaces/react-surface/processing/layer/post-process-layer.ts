@@ -5,7 +5,7 @@ import {
   makeObservable,
   observable,
 } from "../../../../instance-provider";
-import { Vec2 } from "../../../../math";
+import { type Vec2 } from "../../../../math";
 import {
   IRenderTextureResource,
   type IRenderTextureResourceRequest,

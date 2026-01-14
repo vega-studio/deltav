@@ -5,7 +5,7 @@ import {
   type ReadonlyVec3Compat,
   scale3,
   subtract3,
-  Vec3,
+  type Vec3,
 } from "../math/vector.js";
 
 /**
@@ -47,7 +47,7 @@ export function rayToLocation(
 }
 
 /**
- * Generates a ray from two points. Ray starts at 'origin' and points toward
+ * Generates a ray from two points. type Ray starts at 'origin' and points toward
  * 'destination'
  */
 export function rayFromPoints(

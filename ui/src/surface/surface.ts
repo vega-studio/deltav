@@ -6,7 +6,7 @@ import { Instance } from "../instance-provider/instance.js";
 import { BaseProjection } from "../math/index.js";
 import { getAbsolutePositionBounds } from "../math/primitives/absolute-position.js";
 import { Bounds } from "../math/primitives/bounds.js";
-import { Vec4 } from "../math/vector.js";
+import { type Vec4 } from "../math/vector.js";
 import { ColorBufferResourceManager } from "../resources/color-buffer/index.js";
 import {
   BaseResourceManager,

@@ -12,11 +12,11 @@ import {
   lookAtQuat,
   M3R,
   M4R,
-  Mat4x4,
+  type Mat4x4,
   matrix3x3FromUnitQuatModel,
   multiply4x4,
   oneQuat,
-  Quaternion,
+  type Quaternion,
   rotateVectorByUnitQuat,
   scale3,
   SRT4x4,
@@ -24,7 +24,7 @@ import {
   transpose3x3,
   TRS4x4,
   V3R,
-  Vec3,
+  type Vec3,
 } from "../../math";
 import { UpdateProp } from "../../types.js";
 import { Instance3D } from "./instance-3d.js";
@@ -486,7 +486,7 @@ export class Transform extends TreeNode<Transform> {
     this._scale.didUpdate = true;
 
     // Use the calculated scale to make a pure rotation matrix from which we can
-    // derive a Quaternion for the world orientation.
+    // derive a type Quaternion for the world orientation.
     // prettier-ignore
     const [a, b, c, d] = this._rotation.value;
     decomposeRotation(this._matrix.value, sx, sy, sz, this._rotation.value);

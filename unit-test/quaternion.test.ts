@@ -3,7 +3,7 @@ import assert from "assert";
 
 import {
   compare4x4,
-  Mat4x4,
+  type Mat4x4,
   rotation4x4,
   toString4x4,
   transform4,
@@ -45,9 +45,9 @@ import {
   compare3,
   compare4,
   forward3,
-  Vec1,
-  Vec3,
-  Vec4,
+  type Vec1,
+  type Vec3,
+  type Vec4,
 } from "../ui/src/math/vector.js";
 import { EulerOrder } from "../ui/src/types.js";
 import { fail1, fail3, fail4, fuzzCompare4 } from "./vector.test.js";

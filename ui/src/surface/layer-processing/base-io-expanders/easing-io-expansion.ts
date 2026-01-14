@@ -3,7 +3,7 @@ import {
   AutoEasingLoopStyle,
   AutoEasingMethod,
 } from "../../../math/auto-easing-method.js";
-import { Vec, VecMath, VecMethods } from "../../../math/vector.js";
+import { type Vec, VecMath, VecMethods } from "../../../math/vector.js";
 import {
   ShaderDeclarationStatements,
   ShaderIOHeaderInjectionResult,

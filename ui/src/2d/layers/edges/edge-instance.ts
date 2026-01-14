@@ -6,7 +6,7 @@ import {
   makeObservable,
   observable,
 } from "../../../instance-provider/observable.js";
-import { copy4, Vec2, Vec4 } from "../../../math";
+import { copy4, type Vec2, type Vec4 } from "../../../math";
 
 export interface IEdgeInstanceOptions extends IInstanceOptions {
   /** This is the list of control points  */

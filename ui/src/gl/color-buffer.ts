@@ -1,4 +1,4 @@
-import { Vec2 } from "../math";
+import { type Vec2 } from "../math";
 import { uid } from "../util/uid.js";
 import { GLProxy } from "./gl-proxy.js";
 import { GLSettings } from "./gl-settings.js";

@@ -3,9 +3,9 @@ import {
   IInstanceOptions,
   Instance,
 } from "../../../instance-provider/instance.js";
-import { Vec2, type Vec4 } from "../../../math/vector.js";
+import { type Vec2, type Vec4 } from "../../../math/vector.js";
 import type { Color } from "../../../types.js";
-import { Anchor, AnchorType, ScaleMode } from "../../types.js";
+import { type Anchor, AnchorType, ScaleMode } from "../../types.js";
 
 export interface IRectangleInstanceOptions extends IInstanceOptions {
   /**

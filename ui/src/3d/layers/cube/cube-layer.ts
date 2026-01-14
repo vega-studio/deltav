@@ -1,6 +1,6 @@
 import { GLSettings } from "../../../gl";
 import { InstanceProvider } from "../../../instance-provider";
-import { Vec2, Vec3 } from "../../../math/vector.js";
+import { type Vec2, type Vec3 } from "../../../math/vector.js";
 import { ILayerProps, Layer } from "../../../surface/layer.js";
 import {
   FragmentOutputType,

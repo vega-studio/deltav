@@ -50,7 +50,7 @@ export function getAbsolutePositionBounds<T>(
   if (reference.width === 0 || reference.height === 0) {
     if (!loggedError.has(item)) {
       console.warn(
-        "An AbsolutePosition evaluated to invalid dimensions.",
+        "An type AbsolutePosition evaluated to invalid dimensions.",
         "Please ensure that the object provided and the reference has valid dimensions",
         "to produce dimensions with width and height that are non-zero.",
         "item:",
@@ -87,7 +87,7 @@ export function getAbsolutePositionBounds<T>(
     if (width < 0) {
       if (!loggedError.has(item)) {
         console.warn(
-          "An AbsolutePosition evaluated to invalid dimensions.",
+          "An type AbsolutePosition evaluated to invalid dimensions.",
           "Please ensure that the object provided and the reference has valid dimensions",
           "to produce dimensions with width and height that are greater than zero.",
           "item:",
@@ -124,7 +124,7 @@ export function getAbsolutePositionBounds<T>(
     if (height === undefined || height < 0) {
       if (!loggedError.has(item)) {
         console.warn(
-          "An AbsolutePosition evaluated to invalid dimensions.",
+          "An type AbsolutePosition evaluated to invalid dimensions.",
           "Please ensure that the object provided and the reference has valid dimensions",
           "to produce dimensions with width and height that are greater than zero.",
           "item:",

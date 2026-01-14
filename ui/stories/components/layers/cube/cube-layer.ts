@@ -9,8 +9,8 @@ import {
   InstanceProvider,
   IShaderInitialization,
   Layer,
-  Vec2,
-  Vec3,
+  type Vec2,
+  type Vec3,
   VertexAttributeSize,
 } from "../../../../src";
 import { CubeInstance } from "./cube-instance.js";

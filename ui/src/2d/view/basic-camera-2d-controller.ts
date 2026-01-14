@@ -17,8 +17,8 @@ import {
   scale3,
   subtract2,
   subtract3,
-  Vec2,
-  Vec3,
+  type Vec2,
+  type Vec3,
   vec3,
 } from "../../math";
 import { Bounds } from "../../math/primitives/bounds.js";

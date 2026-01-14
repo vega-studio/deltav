@@ -9,7 +9,7 @@ import {
   InstanceProvider,
   IShaderInitialization,
   Layer,
-  Vec2,
+  type Vec2,
   VertexAttributeSize,
 } from "../../../../src";
 import { SurfaceTileInstance } from "./surface-tile-instance.js";

@@ -31,8 +31,8 @@ import {
   M431,
   M432,
   M433,
-  Mat3x3,
-  Mat4x4,
+  type Mat3x3,
+  type Mat4x4,
   type ReadonlyMat3x3,
   type ReadonlyMat4x4,
 } from "./matrix.js";
@@ -45,9 +45,9 @@ import {
   type ReadonlyVec3Compat,
   scale3,
   V3R,
-  Vec3,
+  type Vec3,
   vec3,
-  Vec4,
+  type Vec4,
 } from "./vector.js";
 
 const { cos, sin, sqrt, exp, acos, atan2, PI } = Math;
@@ -93,13 +93,13 @@ export type Quaternion = Vec4;
 /** Expresses a readonly quaternion [scalar, i, j, k] */
 export type ReadonlyQuaternion = Readonly<Vec4>;
 
-/** Temp Quaternion register. Can be used for intermediate operations */
+/** Temp type Quaternion register. Can be used for intermediate operations */
 export const QR1 = zeroQuat();
-/** Temp Quaternion register. Can be used for intermediate operations */
+/** Temp type Quaternion register. Can be used for intermediate operations */
 export const QR2 = zeroQuat();
-/** Temp Quaternion register. Can be used for intermediate operations */
+/** Temp type Quaternion register. Can be used for intermediate operations */
 export const QR3 = zeroQuat();
-/** Temp Quaternion register. Can be used for intermediate operations */
+/** Temp type Quaternion register. Can be used for intermediate operations */
 export const QR4 = zeroQuat();
 
 /** Helper index to make index selection more readable if desired */
@@ -398,7 +398,7 @@ export function dotQuat(
 
 /**
  * Constructs a rotation quaternion from an axis (a normalized
- * Vec3) and an angle (in radians).
+ * type Vec3) and an angle (in radians).
  */
 export function fromEulerAxisAngleToQuat(
   axis: Vec3,
@@ -554,7 +554,7 @@ function twoAxisRotation(
 // }
 
 /**
- * Produces a XYZ Euler angle from the provided Quaternion.
+ * Produces a XYZ Euler angle from the provided type Quaternion.
  */
 export function toEulerFromQuat(q: ReadonlyQuaternion, out?: EulerRotation) {
   return toOrderedEulerFromQuat(q, EulerOrder.zyx, out);
@@ -1003,7 +1003,7 @@ export function angleQuat(quat: ReadonlyQuaternion): number {
 }
 
 /**
- * Extracts the axis part, as a Vec3, of a rotation quaternion.
+ * Extracts the axis part, as a type Vec3, of a rotation quaternion.
  */
 export function axisQuat(quat: ReadonlyQuaternion): Vec3 {
   const x = quat[1],
@@ -1247,7 +1247,7 @@ export function lookAtQuat(
   m33 = vz[2];
 
   // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
-  // article "Quaternion Calculus and Fast Animation".
+  // article "type Quaternion Calculus and Fast Animation".
   w = (1 + m11 + m22 + m33) * 0.25; // w^2
 
   if (w > 0.0) {
@@ -1436,7 +1436,7 @@ export function decomposeRotation(
   m33 = mat[10] / sz;
 
   // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
-  // article "Quaternion Calculus and Fast Animation".
+  // article "type Quaternion Calculus and Fast Animation".
   w = (1 + m11 + m22 + m33) * 0.25; // w^2
 
   if (w > 0.0) {

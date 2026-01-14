@@ -1,5 +1,5 @@
 import { InstanceProvider } from "../../../instance-provider";
-import { IAutoEasingMethod, Vec } from "../../../math";
+import { IAutoEasingMethod, type Vec } from "../../../math";
 import { LayerScene, Surface } from "../../../surface";
 import {
   ILayerMaterialOptions,
@@ -10,7 +10,7 @@ import {
 } from "../../../types.js";
 import { CommonMaterialOptions } from "../../../util/common-options.js";
 import { ILayer2DProps, Layer2D } from "../../view/layer-2d.js";
-import { ImageInstance } from "./image-instance.js";
+import { type ImageInstance } from "./image-instance.js";
 import ImageLayerFS from "./image-layer.fs";
 import ImageLayerVS from "./image-layer.vs";
 import ImageLayerRotationVS from "./image-layer-rotation.vs";

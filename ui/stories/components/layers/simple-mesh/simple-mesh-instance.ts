@@ -1,10 +1,10 @@
 import {
-  Color,
+  type Color,
   IInstance3DOptions,
   Instance3D,
   makeObservable,
   observable,
-  Vec4,
+  type Vec4,
 } from "../../../../src";
 
 export interface ISimpleMeshInstanceOptions extends IInstance3DOptions {

@@ -6,7 +6,7 @@ import {
   MaterialUniformType,
 } from "../../../gl/types.js";
 import { Instance } from "../../../instance-provider";
-import { Vec4 } from "../../../math";
+import { type Vec4 } from "../../../math";
 import { IInstanceAttribute } from "../../../types.js";
 import { uid } from "../../../util/uid.js";
 import { ILayerProps, Layer } from "../../layer.js";

@@ -1,10 +1,10 @@
 import {
-  Color,
+  type Color,
   IInstance3DOptions,
   Instance3D,
   makeObservable,
   observable,
-  Size,
+  type Size,
 } from "../../../../src";
 
 /** Customizes a new Cube instance */

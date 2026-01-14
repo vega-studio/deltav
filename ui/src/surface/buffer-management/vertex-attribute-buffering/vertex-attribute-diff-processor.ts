@@ -1,5 +1,5 @@
 import { Instance } from "../../../instance-provider/instance.js";
-import { Mat4x4, Vec } from "../../../math/index.js";
+import { type Mat4x4, type Vec } from "../../../math/index.js";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../../types.js";
 import { ILayerProps } from "../../layer.js";
 import { BaseDiffProcessor } from "../base-diff-processor.js";

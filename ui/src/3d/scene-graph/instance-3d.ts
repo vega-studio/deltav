@@ -4,7 +4,7 @@ import {
   makeObservable,
   observable,
 } from "../../instance-provider";
-import { Mat4x4, Quaternion, Vec3 } from "../../math";
+import { type Mat4x4, type Quaternion, type Vec3 } from "../../math";
 import { Transform } from "./transform.js";
 
 export interface IInstance3DOptions extends IInstanceOptions {

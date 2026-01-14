@@ -3,9 +3,9 @@ import {
   IInstanceOptions,
   Instance,
 } from "../../../instance-provider/instance.js";
-import { Vec2 } from "../../../math";
-import { isWhiteSpace, Size } from "../../../types.js";
-import { Anchor, AnchorType } from "../../types.js";
+import { type Vec2 } from "../../../math";
+import { isWhiteSpace, type Size } from "../../../types.js";
+import { type Anchor, AnchorType } from "../../types.js";
 import { GlyphInstance } from "./glyph-instance.js";
 import { TextAreaInstance } from "./text-area-instance.js";
 

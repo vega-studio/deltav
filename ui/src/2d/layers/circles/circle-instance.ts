@@ -3,7 +3,7 @@ import {
   IInstanceOptions,
   Instance,
 } from "../../../instance-provider/instance.js";
-import { Vec2 } from "../../../math";
+import { type Vec2 } from "../../../math";
 
 export interface ICircleInstanceOptions extends IInstanceOptions {
   /** Center position of the circle */

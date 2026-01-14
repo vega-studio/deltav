@@ -1,7 +1,7 @@
 import Debug from "debug";
 
-import { compare4, copy4, flatten4, Vec4 } from "../math/vector.js";
-import { FragmentOutputType, TypeVec } from "../types.js";
+import { compare4, copy4, flatten4, type Vec4 } from "../math/vector.js";
+import { FragmentOutputType, type TypeVec } from "../types.js";
 import { indexToTextureUnit, textureUnitToIndex } from "./gl-decode.js";
 import { GLProxy } from "./gl-proxy.js";
 import { GLSettings } from "./gl-settings.js";

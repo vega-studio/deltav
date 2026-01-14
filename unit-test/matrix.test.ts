@@ -27,8 +27,8 @@ import {
   identity3x3,
   identity4x4,
   Mat2x2,
-  Mat3x3,
-  Mat4x4,
+  type Mat3x3,
+  type Mat4x4,
   multiply2x2,
   multiply3x3,
   multiply4x4,
@@ -60,9 +60,9 @@ import {
   fuzzyCompare2,
   fuzzyCompare3,
   fuzzyCompare4,
-  Vec2,
-  Vec3,
-  Vec4,
+  type Vec2,
+  type Vec3,
+  type Vec4,
 } from "../ui/src/math/vector.js";
 import { fail2, fail3, fail4 } from "./vector.test.js";
 

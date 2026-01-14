@@ -1,8 +1,8 @@
 import Debug from "debug";
 
-import { Vec4 } from "../math";
+import { type Vec4 } from "../math";
 import type { IViewProps, View } from "../surface/view.js";
-import { Size } from "../types.js";
+import { type Size } from "../types.js";
 import { Attribute } from "./attribute.js";
 import { Geometry } from "./geometry.js";
 import { GLProxy } from "./gl-proxy.js";

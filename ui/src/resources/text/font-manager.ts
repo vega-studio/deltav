@@ -2,7 +2,7 @@ import Debug from "debug";
 
 import { Bounds } from "../../math/primitives";
 import { PackNode } from "../../resources/texture/pack-node.js";
-import { Omit, ResourceType, Size } from "../../types.js";
+import { Omit, ResourceType, type Size } from "../../types.js";
 import { BaseResourceOptions } from "../base-resource-manager.js";
 import { SubTexture } from "../texture/sub-texture.js";
 import { FontMap, FontMapGlyphType } from "./font-map.js";

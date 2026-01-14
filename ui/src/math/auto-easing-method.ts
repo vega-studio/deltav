@@ -1,6 +1,6 @@
 import { InstanceIOValue } from "../types.js";
 import { uid } from "../util/uid.js";
-import { isVec4, Vec, VecMath } from "./vector.js";
+import { isVec4, type Vec, VecMath } from "./vector.js";
 
 const { min, max, pow, round, sin, PI } = Math;
 const GPU_PI = round(PI * 1000) / 1000;
@@ -1069,7 +1069,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1098,7 +1098,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1127,7 +1127,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1156,7 +1156,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1185,7 +1185,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1214,7 +1214,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1243,7 +1243,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1273,7 +1273,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1302,7 +1302,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1331,7 +1331,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1360,7 +1360,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1389,7 +1389,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1418,7 +1418,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1448,7 +1448,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1478,7 +1478,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1508,7 +1508,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }
@@ -1539,7 +1539,7 @@ export class AutoEasingMethod<T extends InstanceIOValue>
         if (!isVec4(start) || !isVec4(end) || !isVec4(out)) {
           const { vec } = VecMath(end);
           console.warn(
-            "SLERP QUAT AutoEasingMethod was specified on a non Vec4/Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
+            "SLERP QUAT AutoEasingMethod was specified on a non type Vec4/type Quaternion type which is invalid. This AutoEasingMethod will ONLY work on tuples that have 4 or more elements."
           );
           return vec(1, 0, 0, 0);
         }

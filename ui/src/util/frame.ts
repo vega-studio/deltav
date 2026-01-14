@@ -165,9 +165,6 @@ const loop = (time: number) => {
   else animationFrameId = -1;
 };
 
-// Start the command loop
-animationFrameId = requestAnimationFrame(loop);
-
 /**
  * Method that queues up a command to be executed not on this animation frame,
  * but the next one
@@ -292,4 +289,11 @@ export function stopAllFrameCommands() {
   immediateQueuedCommands = [];
   nextQueuedCommands = [];
   nextFrameCommands = [];
+}
+
+/**
+ * Begins the frame loop's execution.
+ */
+export function startFrameLoop() {
+  animationFrameId = requestAnimationFrame(loop);
 }

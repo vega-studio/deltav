@@ -1,6 +1,6 @@
 import { Texture } from "../../gl/texture.js";
 import { Bounds } from "../../math/primitives/bounds.js";
-import { Vec2 } from "../../math/vector.js";
+import { type Vec2 } from "../../math/vector.js";
 import { InstanceIOValue, Omit } from "../../types.js";
 import { uid } from "../../util";
 import { VideoTextureMonitor } from "./video-texture-monitor.js";

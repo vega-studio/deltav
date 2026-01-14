@@ -1,5 +1,5 @@
 import { InstanceProvider } from "../../../instance-provider";
-import { IAutoEasingMethod, Vec, Vec2 } from "../../../math";
+import { IAutoEasingMethod, type Vec, type Vec2 } from "../../../math";
 import {
   fontRequest,
   FontResourceRequestFetch,

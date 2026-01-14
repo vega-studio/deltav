@@ -10,7 +10,7 @@ import {
 } from "../gl/index.js";
 import { Instance, InstanceProvider } from "../instance-provider/index.js";
 import { BaseProjection, SimpleProjection } from "../math/base-projection.js";
-import { type AbsolutePosition, Vec2 } from "../math/index.js";
+import { type AbsolutePosition, type Vec2 } from "../math/index.js";
 import { Bounds } from "../math/primitives/bounds.js";
 import { BaseResourceOptions } from "../resources/base-resource-manager.js";
 import {
@@ -25,7 +25,7 @@ import {
 } from "../resources/texture/render-texture.js";
 import { textureRequest } from "../resources/texture/render-texture-resource-request.js";
 import {
-  Color,
+  type Color,
   FragmentOutputType,
   type FrameMetrics,
   Omit,

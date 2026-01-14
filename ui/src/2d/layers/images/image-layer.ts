@@ -9,7 +9,7 @@ import { createChildLayer, mapInjectDefault } from "../../../util";
 import { PromiseResolver } from "../../../util/promise-resolver.js";
 import { Layer2D } from "../../view/layer-2d.js";
 import { debugVideoEvents } from "./debug-video.js";
-import { ImageInstance } from "./image-instance.js";
+import { type ImageInstance } from "./image-instance.js";
 import {
   IImageRenderLayerProps,
   ImageRenderLayer,

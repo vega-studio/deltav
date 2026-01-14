@@ -4,7 +4,7 @@ import {
   fromEulerAxisAngleToQuat,
   multiplyQuat,
   normalizeQuat,
-  Quaternion,
+  type Quaternion,
 } from "../../math/quaternion.js";
 import type { Camera } from "../../util/camera.js";
 import type { Instance3D } from "../scene-graph/instance-3d.js";

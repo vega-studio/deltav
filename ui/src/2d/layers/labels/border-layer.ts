@@ -1,5 +1,5 @@
 import { InstanceProvider } from "../../../instance-provider";
-import { IAutoEasingMethod, Vec } from "../../../math";
+import { IAutoEasingMethod, type Vec } from "../../../math";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,

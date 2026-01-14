@@ -1,8 +1,13 @@
 import Debug from "debug";
 
 import { GLSettings, Texture, TextureOptions } from "../../gl";
-import { add2, scale2, Vec2 } from "../../math/vector.js";
-import { isWhiteSpace, ResourceType, Size, TextureSize } from "../../types.js";
+import { add2, scale2, type Vec2 } from "../../math/vector.js";
+import {
+  isWhiteSpace,
+  ResourceType,
+  type Size,
+  TextureSize,
+} from "../../types.js";
 import { IdentifyByKey } from "../../util/identify-by-key.js";
 import { PackNode } from "../texture/pack-node.js";
 import { SubTexture } from "../texture/sub-texture.js";

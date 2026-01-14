@@ -1,6 +1,6 @@
 const { sqrt, max, min, floor, ceil, abs, acos, sin } = Math;
 
-/** Explicit Vec1 */
+/** Explicit type Vec1 */
 export interface IVec1 extends Array<number> {
   0: number;
   length: 1;
@@ -13,7 +13,7 @@ export interface IVec2 extends Array<number> {
   length: 2;
 }
 
-/** Explicit Vec3 */
+/** Explicit type Vec3 */
 export interface IVec3 extends Array<number> {
   0: number;
   1: number;
@@ -21,7 +21,7 @@ export interface IVec3 extends Array<number> {
   length: 3;
 }
 
-/** Explicit Vec4 */
+/** Explicit type Vec4 */
 export interface IVec4 extends Array<number> {
   0: number;
   1: number;
@@ -39,22 +39,22 @@ export type Vec3 = [number, number, number];
 /** Vector of 4 components */
 export type Vec4 = [number, number, number, number];
 
-/** Compatible types with Vec1 for operations (just not iterating) */
+/** Compatible types with type Vec1 for operations (just not iterating) */
 export type Vec1Compat = Vec1 | Vec2 | Vec3 | Vec4;
 /** Compatible types with Vec2 for operations (just not iterating) */
 export type Vec2Compat = Vec2 | Vec3 | Vec4;
-/** Compatible types with Vec3 for operations (just not iterating) */
+/** Compatible types with type Vec3 for operations (just not iterating) */
 export type Vec3Compat = Vec3 | Vec4;
-/** Compatible types with Vec4 for operations (just not iterating) */
+/** Compatible types with type Vec4 for operations (just not iterating) */
 export type Vec4Compat = Vec4;
 
-/** Readonly Compatible types with Vec1 for operations (just not iterating) */
+/** Readonly Compatible types with type Vec1 for operations (just not iterating) */
 export type ReadonlyVec1Compat = Readonly<Vec1Compat>;
 /** Readonly Compatible types with Vec2 for operations (just not iterating) */
 export type ReadonlyVec2Compat = Readonly<Vec2Compat>;
-/** Readonly Compatible types with Vec3 for operations (just not iterating) */
+/** Readonly Compatible types with type Vec3 for operations (just not iterating) */
 export type ReadonlyVec3Compat = Readonly<Vec3Compat>;
-/** Readonly Compatible types with Vec4 for operations (just not iterating) */
+/** Readonly Compatible types with type Vec4 for operations (just not iterating) */
 export type ReadonlyVec4Compat = Readonly<Vec4Compat>;
 
 /** This type defines any possible explicit vector */
@@ -63,7 +63,7 @@ export type IVec = IVec1 | IVec2 | IVec3 | IVec4;
 export type Vec = Vec1 | Vec2 | Vec3 | Vec4;
 
 /**
- * Temp Vec3 registers. Can be used for intermediate operations. These
+ * Temp type Vec3 registers. Can be used for intermediate operations. These
  * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
  * don't expect them to retain any expected value.
  *
@@ -80,7 +80,7 @@ export type Vec = Vec1 | Vec2 | Vec3 | Vec4;
 export const V3R: Vec3[] = new Array(20).fill(0).map((_) => [0, 0, 0]);
 
 /**
- * Temp Vec4 registers. Can be used for intermediate operations. These
+ * Temp type Vec4 registers. Can be used for intermediate operations. These
  * are EXTREMELY temporary and volatile for use. Use with EXTREME caution and
  * don't expect them to retain any expected value.
  *
@@ -114,7 +114,7 @@ export function isVec4(val: any): val is Vec4 {
   return val && Array.isArray(val) && val.length === 4;
 }
 
-// Vec1 methods
+// type Vec1 methods
 
 export function apply1(v: Vec1Compat | undefined, v0: number): Vec1 {
   v = v || ([] as any as Vec1);
@@ -543,7 +543,7 @@ export function vec2(
   return out as Vec2;
 }
 
-// Vec3 methods
+// type Vec3 methods
 
 export function apply3(
   v: Vec3Compat | undefined,
@@ -848,7 +848,7 @@ export function down3(
   return normalize3(cross3(forward, cross3(forward, up)), out);
 }
 
-// Vec4 methods
+// type Vec4 methods
 export function apply4(
   v: Vec4Compat | undefined,
   v0: number,
@@ -1158,7 +1158,7 @@ export function vec4(
 }
 
 /**
- * Generates a Vec4/Color (rgb) from a hex value with 3 components 0xFFFFFF
+ * Generates a type Vec4/Color (rgb) from a hex value with 3 components 0xFFFFFF
  */
 export function color4FromHex3(hex: number, out?: Vec4) {
   out = out || [0, 0, 0, 0];
@@ -1173,7 +1173,7 @@ export function color4FromHex3(hex: number, out?: Vec4) {
 }
 
 /**
- * Generates a Vec4/Color (rgba) from a hex value with 4 components 0xFFFFFFFF
+ * Generates a type Vec4/Color (rgba) from a hex value with 4 components 0xFFFFFFFF
  */
 export function color4FromHex4(hex: number, out?: Vec4) {
   out = out || [0, 0, 0, 0];
@@ -1231,7 +1231,7 @@ export function slerpQuat(from: Vec4, to: Vec4, t: number, out?: Vec4): Vec4 {
   return out;
 }
 
-// Vec method aggregations
+// type Vec method aggregations
 export type VecMethods<T extends Vec> = {
   add(left: T, right: T, out?: T): T;
   ceil(vec: T, out?: T): T;

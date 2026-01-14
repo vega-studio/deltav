@@ -11,7 +11,7 @@ import {
   subtract4,
   tod_flip2,
   V4R,
-  Vec2,
+  type Vec2,
   type Vec4,
 } from "../../../src";
 import type { LineSweep } from "./line-sweep.js";

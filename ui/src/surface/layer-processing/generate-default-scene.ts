@@ -1,4 +1,4 @@
-import { AbsolutePosition } from "../../math/primitives/absolute-position.js";
+import { type AbsolutePosition } from "../../math/primitives/absolute-position.js";
 import { Camera, CameraProjectionType } from "../../util/camera.js";
 
 export interface IDefaultElements {

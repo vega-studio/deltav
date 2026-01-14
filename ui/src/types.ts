@@ -16,14 +16,14 @@ import { Instance } from "./instance-provider/instance.js";
 import { IAutoEasingMethod } from "./math/auto-easing-method.js";
 import { BaseProjection } from "./math/index.js";
 import {
-  Mat3x3,
-  Mat4x4,
-  Vec,
-  Vec1,
-  Vec2,
-  Vec2Compat,
-  Vec3,
-  Vec4,
+  type Mat3x3,
+  type Mat4x4,
+  type Vec,
+  type Vec1,
+  type Vec2,
+  type Vec2Compat,
+  type Vec3,
+  type Vec4,
 } from "./math/index.js";
 import { BaseResourceOptions } from "./resources/base-resource-manager.js";
 import { ISceneOptions } from "./surface/layer-scene.js";
@@ -500,7 +500,7 @@ export interface IInstanceAttributeInternal<T extends Instance>
 
 /**
  * This is specifically a deduced type of instance attribute that is specially
- * dealing with Vec1-4 values. These types of vectors can be dealt with in
+ * dealing with type Vec1-4 values. These types of vectors can be dealt with in
  * special ways, thus they get this special case.
  */
 export interface IInstanceAttributeVector<T extends Instance>
@@ -587,7 +587,7 @@ export interface IEasingInstanceAttribute<T extends Instance>
    */
   size: InstanceAttributeSize;
   /**
-   * If this is an easing attribute, then the instance will only provide Vec1-4
+   * If this is an easing attribute, then the instance will only provide type Vec1-4
    * values
    */
   update(o: T): InstanceIOVectorValue;

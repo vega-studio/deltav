@@ -1,5 +1,5 @@
 import { Instance } from "../../../instance-provider/index.js";
-import { Vec4 } from "../../../math/vector.js";
+import { type Vec4 } from "../../../math/vector.js";
 import { InstanceDiff } from "../../../types.js";
 import { ILayerProps } from "../../layer.js";
 import { BaseDiffProcessor } from "../base-diff-processor.js";
@@ -123,7 +123,7 @@ export class UniformDiffProcessor<
           continue;
         }
 
-        // Vec4 updating routine. Makes sure the correct components are updated for the provided values
+        // type Vec4 updating routine. Makes sure the correct components are updated for the provided values
         for (k = start, endk = value.length + start; k < endk; ++k) {
           block[k] = value[k - start];
         }

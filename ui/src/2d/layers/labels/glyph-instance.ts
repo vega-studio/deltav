@@ -4,7 +4,7 @@ import {
   makeObservable,
   observable,
 } from "../../../instance-provider";
-import { Vec2, Vec4 } from "../../../math/vector.js";
+import { type Vec2, type Vec4 } from "../../../math/vector.js";
 import { IFontResourceRequest } from "../../../resources";
 import { Omit } from "../../../types.js";
 import { LabelInstance } from "./label-instance.js";

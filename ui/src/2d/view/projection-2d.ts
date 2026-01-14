@@ -1,4 +1,4 @@
-import { BaseProjection, Ray, Vec2 } from "../../math";
+import { BaseProjection, type Ray, type Vec2 } from "../../math";
 import { Camera2D } from "./camera-2d.js";
 
 /** Provides a guaranteed camera object if none is provided */

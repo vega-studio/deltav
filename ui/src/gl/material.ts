@@ -1,4 +1,9 @@
-import { MapValueType, Omit, OutputFragmentShader, TypeVec } from "../types.js";
+import {
+  type MapValueType,
+  Omit,
+  OutputFragmentShader,
+  type TypeVec,
+} from "../types.js";
 import { GLProxy } from "./gl-proxy.js";
 import { GLSettings } from "./gl-settings.js";
 import { RenderTarget } from "./render-target.js";

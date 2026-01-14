@@ -1,10 +1,16 @@
 import { IInstanceOptions, Instance } from "../../../instance-provider";
 import { makeObservable, observable } from "../../../instance-provider";
-import { Vec2 } from "../../../math/vector.js";
+import { type Vec2 } from "../../../math/vector.js";
 import { IAtlasResourceRequest } from "../../../resources";
 import { NOOP } from "../../../types.js";
-import { Anchor, AnchorType, ScaleMode } from "../../types.js";
-import { ImageInstanceResource } from "./image-layer";
+import { type Anchor, AnchorType, ScaleMode } from "../../types.js";
+import { type ImageInstanceResource } from "./image-layer";
+
+// Matches "Vec2", "Vec", "Vec3", "Vec4", "Mat4x4", or "Mat3x3" (not preceded by "type ")
+// and captures everything (including whitespace, newlines) up to the literal string "from".
+// Excludes matches that have "type " immediately in front (the space matters).
+export const untypedVecMatToFromRegex =
+  /(?<!type )(Vec2|Vec|Vec3|Vec4|Mat4x4|Mat3x3)[\s\S]*?from/;
 
 const { max } = Math;
 

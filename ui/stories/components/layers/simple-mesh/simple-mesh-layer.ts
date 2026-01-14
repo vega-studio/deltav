@@ -8,7 +8,7 @@ import {
   InstanceProvider,
   IShaderInitialization,
   Layer,
-  Vec3,
+  type Vec3,
   VertexAttributeSize,
 } from "../../../../src";
 import { SimpleMeshInstance } from "./simple-mesh-instance.js";

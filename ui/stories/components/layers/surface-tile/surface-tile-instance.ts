@@ -1,11 +1,11 @@
 import {
-  Color,
+  type Color,
   IInstanceOptions,
   Instance,
   makeObservable,
   observable,
-  Vec3,
-  Vec4,
+  type Vec3,
+  type Vec4,
 } from "../../../../src";
 
 export interface ISurfaceTileInstance extends IInstanceOptions {

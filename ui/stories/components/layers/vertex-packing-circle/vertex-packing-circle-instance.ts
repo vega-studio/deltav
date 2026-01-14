@@ -3,7 +3,7 @@ import {
   Instance,
   makeObservable,
   observable,
-  Vec2,
+  type Vec2,
 } from "../../../../src/index.js";
 
 export interface IVertexPackingCircleInstanceOptions extends IInstanceOptions {

@@ -1,4 +1,4 @@
-import { Vec2 } from "../math";
+import { type Vec2 } from "../math";
 import { Geometry } from "./geometry.js";
 import { GLSettings } from "./gl-settings.js";
 import { Material } from "./material.js";

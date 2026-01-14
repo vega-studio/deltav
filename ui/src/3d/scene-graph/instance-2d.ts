@@ -4,7 +4,7 @@ import {
   makeObservable,
   observable,
 } from "../../instance-provider";
-import { Quaternion, Vec2Compat, Vec3 } from "../../math";
+import { type Quaternion, type Vec2Compat, type Vec3 } from "../../math";
 import { Transform2D } from "./transform-2d.js";
 
 export interface IInstance3DOptions extends IInstanceOptions {

@@ -52,4 +52,6 @@ const updateLoop = async () => {
   updateLoop();
 };
 
-updateLoop();
+export function startTransformUpdateLoop() {
+  updateLoop();
+}

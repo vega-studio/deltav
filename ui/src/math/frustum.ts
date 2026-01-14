@@ -1,6 +1,6 @@
-import type { Mat4x4 } from "./matrix.js";
+import type { type Mat4x4 } from "./matrix.js";
 import { type Plane } from "./plane.js";
-import type { Vec3 } from "./vector.js";
+import type { type Vec3 } from "./vector.js";
 
 /**
  * Minimal representation of a frustum.
@@ -11,7 +11,7 @@ import type { Vec3 } from "./vector.js";
  * - top
  * - near
  */
-export type Frustum = [Plane, Plane, Plane, Plane, Plane, Plane];
+export type Frustum = [type Plane, type Plane, type Plane, type Plane, type Plane, type Plane];
 
 /**
  * Extracts the 6 planes of the frustum from the view projection matrix.

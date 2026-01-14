@@ -4,10 +4,10 @@ import {
   apply4,
   type ReadonlyVec2Compat,
   type ReadonlyVec3Compat,
-  Vec2,
-  Vec3,
-  Vec3Compat,
-  Vec4,
+  type Vec2,
+  type Vec3,
+  type Vec3Compat,
+  type Vec4,
 } from "./vector.js";
 
 const { cos, sin, tan } = Math;
@@ -98,7 +98,7 @@ export type ReadonlyMat4x4 = Readonly<Mat4x4>;
 
 /**
  * This allows a number buffer with elements greater than 4 to be used as the
- * buffer for a Mat2x2.
+ * buffer for a type Mat2x2.
  *
  * DO NOT ASSUME: DO not use a larger matrix and expect the elements to be used
  * based on meaningful mathematical properties. For instance using a 4x4 matrix
@@ -123,13 +123,13 @@ export type ReadonlyMat4x4 = Readonly<Mat4x4>;
  * [a, b]
  * [c, d]
  *
- * Which is the linear buffer interpretation of a Mat4x4 type.
+ * Which is the linear buffer interpretation of a type Mat4x4 type.
  */
 export type Mat2x2Compat = Mat2x2 | Mat3x3 | Mat4x4;
 
 /**
  * This allows a number buffer with elements greater than 4 to be used as the
- * buffer for a Mat2x2.
+ * buffer for a type Mat2x2.
  *
  * DO NOT ASSUME: DO not use a larger matrix and expect the elements to be used
  * based on meaningful mathematical properties. For instance using a 4x4 matrix
@@ -154,13 +154,13 @@ export type Mat2x2Compat = Mat2x2 | Mat3x3 | Mat4x4;
  * [a, b]
  * [c, d]
  *
- * Which is the linear buffer interpretation of a Mat4x4 type.
+ * Which is the linear buffer interpretation of a type Mat4x4 type.
  */
 export type ReadonlyMat2x2Compat = Readonly<Mat2x2Compat>;
 
 /**
  * This allows a number buffer with elements greater than 9 to be used as the
- * buffer for a Mat3x3.
+ * buffer for a type Mat3x3.
  *
  * DO NOT ASSUME: DO not use a larger matrix and expect the elements to be used
  * based on meaningful mathematical properties. For instance using a 4x4 matrix
@@ -187,13 +187,13 @@ export type ReadonlyMat2x2Compat = Readonly<Mat2x2Compat>;
  * [d, e, f]
  * [g, h, i]
  *
- * Which is the linear buffer interpretation of a Mat4x4 type.
+ * Which is the linear buffer interpretation of a type Mat4x4 type.
  */
 export type Mat3x3Compat = Mat3x3 | Mat4x4;
 
 /**
  * This allows a number buffer with elements greater than 9 to be used as the
- * buffer for a Mat3x3.
+ * buffer for a type Mat3x3.
  *
  * DO NOT ASSUME: DO not use a larger matrix and expect the elements to be used
  * based on meaningful mathematical properties. For instance using a 4x4 matrix
@@ -220,69 +220,69 @@ export type Mat3x3Compat = Mat3x3 | Mat4x4;
  * [d, e, f]
  * [g, h, i]
  *
- * Which is the linear buffer interpretation of a Mat4x4 type.
+ * Which is the linear buffer interpretation of a type Mat4x4 type.
  */
 export type ReadonlyMat3x3Compat = Readonly<Mat3x3Compat>;
 
-/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+/** type Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
 export const M200 = 0;
-/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+/** type Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
 export const M201 = 1;
-/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+/** type Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
 export const M210 = 2;
-/** Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
+/** type Mat2x2 row column index for convenience M2<row><column> or M2<Y><X> */
 export const M211 = 3;
 
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M300 = 0;
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M301 = 1;
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M302 = 2;
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M310 = 3;
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M311 = 4;
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M312 = 5;
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M320 = 6;
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M321 = 7;
-/** Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
+/** type Mat3x3 row column index for convenience M3<row><column> or M3<Y><X> */
 export const M322 = 8;
 
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M400 = 0;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M401 = 1;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M402 = 2;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M403 = 3;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M410 = 4;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M411 = 5;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M412 = 6;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M413 = 7;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M420 = 8;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M421 = 9;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M422 = 10;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M423 = 11;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M430 = 12;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M431 = 13;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M432 = 14;
-/** Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
+/** type Mat4x4 row column index for convenience M4<row><column> or M4<Y><X> */
 export const M433 = 15;
 
 /**
@@ -466,7 +466,7 @@ export function determinant3x3(mat: ReadonlyMat3x3): number {
 /**
  * Determinant value of a 4x4 matrix
  *
- * 75 OPS, 4 temp Mat3x3, 8 method calls
+ * 75 OPS, 4 temp type Mat3x3, 8 method calls
  */
 export function determinant4x4(mat: ReadonlyMat4x4): number {
   // prettier-ignore
@@ -1338,7 +1338,7 @@ export function transform2(m: ReadonlyMat2x2, v: Vec2, out?: Vec2): Vec2 {
 }
 
 /**
- * Transforms a Vec3 by a matrix.
+ * Transforms a type Vec3 by a matrix.
  */
 export function transform3(m: ReadonlyMat3x3, v: Vec3, out?: Vec3): Vec3 {
   return apply3(
@@ -1350,8 +1350,8 @@ export function transform3(m: ReadonlyMat3x3, v: Vec3, out?: Vec3): Vec3 {
 }
 
 /**
- * Transforms a Vec3 by the provided matrix but treats the Vec3 as a
- * [x, y, z, 1] Vec4.
+ * Transforms a type Vec3 by the provided matrix but treats the type Vec3 as a
+ * [x, y, z, 1] type Vec4.
  */
 export function transform3as4(m: ReadonlyMat4x4, v: Vec3, out?: Vec4): Vec4 {
   return apply4(
@@ -1723,8 +1723,8 @@ export function orthographic4x4(
 }
 
 /**
- * Performs the operations to project a Vec4 to screen coordinates using a
- * projection matrix. The x and y of the out Vec4 will be the final projection,
+ * Performs the operations to project a type Vec4 to screen coordinates using a
+ * projection matrix. The x and y of the out type Vec4 will be the final projection,
  * w should be resolved to 1, and the z coordinate will be in homogenous
  * coordinates where -1 <= z <= 1 iff z lies within frustum near and far planes.
  */
@@ -1748,7 +1748,7 @@ export function projectToScreen(
 }
 
 /**
- * Performs the operations to project a Vec3 to screen coordinates as a Vec4
+ * Performs the operations to project a type Vec3 to screen coordinates as a Vec4
  * with a w of value 1. using a projection matrix. The x and y of the out Vec4
  * will be the final projection, w should be resolved to 1, and the z coordinate
  * will be in homogenous coordinates where -1 <= z <= 1 iff z lies within
@@ -1824,21 +1824,21 @@ export function compare4x4(m1: ReadonlyMat4x4, m2: ReadonlyMat4x4): boolean {
 }
 
 /**
- * Copies a Mat2x2 into a new storage object
+ * Copies a type Mat2x2 into a new storage object
  */
 export function copy2x2(m: ReadonlyMat2x2): Mat2x2 {
   return [m[0], m[1], m[2], m[3]];
 }
 
 /**
- * Copies a Mat3x3 into a new storage object
+ * Copies a type Mat3x3 into a new storage object
  */
 export function copy3x3(m: ReadonlyMat3x3): Mat3x3 {
   return [m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]];
 }
 
 /**
- * Copies a Mat4x4 into a new storage object
+ * Copies a type Mat4x4 into a new storage object
  */
 export function copy4x4(m: ReadonlyMat4x4, out?: Mat4x4): Mat4x4 {
   if (out) {

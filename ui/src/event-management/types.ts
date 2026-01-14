@@ -1,4 +1,4 @@
-import { Vec2 } from "../math/vector.js";
+import { type Vec2 } from "../math/vector.js";
 import { IViewProps, View } from "../surface/view.js";
 
 export enum MouseButton {

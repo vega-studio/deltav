@@ -1,5 +1,5 @@
 import { Instance } from "../../instance-provider";
-import { Mat4x4 } from "../../math/matrix.js";
+import { type Mat4x4 } from "../../math/matrix.js";
 import { ILayerProps, Layer } from "../../surface";
 import { IShaderInitialization } from "../../types.js";
 

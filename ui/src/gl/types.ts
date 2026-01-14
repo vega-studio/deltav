@@ -1,4 +1,10 @@
-import { Mat3x3, Mat4x4, Vec2, Vec3, Vec4 } from "../math";
+import {
+  type Mat3x3,
+  type Mat4x4,
+  type Vec2,
+  type Vec3,
+  type Vec4,
+} from "../math";
 import { NOOP } from "../types.js";
 import { Texture } from "./texture.js";
 

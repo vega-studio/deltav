@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /**
  * These tests are to test the math the view provides to project coordinates from screen to world and vice versa
  */
@@ -9,7 +10,7 @@ import { TO_RADIANS } from "../ui/src/constants.js";
 import {
   compare4x4,
   identity4x4,
-  Mat4x4,
+  type Mat4x4,
   multiply4x4,
   projectToScreen,
   rotation4x4,
@@ -33,9 +34,9 @@ import {
   right3,
   subtract3,
   up3,
-  Vec2Compat,
-  Vec3,
-  Vec4,
+  type Vec2Compat,
+  type Vec3,
+  type Vec4,
   vec4,
 } from "../ui/src/math/vector.js";
 import { Camera, CameraProjectionType } from "../ui/src/util/camera.js";

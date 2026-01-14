@@ -1,5 +1,5 @@
 import { Bounds } from "../math/primitives/bounds.js";
-import { isVec2, Vec2 } from "../math/vector.js";
+import { isVec2, type Vec2 } from "../math/vector.js";
 
 // A configuration that controls how readily a quadtree will split to another level
 // Adjusting this number can improve or degrade your performance significantly and

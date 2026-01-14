@@ -1,6 +1,6 @@
 import { CanvasElement, isOffscreenCanvas } from "../gl";
 import { Bounds } from "../math/primitives";
-import { add2, length2, scale2, subtract2, Vec2 } from "../math/vector.js";
+import { add2, length2, scale2, subtract2, type Vec2 } from "../math/vector.js";
 import { LayerScene } from "../surface/layer-scene.js";
 import { Surface } from "../surface/surface.js";
 import { IViewProps, NoView, View } from "../surface/view.js";

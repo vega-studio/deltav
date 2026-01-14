@@ -1,7 +1,7 @@
 import Debug from "debug";
 
 import { Texture, TextureOptions } from "../../gl/texture.js";
-import { Vec2 } from "../../math/vector.js";
+import { type Vec2 } from "../../math/vector.js";
 import { Omit, ResourceType, TextureSize } from "../../types.js";
 import { IdentifyByKey } from "../../util/identify-by-key.js";
 import { BaseResourceOptions } from "../base-resource-manager.js";

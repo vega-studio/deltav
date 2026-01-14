@@ -1,6 +1,6 @@
 import { Material } from "../../gl/index.js";
 import { Instance } from "../../instance-provider/instance.js";
-import { Vec4 } from "../../math/index.js";
+import { type Vec4 } from "../../math/index.js";
 import { IInstanceAttributeInternal, InstanceDiff } from "../../types.js";
 import { ILayerProps, Layer } from "../layer.js";
 import { generateLayerMaterial } from "../layer-processing/index.js";

@@ -1,6 +1,6 @@
 import { RenderTarget } from "../gl/render-target.js";
 import { Texture } from "../gl/texture.js";
-import { divide2, scale2, Vec2, Vec4 } from "../math/vector.js";
+import { divide2, scale2, type Vec2, type Vec4 } from "../math/vector.js";
 import { FragmentOutputType, IColorPickingData, PickType } from "../types.js";
 import { emitOnce } from "../util/emit-once.js";
 import { Surface } from "./surface.js";

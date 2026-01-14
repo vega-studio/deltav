@@ -1,7 +1,7 @@
 import { uid } from "../util/uid.js";
 import { Bounds } from "./primitives/bounds.js";
-import { Ray } from "./ray.js";
-import { apply2, compare2, Vec2, Vec2Compat } from "./vector.js";
+import { type Ray } from "./ray.js";
+import { apply2, compare2, type Vec2, type Vec2Compat } from "./vector.js";
 
 /**
  * This object expresses a suite of methods that aids in projecting values from

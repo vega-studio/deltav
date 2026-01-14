@@ -6,7 +6,7 @@ import {
   makeObservable,
   observable,
 } from "../../../instance-provider/observable.js";
-import { Vec2 } from "../../../math";
+import { type Vec2 } from "../../../math";
 
 export interface IRingInstanceOptions extends IInstanceOptions {
   /** The center of the ring */

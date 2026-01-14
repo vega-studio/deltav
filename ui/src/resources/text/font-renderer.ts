@@ -6,7 +6,7 @@
 import Debug from "debug";
 
 import { WebGLStat } from "../../gl/webgl-stat.js";
-import { scale2, Vec2 } from "../../math";
+import { scale2, type Vec2 } from "../../math";
 import { IResourceType, ResourceType } from "../../types.js";
 import { IdentifyByKey } from "../../util/identify-by-key.js";
 import type { IFontMapMetrics } from "./font-manager.js";
@@ -278,7 +278,7 @@ async function renderEachPair(
         continue;
       }
 
-      const newBuffer: Uint8ClampedArray = new Uint8ClampedArray(
+      const newBuffer: Uint8ClampedArray<ArrayBuffer> = new Uint8ClampedArray(
         result.data.length + stitchResult.data.length
       );
 

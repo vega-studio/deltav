@@ -1,5 +1,5 @@
 import { makeObservable, observable } from "../../../instance-provider";
-import { Color, Size } from "../../../types.js";
+import { type Color, type Size } from "../../../types.js";
 import {
   IInstance3DOptions,
   Instance3D,

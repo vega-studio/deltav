@@ -5,8 +5,15 @@
  */
 
 const { min, max } = Math;
-const canvas = document.createElement("canvas");
+let _canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
+
+function getCanvas() {
+  if (!_canvas) {
+    _canvas = document.createElement("canvas");
+  }
+  return _canvas;
+}
 
 /**
  * Measures the contents of a canvas based on the canvas havinga pure black
@@ -67,6 +74,7 @@ export function renderGlyph(
   height: number,
   font: string
 ) {
+  const canvas = getCanvas();
   // Ensure we're rendering a single character
   glyph = glyph[0];
 

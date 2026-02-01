@@ -404,4 +404,7 @@ function initStats() {
   (window as any).WebGLStat = WebGLStat;
 }
 
-initStats();
+// At the end of webgl-stat.ts, replace line 407:
+if (typeof window !== "undefined") {
+  initStats();
+}

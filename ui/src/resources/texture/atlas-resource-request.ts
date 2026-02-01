@@ -15,7 +15,13 @@ export type AtlasResource =
   | HTMLVideoElement
   | OffscreenCanvas;
 
-const EMPTY_IMAGE = new Image();
+let _emptyImage: HTMLImageElement;
+function getEmptyImage() {
+  if (!_emptyImage) {
+    _emptyImage = new Image();
+  }
+  return _emptyImage;
+}
 
 /**
  * Base information an atlas resource can provide
@@ -57,7 +63,7 @@ export function atlasRequest(
 ): IAtlasResourceRequest {
   return {
     type: ResourceType.ATLAS,
-    source: EMPTY_IMAGE,
+    source: getEmptyImage(),
     ...options,
   };
 }

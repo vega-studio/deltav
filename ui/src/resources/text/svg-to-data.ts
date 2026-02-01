@@ -1,8 +1,21 @@
 import { PromiseResolver } from "../../util";
 import type { IFontMapMetrics } from "./font-manager.js";
 
-const img = document.createElement("img");
-const canvas = document.createElement("canvas");
+let _img: HTMLImageElement;
+function getImg() {
+  if (!_img) {
+    _img = document.createElement("img");
+  }
+  return _img;
+}
+
+let _canvas: HTMLCanvasElement;
+function getCanvas() {
+  if (!_canvas) {
+    _canvas = document.createElement("canvas");
+  }
+  return _canvas;
+}
 
 function embedFontString(
   fontName: string,
@@ -34,6 +47,8 @@ export async function svgToData(
   svgNS?: string,
   embed?: IFontMapMetrics["embed"]
 ) {
+  const img = getImg();
+  const canvas = getCanvas();
   const resolver = new PromiseResolver<ImageData | null>();
   if (!img || !canvas) return null;
 

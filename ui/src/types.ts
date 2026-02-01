@@ -1,17 +1,14 @@
 import {
-  IMouseInteraction,
-  ISingleTouchInteraction,
-  ITouchInteraction,
+  type IMouseInteraction,
+  type ISingleTouchInteraction,
+  type ITouchInteraction,
 } from "./event-management/index.js";
-import {
-  Attribute,
-  GLSettings,
-  IMaterialUniform,
-  MaterialOptions,
-  MaterialUniformType,
-  Texture,
-} from "./gl/index.js";
+import { type Attribute } from "./gl/attribute.js";
+import { type GLSettings } from "./gl/gl-settings.js";
 import type { IndexBuffer } from "./gl/index-buffer.js";
+import { type MaterialOptions } from "./gl/material.js";
+import { type Texture } from "./gl/texture.js";
+import { type IMaterialUniform, type MaterialUniformType } from "./gl/types.js";
 import { Instance } from "./instance-provider/instance.js";
 import { IAutoEasingMethod } from "./math/auto-easing-method.js";
 import { BaseProjection } from "./math/index.js";
@@ -25,9 +22,9 @@ import {
   type Vec3,
   type Vec4,
 } from "./math/index.js";
-import { BaseResourceOptions } from "./resources/base-resource-manager.js";
-import { ISceneOptions } from "./surface/layer-scene.js";
-import { IViewProps, View } from "./surface/view.js";
+import { type BaseResourceOptions } from "./resources/base-resource-manager.js";
+import { type ISceneOptions } from "./surface/layer-scene.js";
+import { type IViewProps, type View } from "./surface/view.js";
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & {
   [P in U]: never;

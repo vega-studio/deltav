@@ -137,18 +137,15 @@ export type GLContext = WebGLRenderingContext | WebGL2RenderingContext;
 export type CanvasElement = HTMLCanvasElement | OffscreenCanvas;
 
 /**
- * There is no strong support for OffscreenCanvas in browsers yet, so we must warily utilize the feature and ensure we
- * don't have an undefined variable get used.
- */
-const OffscreenCanvas = window.OffscreenCanvas || NOOP;
-
-/**
  * Typeguards to see if the canvas is specifically an offscreen canvas or not.
  */
 export function isOffscreenCanvas(
   canvas: CanvasElement
 ): canvas is OffscreenCanvas {
-  return canvas instanceof OffscreenCanvas;
+  return (
+    canvas instanceof
+    (typeof window !== "undefined" ? window.OffscreenCanvas : NOOP)
+  );
 }
 
 /**

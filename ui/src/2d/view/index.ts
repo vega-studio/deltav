@@ -1,4 +1,5 @@
 export * from "./basic-camera-2d-controller.js";
+export * from "./basic-trackpad-camera-2d-controller.js";
 export * from "./camera-2d.js";
 export * from "./control-2d.js";
 export * from "./layer-2d.js";

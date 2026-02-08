@@ -3,6 +3,7 @@ import React from "react";
 import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 import {
   createAtlas,
+  IAtlasResource,
   IRenderTextureResource,
 } from "../../../resources/index.js";
 import { CustomTag } from "../custom-tag.js";
@@ -20,7 +21,9 @@ export interface IAtlasPropsJSX extends Partial<IResourceJSX> {
 /**
  * Props for AtlasJSX
  */
-type IAtlasJSX = IAtlasPropsJSX & Omit<IRenderTextureResource, "type" | "key">;
+type IAtlasJSX = IAtlasPropsJSX &
+  Omit<IRenderTextureResource, "type" | "key"> &
+  Pick<IAtlasResource, "pixelPerfect">;
 
 /**
  * Provides a simple event handler to be used by the surface
@@ -34,6 +37,7 @@ export const AtlasJSX = (props: IAtlasJSX) => {
           height: props.height,
           width: props.width,
           textureSettings: props.textureSettings,
+          pixelPerfect: props.pixelPerfect,
         })
       );
     },

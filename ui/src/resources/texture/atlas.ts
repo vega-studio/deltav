@@ -29,6 +29,16 @@ export interface IAtlasResource extends BaseResourceOptions {
    *  - premultiply alpha is true.
    */
   textureSettings?: TextureOptions;
+  /**
+   * When true, atlas texture coordinates will cover the exact pixel boundaries
+   * of each packed image with no half-texel inset. Use this when texture
+   * sampling blending is not desired (e.g. pixel art with NEAREST filtering).
+   *
+   * When false (default), a 0.5 texel inset is applied to UV coordinates to
+   * prevent color bleeding from adjacent atlas entries when using linear
+   * (blended) texture filtering.
+   */
+  pixelPerfect?: boolean;
 }
 
 /**
@@ -84,6 +94,12 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
   type: number = ResourceType.ATLAS;
   /** Stores the size of the atlas texture */
   width: TextureSize;
+  /**
+   * When true, atlas texture coordinates cover exact pixel boundaries with no
+   * half-texel inset. Use this when texture sampling blending is not desired
+   * (e.g. pixel art rendered with NEAREST filtering).
+   */
+  pixelPerfect: boolean;
 
   constructor(options: IAtlasResource) {
     super(options);
@@ -91,6 +107,7 @@ export class Atlas extends IdentifyByKey implements IAtlasResource {
     this.width = canvas.width = options.width;
     this.height = canvas.height = options.height;
     this.textureSettings = options.textureSettings;
+    this.pixelPerfect = options.pixelPerfect ?? false;
 
     if (options.width < 0 || options.height < 0) {
       throw new Error(

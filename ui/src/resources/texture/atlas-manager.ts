@@ -20,6 +20,7 @@ import { Atlas, IAtlasResource } from "./atlas.js";
 import { IAtlasResourceRequest } from "./atlas-resource-request.js";
 import { IPackNodeDimensions, PackNode } from "./pack-node.js";
 import { SubTexture } from "./sub-texture.js";
+import { throttledLog } from "../../../../util/debounce.js";
 
 const debug = Debug("performance");
 
@@ -170,7 +171,7 @@ export class AtlasManager {
     // Get the sub texture that is going to be applied to the atlas
     const texture = request.texture;
 
-    // Only a non-null image means the image loaded correctly
+    // Only a defined image means the image loaded correctly
     if (loadedImage && isValidImage(texture)) {
       // Now we create a Rectangle to store the image dimensions
       const rect: Bounds<never> = new Bounds({
@@ -220,12 +221,17 @@ export class AtlasManager {
         // Apply the image to the node
         insertedNode.data = texture;
 
-        // Set our image's atlas properties
+        // Set our image's atlas properties. When pixelPerfect mode is
+        // enabled, UVs cover the exact pixel boundaries with no inset so
+        // NEAREST filtering samples the correct texels. Otherwise a 0.5
+        // texel inset prevents color bleeding under linear (blended)
+        // filtering.
+        const pad = atlas.pixelPerfect ? 0 : 0.5;
         PackNode.applyToSubTexture(packing, insertedNode, texture, {
-          top: 0.5,
-          left: 0.5,
-          right: 0.5,
-          bottom: 0.5,
+          top: pad,
+          left: pad,
+          right: pad,
+          bottom: pad,
         });
 
         // Track the subtexture with the source that created it.
@@ -264,8 +270,7 @@ export class AtlasManager {
       if (texture && !texture.isValid) {
         debug("Resource was invalidated during load:", request);
       } else {
-        // Log an error and load a default sub texture
-        console.error(`Could not load resource:`, request);
+        throttledLog("Could not load resource:", request);
       }
 
       if (request.texture) {
@@ -346,7 +351,7 @@ export class AtlasManager {
 
       if (
         image &&
-        resource.rasterizationScale !== undefined &&
+        resource.rasterizationScale !== void 0 &&
         resource.rasterizationScale !== 1
       ) {
         image = await ImageRasterizer.resizeImage(
@@ -356,7 +361,26 @@ export class AtlasManager {
       }
 
       return image;
-    } else if (source instanceof HTMLVideoElement) {
+    } else if (source instanceof HTMLCanvasElement) {
+      subTexture.pixelWidth = source.width;
+      subTexture.pixelHeight = source.height;
+      subTexture.aspectRatio = source.width / source.height;
+
+      if (
+        source &&
+        resource.rasterizationScale !== void 0 &&
+        resource.rasterizationScale !== 1
+      ) {
+        return await ImageRasterizer.resizeImage(
+          source,
+          resource.rasterizationScale || 1
+        );
+      }
+
+      return source;
+    }
+
+    else if (source instanceof HTMLVideoElement) {
       if (source.videoHeight === 0 || source.videoWidth === 0) {
         console.warn(
           "Video requests to the atlas manager MUST have the video completely loaded and ready for loading",
@@ -409,7 +433,7 @@ export class AtlasManager {
 
       if (
         image &&
-        resource.rasterizationScale !== undefined &&
+        resource.rasterizationScale !== void 0 &&
         resource.rasterizationScale !== 1
       ) {
         image = await ImageRasterizer.resizeImage(
@@ -430,7 +454,7 @@ export class AtlasManager {
 
       if (
         image &&
-        resource.rasterizationScale !== undefined &&
+        resource.rasterizationScale !== void 0 &&
         resource.rasterizationScale !== 1
       ) {
         image = await ImageRasterizer.resizeImage(
@@ -552,7 +576,13 @@ export class AtlasManager {
       // subtexture object the node originally was associated with. This way all
       // references using this subtexture object will immediately have the new
       // subtexture information.
-      PackNode.applyToSubTexture(rootNode, newNode, node.data);
+      const repackPad = atlas.pixelPerfect ? 0 : 0.5;
+      PackNode.applyToSubTexture(rootNode, newNode, node.data, {
+        top: repackPad,
+        left: repackPad,
+        right: repackPad,
+        bottom: repackPad,
+      });
     }
 
     if (failedRepack) {

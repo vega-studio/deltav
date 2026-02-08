@@ -136,7 +136,7 @@ export class ImageLayer<
    */
   draw() {
     // Get the changes we need to handle. We make sure the provider's changes
-    // remain in tact for the child layer to process them.
+    // remain intact for the child layer to process them.
     const changes = this.resolveChanges(true);
     // Make sure we are triggering redraws appropriately
     this.updateAnimationState();

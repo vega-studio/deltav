@@ -36,7 +36,9 @@
     "assert": "2.0.0",
     "debug": "3.1.0",
     "devops": "git+ssh://github.com/vega-studio/node-devops-public.git#6.0.8",
-    "rand-seed": "1.0.2"
+    "rand-seed": "1.0.2",
+    "sass": "1.97.3",
+    "sass-embedded": "1.97.3"
   },
   "fallbackDependencies": {
     "devops": [

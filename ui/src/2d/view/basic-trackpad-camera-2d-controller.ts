@@ -10,8 +10,7 @@ import type { IMouseInteraction } from "../../event-management/types.js";
  * This is intentionally the same shape as `IBasicCamera2DControllerOptions`
  * so it can be swapped in with minimal changes.
  */
-export interface IBasicTrackPadCamera2DControllerOptions
-  extends IBasicCamera2DControllerOptions {}
+export interface IBasicTrackPadCamera2DControllerOptions extends IBasicCamera2DControllerOptions {}
 
 /**
  * Camera controller specialized for trackpads:
@@ -72,4 +71,3 @@ export class BasicTrackPadCamera2DController extends BasicCamera2DController {
 export type IBasicTrackPadCameraControllerOptions =
   IBasicTrackPadCamera2DControllerOptions;
 export const BasicTrackPadCameraController = BasicTrackPadCamera2DController;
-

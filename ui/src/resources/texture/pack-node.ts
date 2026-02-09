@@ -11,9 +11,14 @@ export interface IPackNodeDimensions<T> {
 }
 
 /**
- * This is used specifically by the atlas manager to aid in packing
- * in textures within an area. This will guarantee boundaries of textures are
- * not violated and provide proper feedback for where to draw a given image
+ * Binary-tree bin-packer used to allocate rectangular regions within a fixed
+ * area (e.g. atlas or compositing texture). Exported for use across the deltav
+ * ecosystem (atlas manager, font map, custom texture packers).
+ *
+ * Guarantees boundaries are not violated and returns the node (and bounds)
+ * where each item was placed. Use with {@link IPackNodeDimensions} and
+ * {@link PackNode.applyToSubTexture} for atlas UVs, or use the node's bounds
+ * for pixel coordinates.
  */
 export class PackNode<T> {
   child: [PackNode<T> | null, PackNode<T> | null] = [null, null];

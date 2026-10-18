@@ -14,7 +14,7 @@ related:
   - resources/textures-and-atlases.md
   - resources/color-buffers.md
 status: complete
-verified-at: 5b9f617f
+verified-at: 4098986b
 ---
 
 ## Purpose

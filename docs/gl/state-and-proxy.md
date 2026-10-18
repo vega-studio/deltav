@@ -13,7 +13,7 @@ related:
   - gl/gpu-resources.md
   - gl/scene-model-material.md
 status: complete
-verified-at: 5b9f617f
+verified-at: 4098986b
 ---
 
 ## Purpose

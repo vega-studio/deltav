@@ -10,7 +10,7 @@ related:
   - gl/gpu-resources.md
   - surface/render-loop.md
 status: complete
-verified-at: 5b9f617f
+verified-at: 4098986b
 ---
 
 ## Purpose

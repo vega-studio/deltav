@@ -23,18 +23,18 @@ verified-at: 2e5bdfab
 
 Where things live in the repository and how they are built, type-checked, tested, demoed and
 released. Almost all tooling is delegated to the `devops` package (a Vega Studio CLI installed from
-git), so the configs in this repo are thin; several are generic template files that reference
+git) — except typecheck and tests, which call `tsc` and `jest` directly — so the configs in this repo are thin; several are generic template files that reference
 folders this repo does not have.
 
 ## Key files
 
-- `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; every script is `devops <cmd>`; runtime deps are React 19 and its types; `shader.ext` lists `fs`/`vs`.
+- `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; every script is `devops <cmd>` except `ts` (`tsc`) and `test` (`jest`); runtime deps are React 19 and its types; `shader.ext` lists `fs`/`vs`.
 - `tsconfig.json` — strict TS, `experimentalDecorators` + `emitDecoratorMetadata` (needed by `@observable`), `jsx: react`, `typeRoots` includes `./dts`.
 - `vite.config.ts` — Vite config made only of `useDevopsPlugins()` from `node_modules/devops/shim`.
 - `jest.config.js` — ts-jest ESM preset, `testEnvironment: node`, matches `*.test.ts` under `unit-test`, `ui` and others.
 - `build.conf.ts` — `BUILD_TARGETS = ["prod"]` for the devops build.
 - `.babelrc.json` — Babel config Storybook loads (preset-env Chrome 100, TS, React, legacy decorators).
-- `eslint.config.mjs` — flat ESLint config (TS, prettier, simple-import-sort) run by `devops ts`.
+- `eslint.config.mjs` — flat ESLint config (TS, prettier, simple-import-sort); no script runs it any more (`bun run ts` is `tsc` only).
 - `.storybook/main.mts` — Storybook (react-vite) config: stories, addons, static dirs.
 - `.storybook/preview.tsx`, `.storybook/manager.mts`, `.storybook/theme.mts`, `.storybook/preview-head.html` — autodocs tag, theme, RedHatDisplay `@font-face` declarations.
 - `dts/asset.d.ts` — module declarations for `*.png`, `*.svg`, `*.ttf`, `*.woff2` and `*.vs`/`*.fs` (shader sources import as `string`).
@@ -66,20 +66,22 @@ part of the build; the stories also use `util/hooks`.
 
 ### Scripts
 
-All scripts run `devops` from `node_modules`; invoke them as `bun run <script>`.
+Scripts run `devops` from `node_modules`, except `ts` and `test`, which run `tsc` and `jest` from
+`node_modules/.bin`; invoke them as `bun run <script>`.
 
 | Script | What it does |
 |---|---|
 | `dev` | Development server for the demos; the README points to http://localhost:6006 |
 | `storybook` | Sets `PROJECT_ROOT`, then `storybook dev -p ${PORT:-6006}` with `.storybook` as config dir (`storybook build` variant outputs `storybook-static`) |
-| `ts` | Writes a temporary `tsconfig.temp.json` from `tsconfig.json`, runs `tsc --noemit --incremental`, then ESLint over the existing `include` folders |
-| `test` | Runs Jest with `jest.config.js` (env `PATTERN` filters, `WATCH` watches) |
+| `ts` | `tsc --noEmit -p tsconfig.json`; exits with tsc's status, no lint |
+| `test` | `jest --config jest.config.js`; exits with jest's status. Extra arguments go to jest, so `bun run test unit-test/<file>.test.ts` runs one file |
 | `release`, `package` | devops release/packaging (produces `dist`) |
 | `clean`, `component`, `init`, `template`, `url`, `pr` | Generic devops project commands |
 
 `devops` is a git dependency (`git+ssh://github.com/vega-studio/node-devops-public.git`, with
-`fallbackDependencies`); without access to it, `bun install` cannot provide any script. A plain
-typecheck without devops is `node_modules/.bin/tsc --noEmit -p tsconfig.json`.
+`fallbackDependencies`); without access to it, `bun install` cannot provide the devops scripts.
+`devops ts` and `devops test` are not used: without a subcommand they print help and exit 1, and
+`devops ts run` fails with TS5042 yet exits 0.
 
 ### Shaders and assets at build time
 
@@ -143,7 +145,7 @@ section to `RELEASE_NOTES.md` (`## x.y.z` with `[ADDED]`/`[FIXED]` entries).
   mention `app`, `app/config`, `test`, `utils`, `bin`, `shim` — none exist here. `build.conf.ts`
   comments about `app/config/env.*.ts` do not apply. `dts/express.d.ts` and `dts/make-cert.d.ts`
   are server-template declarations unused by the library.
-- `bun run ts` also lints; a lint error fails it even when `tsc` passes.
+- `bun run ts` does not lint; run `node_modules/.bin/eslint` separately when lint matters.
 - Do not import `ui/src/index.ts` from a Jest test: module load touches `window` and `document`
   (see [Architecture](architecture.md) gotchas) and the test environment is `node`.
 - The root `util` folder is pulled into the library build through the React surface imports;

@@ -5,6 +5,7 @@ export default {
   // testEnvironment: "jsdom",
   preset: "ts-jest/presets/js-with-ts-esm",
   testEnvironment: "node",
+  setupFiles: [path.resolve("unit-test/jest-setup.ts")],
   testRegex: path.resolve("(unit-test|ui|test|app|utils)/.*.test.ts$"),
   extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: {

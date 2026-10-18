@@ -16,7 +16,7 @@ related:
   - utilities/repo-util.md
   - utilities/library-util.md
 status: complete
-verified-at: 6fb79d85
+verified-at: 62044439
 ---
 
 ## Purpose
@@ -31,7 +31,7 @@ folders this repo does not have.
 - `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; every script is `devops <cmd>` except `ts` (`tsc`) and `test` (`jest`); runtime deps are React 19 and its types; `shader.ext` lists `fs`/`vs`.
 - `tsconfig.json` — strict TS, `experimentalDecorators` + `emitDecoratorMetadata` (needed by `@observable`), `jsx: react`, `typeRoots` includes `./dts`.
 - `vite.config.ts` — Vite config made only of `useDevopsPlugins()` from `node_modules/devops/shim`.
-- `jest.config.js` — ts-jest ESM preset, `testEnvironment: node`, matches `*.test.ts` under `unit-test`, `ui` and others.
+- `jest.config.js` — ts-jest ESM preset, `testEnvironment: node`, `setupFiles` `unit-test/jest-setup.ts`, matches `*.test.ts` under `unit-test`, `ui` and others.
 - `build.conf.ts` — `BUILD_TARGETS = ["prod"]` for the devops build.
 - `.babelrc.json` — Babel config Storybook loads (preset-env Chrome 100, TS, React, legacy decorators).
 - `eslint.config.mjs` — flat ESLint config (TS, prettier, simple-import-sort); no script runs it any more (`bun run ts` is `tsc` only).
@@ -98,6 +98,10 @@ fonts/images as base64 data URLs; `dts/asset.d.ts` gives these imports their typ
 `gl/attribute.test.ts` (`Attribute.repeatInstances`). They import the module files directly with
 `@jest/globals` and `assert`. Nothing that needs a WebGL context (surface, layers, shaders,
 buffers) is unit-tested; those are exercised visually through Storybook.
+`unit-test/jest-setup.ts` (jest `setupFiles`) polyfills `requestAnimationFrame` and
+`cancelAnimationFrame` with unref'd ~16 ms timers, because `ui/src/util/frame.ts` starts its
+command loop when the module loads and any test importing it (through `Transform` or the camera)
+would otherwise fail to load.
 
 ### Storybook
 

@@ -27,10 +27,7 @@ bun install
 
 ## Guide
 
-This is the recommended reading for using this framework. More docs to come, but
-plenty to get you rolling!
-
-[The Guide](./docs/intro.md)
+Documentation is being rewritten.
 
 ## Run Demos and modify the source code
 

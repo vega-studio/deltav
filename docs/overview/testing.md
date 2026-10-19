@@ -11,7 +11,7 @@ related:
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: 38857046
+verified-at: ed933605
 ---
 
 ## Purpose
@@ -53,6 +53,8 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `test/resources/*.test.ts` — the resources, render targets and post-processing suite (see Resources suite); `helpers.ts` (palette, `useResourcesPage`, `eventually`, `probeRect`).
 - `test/fixtures/3d/*` — `3d/scene` (a `View3D` with one `CubeLayer`, `TriangleLayer` or flat-colour subclass; camera, scene-graph parents and instances as props), `3d/layer-2d-in-3d`; `scene-props.ts` (prop types), `camera.ts` (`useCamera`), `flat-layers.ts` (`FlatCubeLayer`, `FlatTriangleLayer`).
 - `test/3d/*.test.ts` — the 3D suite (see 3D suite); `expect-math.ts` is its independent projection oracle, checked by the node-only `expect-math.test.ts`; `helpers.ts` (palette, `expectShape`, `expectTriangle`, `eventually`).
+- `test/stress/*.test.ts` — the stress suite (see Stress suite); helpers `record.ts` (`StressRecord`, `waitForLoad`, `expectHealthyGL`, `gpuDrainMs`, `frameStats`), `scenario.ts` (`runStress`, `STRESS_TIMEOUT`), `stress-probes.ts` (`expectShapes`, `rectShape`, `circleShape`, `eventually`, palette), `stress-api.ts` (`window.__deltavStress` types).
+- `test/fixtures/stress/*.fixture.tsx` — `stress/circles`, `churn`, `edges`, `labels`, `atlas`, `many-layers`, `post-process`, `cubes`, `remount`; shared `stress-loop.ts` (`useStressLoop`, `random`, `liveCount`), `stress-scene.tsx` (`LOAD_AREA`, `SENTINEL_STRIP`, `mainView2D`), `stress-cube-layer.ts` (`StressCubeLayer`).
 - `archive/unit-test/README.md` — why the old tests are kept and that they are not run.
 
 ## How it works
@@ -342,6 +344,34 @@ through `o.matrix` and paint the instance colour. Defects pinned as `test.failin
 layers (DELTAV-85), a layer's first instance parented before it is drawn (DELTAV-86),
 orthographic near/far (DELTAV-87) and `Axis2D.XY` (DELTAV-88). Scene-graph cases otherwise
 mount the child unparented and parent it once drawn.
+
+## Stress suite
+
+`bun run test test/stress` renders hard scenes to find pipeline pain points (D10). Each scenario
+runs through `runStress`, which wraps `mountCycle` (one cycle unless the scenario asks for more)
+and asserts that the load completes, that `getError()` is `NO_ERROR` and the context is not lost,
+that sentinel pixels are analytically correct after the load, and that teardown leaks nothing.
+There are no frame-time thresholds: SwiftShader times only compare scenarios with each other.
+
+- **Layout**: 2D scenes are 800×600 with an identity camera; the load fills `LOAD_AREA`
+  (x < 520) and sentinels sit in the strip to its right, drawn by their own layer on top, so
+  their negative probes see the clear colour. Fixtures build their load from a seeded PRNG and
+  take every size from props.
+- **Load loop**: `useStressLoop` publishes `window.__deltavStress`; after `ready` a plain
+  `requestAnimationFrame` loop (not a `frame.ts` command, so it is not in the leak counts) runs
+  the fixture's per-frame work for `frames` frames and records each timestamp, plus per-round
+  values (live buffer or texture counts from `window.__deltavLeaks`).
+- **Records**: `test-results/stress/<scenario>.json` (gitignored) and one `[stress]` console
+  line: mount-to-first-frame (`readyAt − mountedAt`), mean/p95/max frame time, GL object counts
+  at named points, phase wall times, and `gpuDrainMs`.
+- **`gpuDrainMs`**: draw calls return once queued, so rAF frame times are only the CPU side; the
+  first canvas read waits until SwiftShader has rasterised every queued frame. That read time is
+  the scene's raster cost. For the same reason `expectShapes` reads every probe of a scenario in
+  one page round trip.
+- **Workarounds**: the post-process chain draws a circle (RectangleLayer does not compile into a
+  render target) and has a `test.failing` variant with the gauss blurs (they do not compile); the
+  3D scene uses `StressCubeLayer`, the built-in `CubeLayer` with its `transform` attribute read
+  from `instance.matrix` (the built-in one is never uploaded).
 
 ## Extension points
 

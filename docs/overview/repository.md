@@ -18,7 +18,7 @@ related:
   - utilities/repo-util.md
   - utilities/library-util.md
 status: complete
-verified-at: 38857046
+verified-at: ed933605
 ---
 
 ## Purpose
@@ -53,7 +53,7 @@ folders this repo does not have.
 | `ui/index.ts` | Package entry: re-exports `ui/components/index.ts` (NOOP placeholder from the template) and `ui/src/index.ts` |
 | `ui/stories` | Storybook demos (`components/`), story data (`data/`), static fonts (`assets/fonts`) |
 | `ui/assets` | Storybook static dir (only a README) |
-| `test` | Browser test suite: `test/harness` (jest-side harness, Vite config, probes, leak detector and `mountCycle`), `test/fixtures` (React fixture pages) and one folder per test area (`test/teardown`, …); see [Testing](testing.md) |
+| `test` | Browser test suite: `test/harness` (jest-side harness, Vite config, probes, leak detector and `mountCycle`), `test/fixtures` (React fixture pages) and one folder per test area (`test/teardown`, `test/stress`, …); see [Testing](testing.md) |
 | `archive/unit-test` | The old node-only jest tests, kept for reference; not compiled, not run |
 | `util` | Repo-level generic helpers, not part of the library API — see [Repository utilities](../utilities/repo-util.md) |
 | `dts` | Ambient type declarations |

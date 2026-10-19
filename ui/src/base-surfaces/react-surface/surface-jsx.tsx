@@ -12,9 +12,9 @@ import {
   ISurfaceOptions,
   IViewProps,
   LayerInitializer,
-  Surface,
   ViewInitializer,
 } from "../../surface/index.js";
+import { Surface } from "../../surface/surface.js";
 import { isDefined } from "../../util/common-filters.js";
 import {
   type createLayer,

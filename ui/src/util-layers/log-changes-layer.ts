@@ -5,8 +5,8 @@ import {
   Layer,
   LayerInitializer,
   LayerScene,
-  Surface,
 } from "../surface";
+import type { Surface } from "../surface/surface.js";
 import { Omit } from "../types.js";
 import { createChildLayer, createLayer } from "../util/create-layer.js";
 

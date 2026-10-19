@@ -15,7 +15,7 @@ related:
   - buffers/overview.md
   - gl/renderer.md
 status: complete
-verified-at: 2e5bdfab
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -30,7 +30,7 @@ pipeline once and points to the doc that owns each part.
 
 - `ui/index.ts` — package entry (`main`/`types` in `package.json` point at its build output); re-exports `ui/components/index.ts` (a NOOP placeholder) and `ui/src/index.ts`.
 - `ui/src/index.ts` — the whole public API: imports `ui/src/util/webgl2-type-shim.ts` for its side effect, then `export *` from every area folder listed in the module map below plus `ui/src/types.ts`.
-- `ui/src/surface/surface.ts` — `Surface`, the root object; `DEFAULT_IO_EXPANSION`, `DEFAULT_RESOURCE_MANAGEMENT`, `DEFAULT_SHADER_TRANSFORM`, `ISurfaceOptions`.
+- `ui/src/surface/surface.ts` — `Surface`, the root object (built only by `SurfaceJSX`, exported as a type only); `DEFAULT_IO_EXPANSION`, `DEFAULT_RESOURCE_MANAGEMENT`, `DEFAULT_SHADER_TRANSFORM`, `ISurfaceOptions`.
 - `ui/src/surface/layer-scene.ts` — `LayerScene`, `ISceneOptions`: a keyed group of views and layers.
 - `ui/src/surface/layer.ts` — `Layer` base class, `ILayerProps`, `LayerInitializer`.
 - `ui/src/surface/view.ts` — `View` base class, `createView`, `ClearFlags`, `ViewDrawMode`.
@@ -55,14 +55,17 @@ flowchart LR
   U[UserInputEventManager] -->|EventManagers, picking| S
 ```
 
-1. **Setup.** `new Surface({ context: canvas, ... })` runs `Surface.init`: `initGL` creates the
+1. **Setup.** `SurfaceJSX` mounts a `<canvas>`, resolves its child tags and constructs the
+   `Surface` on it (the only place one is built; the package exports `Surface` as a type only).
+   That runs `Surface.init`: `initGL` creates the
    `WebGLRenderer` (which gets a WebGL context through `GLProxy.getContext`), then the
    `UserInputEventManager` (always with a `LayerMouseEvents` manager first), the `ResourceRouter`
    with the resource managers (default `DEFAULT_RESOURCE_MANAGEMENT`), the IO expanders
    (`BasicIOExpansion`, `ActiveIOExpansion`, `EasingIOExpansion` plus any the resource managers
    contribute) and the shader transforms (`Shaders30CompatibilityTransform`). `Surface.ready`
    resolves when this is done. See [Surface](../surface/surface.md).
-2. **Pipeline.** `Surface.pipeline({ resources, scenes })` is declarative and reactive: it diffs
+2. **Pipeline.** `SurfaceJSX` passes the resources and scenes its child tags declare to
+   `Surface.pipeline({ resources, scenes })`, which is declarative and reactive: it diffs
    the given resource and scene initializers against the current ones with `ReactiveDiff`
    (`resourceDiffs`, `sceneDiffs`), keyed by `key`. Each `LayerScene` in turn diffs its views
    (`createView(View2D, {...})`) and layers (`createLayer(CircleLayer, {...})`). Calling
@@ -81,8 +84,7 @@ flowchart LR
    `Instance.changes` and calls `InstanceProvider.instanceUpdated`; `add`/`remove` record
    INSERT/REMOVE diffs. Nothing touches the GPU until the next frame. See
    [Instances](../instances/instances.md), [Instance providers](../instances/instance-providers.md).
-5. **Frame.** `Surface.draw(time?)` (called by the app, or by `SurfaceJSX` through
-   `onAnimationLoop`) updates `frameMetrics`, calls `EventManager.willRender`, broadcasts camera
+5. **Frame.** `Surface.draw(time?)` (called by `SurfaceJSX` through `onAnimationLoop`) updates `frameMetrics`, calls `EventManager.willRender`, broadcasts camera
    changes, then `Surface.commit`: for each scene (sorted by `order`), each render view whose
    `View.shouldDrawView` is true, each layer: `Layer.draw` consumes the provider's change list
    through the `InstanceDiffManager`'s processor into the buffer manager, then updates uniforms;
@@ -126,17 +128,19 @@ Every customization plugs into one of these seams; the linked doc gives the exac
 
 - **New layer:** subclass `Layer` (or `Layer2D` for 2D world space), implement `initShader()`
   returning `IShaderInitialization`, set `static defaultProps`, optionally `getMaterialOptions`,
-  `baseShaderModules`, `childLayers`; pair with an `Instance` subclass. Mount with `createLayer`.
+  `baseShaderModules`, `childLayers`; pair with an `Instance` subclass. Mount with `LayerJSX`
+  (which builds the `createLayer` initializer).
   See [Authoring a layer](../shaders/authoring-a-layer.md).
 - **New view/camera:** subclass `View` (implement `fitViewtoViewport` and the projection methods)
-  and mount with `createView`. See [Views and scenes](../surface/views-and-scenes.md).
-- **Shader IO:** pass `ioExpansion` (array, or function receiving the defaults) and
-  `shaderTransforms` in `ISurfaceOptions`; subclass `BaseIOExpansion` / `BaseShaderTransform`.
+  and mount with `ViewJSX` (which builds the `createView` initializer). See [Views and scenes](../surface/views-and-scenes.md).
+- **Shader IO:** pass the `ioExpansion` (array, or function receiving the defaults) and
+  `shaderTransforms` props of `SurfaceJSX` (typed from `ISurfaceOptions`); subclass `BaseIOExpansion` / `BaseShaderTransform`.
   Register GLSL modules with `ShaderModule.register`. See [IO expansion](../shaders/io-expansion.md),
   [Shader modules](../shaders/shader-modules.md).
-- **Resources:** pass `resourceManagers` (`{ type, manager }[]`, a `BaseResourceManager` subclass)
-  in `ISurfaceOptions`. See [Resource management](../resources/resource-management.md).
-- **Input:** pass `eventManagers` (subclasses of `EventManager`, or `SimpleEventHandler`).
+- **Resources:** pass the `resourceManagers` prop of `SurfaceJSX` (`{ type, manager }[]`, a
+  `BaseResourceManager` subclass). See [Resource management](../resources/resource-management.md).
+- **Input:** add an event manager tag (`SimpleEventHandlerJSX`, `QueuedEventHandlerJSX`,
+  `BasicCamera2DControllerJSX`, …) inside `SurfaceJSX`; each builds an `EventManager`.
   See [Event management](../interaction/event-management.md).
 - **Imperative GPU work inside the frame:** `CommandLayer` with `Surface.commands`. See
   [Surface commands](../surface/commands.md).
@@ -148,9 +152,8 @@ Every customization plugs into one of these seams; the linked doc gives the exac
   which creates a throwaway canvas to fill `WebGLStat` (prefers `webgl2`, falls back to `webgl`
   and `experimental-webgl`) and sets `window.WebGLStat`. Unit tests therefore import individual
   module files (e.g. `ui/src/math/vector.ts`, `ui/src/gl/attribute.ts`), never `ui/src/index.ts`.
-- `Surface.draw` is not self-scheduling. Without `SurfaceJSX` the app must call it every frame
-  (e.g. `onAnimationLoop(t => surface.draw(t))`), and must call `Surface.resize`/`fitContainer`
-  when the canvas changes size.
+- `Surface.draw` is not self-scheduling: `SurfaceJSX` runs the frame loop
+  (`onAnimationLoop`) and re-fits the canvas on window resize, so app code never calls `draw`.
 - GPU state lags data by one frame: instance changes, `pipeline` calls (awaits `onFrame`) and
   resource loads all land on a later `draw`.
 - An `InstanceProvider` may feed only one layer: `InstanceProvider.resolve` throws if a second

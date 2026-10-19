@@ -14,7 +14,7 @@ related:
   - interaction/event-management.md
   - react/react-surface.md
 status: complete
-verified-at: 6d7b2744
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -22,9 +22,13 @@ verified-at: 6d7b2744
 `Surface` is the root runtime object of deltav. It wraps one canvas and its WebGL context
 (through a `WebGLRenderer`), and owns everything rendered into it: the resource managers, the
 scenes (`LayerScene`) with their views and layers, the user-input event managers and the
-surface-wide shader pipeline configuration (IO expanders, shader transforms, IO sorting). An
-application declares *what* to render with `Surface.pipeline` and drives frames with
-`Surface.draw`; the Surface diffs the declaration against what exists and renders it.
+surface-wide shader pipeline configuration (IO expanders, shader transforms, IO sorting).
+`Surface` is internal: applications never construct it. `SurfaceJSX` (see
+[React surface](../react/react-surface.md)) is the only code that builds one, and it drives it:
+it passes the JSX tree to `Surface.pipeline` and calls `Surface.draw` every frame; the Surface
+diffs the declaration against what exists and renders it. The package exports `Surface` as a
+type only (`ui/src/surface/index.ts`), so an app can still hold the instance `SurfaceJSX` hands
+to its `ready` resolver and call its methods.
 
 ## Key files
 
@@ -44,9 +48,11 @@ application declares *what* to render with `Surface.pipeline` and drives frames 
 
 ### Construction and init
 
-`new Surface(options?)` creates the `ready` promise; if `options` is given it calls
-`Surface.init(options)` without awaiting it, so always `await surface.ready` (or `await
-surface.init(...)`) before use. `init` is a no-op if a context already exists. It runs, in order:
+`SurfaceJSX` constructs the surface on mount (`new Surface(options)` in
+`ui/src/base-surfaces/react-surface/surface-jsx.tsx`, the only call site) and awaits
+`surface.ready` before using it. The constructor creates the `ready` promise; given `options` it
+calls `Surface.init(options)` without awaiting it. `init` is a no-op if a context already exists.
+It runs, in order:
 
 1. `pixelRatio = options.pixelRatio || window.devicePixelRatio`, clamped to `>= 1`.
 2. `initGL` — builds the `WebGLRenderer` on `options.context` (an `HTMLCanvasElement`) with
@@ -75,7 +81,8 @@ Layers read this configuration through `Surface.getIOExpanders`, `getShaderTrans
 ### The pipeline
 
 `Surface.pipeline(pipeline: IPipeline)` takes `{ resources?: BaseResourceOptions[], scenes?:
-ISceneOptions[] }`:
+ISceneOptions[] }`. `SurfaceJSX` builds that object from its child tags and calls it once the
+surface is ready:
 
 - It bumps `pipelineLoadContext` and awaits `onFrame()`; if another `pipeline` call arrived in
   the meantime, this one returns without doing anything (last call per frame wins).
@@ -145,8 +152,11 @@ context. Calls to `draw`/`commit` after that return immediately (`!this.gl`).
 
 ## Gotchas
 
+- `Surface` is not exported as a value: `import { Surface } from "deltav"` gives a type only, and
+  `new Surface(...)` outside `surface-jsx.tsx` does not compile. Build surfaces with `SurfaceJSX`.
 - `init` is async and the constructor does not await it: `pipeline` or `draw` before `ready`
   resolves sees no `gl` and silently does nothing (`draw`/`commit`), or no `resourceManager`.
+  `SurfaceJSX` awaits `ready` first.
 - Passing `resourceManagers`, or an *array* for `ioExpansion`/`shaderTransforms`, replaces the
   defaults entirely. Without `EasingIOExpansion`, easing attributes do not work; without the
   default resource managers, textures, atlases, fonts and color buffers cannot be requested.
@@ -154,8 +164,8 @@ context. Calls to `draw`/`commit` after that return immediately (`!this.gl`).
   warns that not doing so can leave elements unrendered.
 - Several `pipeline()` calls in one frame collapse to the last one; the earlier promises resolve
   without having applied anything.
-- `pixelRatio` defaults to `window.devicePixelRatio` at field-initialisation time, so constructing
-  a `Surface` needs a `window`.
+- `pixelRatio` defaults to `window.devicePixelRatio` at field-initialisation time, so building a
+  surface needs a `window`.
 - A layer whose `draw()` throws is removed from its scene for that frame and logged by
   `printLayerErrors` (with extra diagnostics for attribute `update` results whose length differs
   from the attribute size). It comes back only when the pipeline is diffed again.
@@ -172,4 +182,4 @@ context. Calls to `draw`/`commit` after that return immediately (`!this.gl`).
 - [Surface commands](commands.md) — `Surface.commands` and `CommandLayer`.
 - [Renderer](../gl/renderer.md) — `WebGLRenderer`.
 - [Resource management](../resources/resource-management.md) — `ResourceRouter` and managers.
-- [React surface](../react/react-surface.md) — the JSX wrapper that drives `draw`.
+- [React surface](../react/react-surface.md) — `SurfaceJSX`, the only builder of a `Surface`.

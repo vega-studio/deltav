@@ -11,7 +11,7 @@ related:
   - instances/easing-and-animation.md
   - resources/textures-and-atlases.md
 status: complete
-verified-at: 3c259f7a
+verified-at: d80bb72a
 ---
 
 ## Purpose

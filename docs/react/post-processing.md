@@ -11,7 +11,7 @@ related:
   - shaders/shader-modules.md
   - react/util-layers.md
 status: complete
-verified-at: 2eeb963a
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -29,8 +29,8 @@ inside `SurfaceJSX` and wired purely by resource names.
 - `ui/src/base-surfaces/react-surface/processing/commands-jsx.tsx` — `CommandsJSX`: a scene running a `CommandLayer` callback.
 - `ui/src/base-surfaces/react-surface/processing/bloom/bloom-jsx.ts` — `BloomJSX`, `IBloomJSX`.
 - `ui/src/base-surfaces/react-surface/processing/box-sample/box-sample-jsx.ts` — `BoxSampleJSX`, `BoxSampleJSXDirection`; shader `box-sample-jsx.fs`.
-- `ui/src/base-surfaces/react-surface/processing/gauss-horizontal-blur/gauss-horizontal-blur-jsx.tsx` — `GaussHorizontalBlurJSX` (not re-exported).
-- `ui/src/base-surfaces/react-surface/processing/gauss-vertical-blur/gauss-vertical-blur-jsx.ts` — `GaussVerticalBlurJSX` (not re-exported).
+- `ui/src/base-surfaces/react-surface/processing/gauss-horizontal-blur/gauss-horizontal-blur-jsx.tsx` — `GaussHorizontalBlurJSX`.
+- `ui/src/base-surfaces/react-surface/processing/gauss-vertical-blur/gauss-vertical-blur-jsx.ts` — `GaussVerticalBlurJSX`.
 - `ui/src/base-surfaces/react-surface/processing/trail/trail-jsx.ts` — `TrailJSX`, `ITrailJSX`.
 - `ui/src/base-surfaces/react-surface/processing/draw/draw-jsx.ts` — `DrawJSX`, `IDrawJSX`: blit a texture (or one channel) to screen.
 - `ui/src/base-surfaces/react-surface/processing/draw/draw-debug-jsx.tsx` — `DrawDebugJSX`: up to 16 textures in a 4x4 grid of viewports.
@@ -147,7 +147,7 @@ read its outputs. See `ui/stories/components/multi-render-target.stories.tsx` (`
   `Layer.needsViewDrawn`; nothing in `ui/src` reads that flag (nor `alwaysDraw`, which
   `initShader` sets), so whether a pass redraws is decided by its view's `drawMode` (default
   `ALWAYS`). Use `view: { config: { drawMode: ... } }` to throttle a pass.
-- The gaussian blur components are not exported from the package index, unused by stories, and
+- The gaussian blur components are exported from the package index but unused by stories, and
   their `.fs` files declare `varying vec2 texCoord` themselves although `PostProcessLayer` also
   prepends it; the vertical blur steps by `1.0 / viewSize.x`. Treat them as unverified.
 - `PostProcessLayer.defaultProps.fs` is a placeholder whose GLSL is missing a closing brace;

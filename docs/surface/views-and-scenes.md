@@ -14,7 +14,7 @@ related:
   - resources/color-buffers.md
   - react/post-processing.md
 status: complete
-verified-at: 6d7b2744
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -41,16 +41,21 @@ in sync by `ReactiveDiff`.
 
 ### Declaring
 
-```ts
-surface.pipeline({
-  resources: [/* createTexture(...), createColorBuffer(...) */],
-  scenes: [{
-    key: "main",
-    views: [createView(View2D, { key: "v", camera, clearFlags: [ClearFlags.COLOR] })],
-    layers: [createLayer(CircleLayer, { key: "dots", data: provider })],
-  }],
-});
+Scenes, views and layers are declared as `SurfaceJSX` children:
+
+```tsx
+<SurfaceJSX>
+  <TextureJSX name="tex" /* … */ />
+  <SceneJSX name="main">
+    <ViewJSX name="v" type={View2D} config={{ camera, clearFlags: [ClearFlags.COLOR] }} />
+    <LayerJSX name="dots" type={CircleLayer} providerRef={provider} config={{}} />
+  </SceneJSX>
+</SurfaceJSX>
 ```
+
+`SurfaceJSX` turns them into the `IPipeline` it passes to the internal `Surface.pipeline`:
+`{ resources, scenes: [{ key: "main", views: [createView(View2D, …)], layers:
+[createLayer(CircleLayer, …)] }] }`.
 
 `createView(ViewClass, props)` returns `{ key, init: [ViewClass, props] }` and defaults
 `viewport` to `{ left: 0, right: 0, top: 0, bottom: 0 }` (the full target). `ISceneOptions` is

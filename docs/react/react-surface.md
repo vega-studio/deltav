@@ -15,14 +15,15 @@ related:
   - resources/color-buffers.md
   - interaction/event-management.md
 status: complete
-verified-at: 2eeb963a
+verified-at: d80bb72a
 ---
 
 ## Purpose
 
-`SurfaceJSX` lets a React app declare a deltav `Surface` and its pipeline (resources, event
-managers, scenes, views, layers) as JSX instead of calling `new Surface(...)` and
-`Surface.pipeline(...)` by hand. The child tags render no DOM of their own; each one builds a
+`SurfaceJSX` is the only way to build a deltav surface: a React app declares the surface and its
+pipeline (resources, event managers, scenes, views, layers) as JSX, and `SurfaceJSX` constructs
+the internal `Surface` and calls `Surface.pipeline(...)` for it. The package exports `Surface` as
+a type only, for the instance `SurfaceJSX` hands to its `ready` resolver. The child tags render no DOM of their own; each one builds a
 deltav object (a `LayerInitializer`, `ViewInitializer`, `ISceneOptions`, resource options or an
 `EventManager`) and hands it up to the surface through a `PromiseResolver`. Everything is exported
 from the package root via `ui/src/base-surfaces/index.ts`.
@@ -176,9 +177,7 @@ render targets, `output`, post-processing).
   work because all resolvers are registered during the parent's render, before any `didMount`.
 - `ISurfaceJSX.optimizedOutputTargets` mentions `enableOutput`; the real method is
   `Surface.enableOptimizedOutput(output)`, valid for the next draw only.
-- `FloatTextureJSX` is not re-exported by `ui/src/base-surfaces/react-surface/index.ts`; import it
-  from its file (as `ui/stories/components/float-textures.stories.tsx` does). It warns when
-  `data.length < width * height * channels`.
+- `FloatTextureJSX` warns when `data.length < width * height * channels`.
 - `CustomTag` only emits DOM when `writeToDom` is true, JSON-stringifying props as lowercase
   attributes; `DepthBufferJSX` reports as `ColorBuffer` and `Simple3DTransformControllerJSX` as
   `BasicCamera2DController` in that debug DOM.

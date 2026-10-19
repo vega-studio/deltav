@@ -1,6 +1,7 @@
 import { InstanceProvider } from "../../../instance-provider";
 import { IAutoEasingMethod, Vec } from "../../../math";
-import { LayerScene, Surface } from "../../../surface";
+import { LayerScene } from "../../../surface";
+import type { Surface } from "../../../surface/surface.js";
 import {
   ILayerMaterialOptions,
   InstanceAttributeSize,

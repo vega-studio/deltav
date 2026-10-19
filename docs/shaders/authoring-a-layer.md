@@ -14,7 +14,7 @@ related:
   - 2d/layers.md
   - instances/instances.md
 status: complete
-verified-at: 8c3a0ef6
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -139,16 +139,20 @@ are appended into the same `main()`.
 
 ### 5. Using the layer
 
-```ts
-const provider = new InstanceProvider<CircleInstance>();
-surface.pipeline({ scenes: [{ key: "main", views: [/* View2D … */],
-  layers: [createLayer(CircleLayer, { key: "circles", data: provider })] }] });
-provider.add(new CircleInstance({ center: [10, 10], radius: 5 }));
+```tsx
+const provider = React.useRef<InstanceProvider<CircleInstance>>(null);
+<SurfaceJSX>
+  <ViewJSX name="main" type={View2D} config={{ camera: new Camera2D() }} />
+  <LayerJSX type={CircleLayer} providerRef={provider} config={{}} />
+</SurfaceJSX>
+// once mounted:
+provider.current?.add(new CircleInstance({ center: [10, 10], radius: 5 }));
 ```
 
-`createLayer` returns a `LayerInitializer` (`ISceneOptions.layers` entry). In React use
-`<LayerJSX type={CircleLayer} providerRef={…} config={{ … }} />` inside `SurfaceJSX` — see
-[2D layers](../2d/layers.md) and [Layer](../surface/layer.md).
+`LayerJSX` builds the `createLayer` initializer (a `LayerInitializer`, `ISceneOptions.layers`
+entry) and `SurfaceJSX` hands it to the internal `Surface.pipeline` — see
+[React surface](../react/react-surface.md), [2D layers](../2d/layers.md) and
+[Layer](../surface/layer.md).
 
 ## Extension points
 

@@ -1,5 +1,6 @@
 import { Instance } from "../../instance-provider";
-import { ILayerProps, Layer, LayerScene, Surface } from "../../surface";
+import { ILayerProps, Layer, LayerScene } from "../../surface";
+import type { Surface } from "../../surface/surface.js";
 import { IShaderInitialization } from "../../types.js";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

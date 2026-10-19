@@ -9,7 +9,7 @@ related:
   - instances/instance-providers.md
   - buffers/instance-diffing.md
 status: complete
-verified-at: 2eeb963a
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -44,14 +44,14 @@ data: props.data })`. `messageHeader` returns `"CHANGES FOR: <key>"` using the i
   `Shader IO: <id>` with the wrapped layer's and children's shader initialization. Returns `null`,
   so `LogChangesLayer` itself renders nothing.
 
-Usage, inside a pipeline's `layers` list:
+Usage, anywhere a `LayerInitializer` is accepted:
 
 ```ts
-layers: [debugLayer(CircleLayer, { key: "circles", data: provider })]
+childLayers() { return [debugLayer(CircleLayer, { key: "circles", data: provider })]; }
 ```
 
-With `LayerJSX`, there is no `debugLayer` equivalent prop; use it in imperative
-`Surface.pipeline` scenes.
+`SurfaceJSX` is the only way to build a surface and `LayerJSX` has no `debugLayer` equivalent
+prop, so `debugLayer` is reachable only from a custom layer's `childLayers()`.
 
 ## Extension points
 

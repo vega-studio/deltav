@@ -3,7 +3,7 @@ import {
   IAutoEasingMethod,
 } from "../../math/auto-easing-method.js";
 import { copy3, divide3, scale3, subtract3, Vec3 } from "../../math/vector.js";
-import { Surface } from "../../surface";
+import type { Surface } from "../../surface/surface.js";
 import { uid } from "../../util/uid.js";
 import { Camera2D } from "./camera-2d.js";
 

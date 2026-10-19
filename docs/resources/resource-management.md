@@ -13,7 +13,7 @@ related:
   - shaders/io-expansion.md
   - react/react-surface.md
 status: complete
-verified-at: 8c3a0ef6
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -59,7 +59,8 @@ IO (the texture managers add `TextureIOExpansion`, see
 
 ### Resource lifecycle
 
-`Surface.pipeline(pipeline)` diffs `pipeline.resources` through `Surface.resourceDiffs`, a
+Resource tags (`TextureJSX`, `ColorBufferJSX`, `FontJSX`, …) inside `SurfaceJSX` become
+`pipeline.resources`. `Surface.pipeline(pipeline)` diffs them through `Surface.resourceDiffs`, a
 `ReactiveDiff` keyed by `key`, **before** it diffs scenes:
 
 - new key → `ResourceRouter.initResource` → `manager.initResource`

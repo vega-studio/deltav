@@ -10,7 +10,7 @@ related:
   - resources/textures-and-atlases.md
   - gl/scene-model-material.md
 status: complete
-verified-at: 8c3a0ef6
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -111,12 +111,14 @@ class MyIOExpansion extends BaseIOExpansion {
     return { injection: "" };
   }
 }
-new Surface({ context, ioExpansion: (defaults) => [...defaults, new MyIOExpansion()] });
+<SurfaceJSX ioExpansion={(defaults) => [...defaults, new MyIOExpansion()]}>{/* … */}</SurfaceJSX>
 ```
+
+`SurfaceJSX` passes its `ioExpansion` and `shaderTransforms` props through to the `Surface` it builds.
 
 - Keep `BasicIOExpansion` in the list unless you replace all declaration writing yourself.
 - A resource manager contributes expanders by overriding `BaseResourceManager.getIOExpansion()`.
-- Add or replace transforms with `ISurfaceOptions.shaderTransforms` (`BaseShaderTransform`: `vertex`, `fragment`, optional `rawVertex`, `rawFragment`).
+- Add or replace transforms with the `shaderTransforms` prop of `SurfaceJSX` (`ISurfaceOptions.shaderTransforms`) (`BaseShaderTransform`: `vertex`, `fragment`, optional `rawVertex`, `rawFragment`).
 
 ## Gotchas
 

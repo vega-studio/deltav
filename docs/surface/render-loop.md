@@ -14,7 +14,7 @@ related:
   - instances/easing-and-animation.md
   - react/post-processing.md
 status: complete
-verified-at: 6d7b2744
+verified-at: d80bb72a
 ---
 
 ## Purpose
@@ -41,10 +41,10 @@ loop and much of the library's deferred work.
 
 ### Who calls draw
 
-`Surface` has no loop of its own. `SurfaceJSX` starts one with
+`Surface` has no loop of its own. `SurfaceJSX`, the only builder of a surface, starts one with
 `onAnimationLoop(draw, frameRate ? 1000 / frameRate : undefined)` and calls
-`surface.draw(time)` each tick (stopping after `renderFrameCount` frames if set). A non-React
-caller does the same with `onAnimationLoop` or `requestAnimationFrame`.
+`surface.draw(time)` each tick (stopping after `renderFrameCount` frames if set, and skipping
+frames while its `stop` prop is set).
 
 ### One frame: `Surface.draw(time?)`
 

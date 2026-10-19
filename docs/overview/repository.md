@@ -15,16 +15,17 @@ covers:
 related:
   - overview/architecture.md
   - overview/testing.md
+  - overview/toolchain.md
   - utilities/repo-util.md
   - utilities/library-util.md
 status: complete
-verified-at: ed933605
+verified-at: 4e02f8b7
 ---
 
 ## Purpose
 
 Where things live in the repository and how they are built, type-checked, tested, demoed and
-released. Almost all tooling is delegated to the `devops` package (a Vega Studio CLI installed from
+released. The asset loaders and the Storybook config live in this repo (see [Toolchain](toolchain.md)); the remaining scripts are delegated to the `devops` package (a Vega Studio CLI installed from
 git) — except typecheck and tests, which call `tsc` and `jest` directly — so the configs in this repo are thin; several are generic template files that reference
 folders this repo does not have.
 
@@ -32,15 +33,16 @@ folders this repo does not have.
 
 - `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; every script is `devops <cmd>` except `ts` (`tsc`) and `test` (`jest`); runtime deps are React 19 and its types; `shader.ext` lists `fs`/`vs`.
 - `tsconfig.json` — strict TS, `experimentalDecorators` + `emitDecoratorMetadata` (needed by `@observable`), `jsx: react`, `typeRoots` includes `./dts`.
-- `vite.config.ts` — Vite config made only of `useDevopsPlugins()` from `node_modules/devops/shim`.
+- `vite.config.ts` — Vite config Storybook loads: `deltavVitePlugins()` from `build/plugins/vite.ts` and the `VITE_RELEASE_VERSION` define; see [Toolchain](toolchain.md).
 - `jest.config.js` — ts-jest ESM preset, `testEnvironment: node`, matches `test/**/*.test.ts`, `globalSetup`/`globalTeardown` `test/harness/global-setup.mjs`/`global-teardown.mjs` (the fixture Vite server), `maxWorkers: 2`, `testTimeout: 60000`; see [Testing](testing.md).
 - `test/harness/vite.config.ts` — test-only Vite config for the browser test fixtures; independent of the devops plugins.
 - `build.conf.ts` — `BUILD_TARGETS = ["prod"]` for the devops build.
-- `.babelrc.json` — Babel config Storybook loads (preset-env Chrome 100, TS, React, legacy decorators).
+- `.babelrc.json` — Babel config (preset-env Chrome 100, TS, React, legacy decorators); no longer read by Storybook, kept until step-04 of DELTAV-62.
 - `eslint.config.mjs` — flat ESLint config (TS, prettier, simple-import-sort); no script runs it any more (`bun run ts` is `tsc` only).
-- `.storybook/main.mts` — Storybook (react-vite) config: stories, addons, static dirs.
+- `.storybook/main.mts` — Storybook (react-vite) config: stories, addons, static dirs, resolved from its own directory; see [Toolchain](toolchain.md).
 - `.storybook/preview.tsx`, `.storybook/manager.mts`, `.storybook/theme.mts`, `.storybook/preview-head.html` — autodocs tag, theme, RedHatDisplay `@font-face` declarations.
-- `dts/asset.d.ts` — module declarations for `*.png`, `*.svg`, `*.ttf`, `*.woff2` and `*.vs`/`*.fs` (shader sources import as `string`).
+- `dts/asset.d.ts` — module declarations for `*.png`, `*.jpg`, `*.jpeg`, `*.gif`, `*.svg`, `*.ttf`, `*.woff`, `*.woff2` and `*.vs`/`*.fs` (shader sources import as `string`), matching the loaders in `build/plugins/loaders.ts`.
+- `build/plugins` — the asset loaders (shaders, inline fonts/images, CSS injection) with Bun and Vite adapters; see [Toolchain](toolchain.md).
 - `RELEASE_NOTES.md` — changelog, newest version first.
 
 ## How it works
@@ -90,9 +92,9 @@ Scripts run `devops` from `node_modules`, except `ts` and `test`, which run `tsc
 ### Shaders and assets at build time
 
 Layer shaders live next to their layer as `.vs`/`.fs` files and are imported as strings
-(`import CircleLayerVS from "./circle-layer.vs"`). The devops Vite plugins provide the loader
-(`vite-devops-shader-compression-plugin` for `.vs`/`.fs` outside `node_modules`) and inline
-fonts/images as base64 data URLs; `dts/asset.d.ts` gives these imports their types.
+(`import CircleLayerVS from "./circle-layer.vs"`); fonts and images import as base64 data URLs and
+the stylesheet as plain `.css`. The loaders live in `build/plugins` — see
+[Toolchain](toolchain.md); `dts/asset.d.ts` gives these imports their types.
 
 ### Tests
 
@@ -110,9 +112,9 @@ The previous node-only tests (`vector`, `matrix`, `quaternion`, `transform`, `pr
 
 ### Storybook
 
-`.storybook/main.mts` loads `**/*.mdx`, `**/*.stories.*` and `**/*.bugs.*` under `ui` (resolved
-from `PROJECT_ROOT`, set by devops), plus stories from packages named in `NODE_MODULES_STORIES`.
-Static dirs are `ui/assets` and `ui/stories/assets`. Story titles are grouped under `Deltav/`:
+How Storybook is configured and run is in [Toolchain](toolchain.md). Stories are
+`**/*.mdx`, `**/*.stories.*` and `**/*.bugs.*` under `ui`; static dirs are `ui/assets` and
+`ui/stories/assets`. Story titles are grouped under `Deltav/`:
 
 | File(s) in `ui/stories/components` | Title |
 |---|---|

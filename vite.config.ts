@@ -1,24 +1,27 @@
-import * as Vite from "vite";
-import { useDevopsPlugins } from "./node_modules/devops/shim/index.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import type { UserConfig } from "vite";
 
-export default async (): Promise<Vite.UserConfig> => {
-  const plugins = [...(await useDevopsPlugins())];
+import { deltavVitePlugins } from "./build/plugins/vite.js";
 
-  // if (process.env.NODE_ENV === "production") {
-  //   plugins = plugins
-  //     .flat()
-  //     .filter((p) => (p as any)?.name !== "vite-plugin-css-injected-by-js");
-  // }
+const ROOT = path.dirname(fileURLToPath(import.meta.url));
+const { version } = JSON.parse(
+  fs.readFileSync(path.resolve(ROOT, "package.json"), "utf8")
+);
 
-  return {
-    plugins,
-    build: {
-      cssCodeSplit: false,
-      rollupOptions: {
-        output: {
-          manualChunks: {},
-        },
-      },
-    },
-  };
+/**
+ * Vite config used only by Storybook (its Vite builder loads this file):
+ * deltav's asset loaders, React, and the release version define.
+ */
+const config: UserConfig = {
+  plugins: deltavVitePlugins(),
+  define: {
+    "import.meta.env.VITE_RELEASE_VERSION": JSON.stringify(version),
+  },
+  build: {
+    cssCodeSplit: false,
+  },
 };
+
+export default config;

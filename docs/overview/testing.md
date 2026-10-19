@@ -11,14 +11,14 @@ related:
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: ed933605
+verified-at: 4e02f8b7
 ---
 
 ## Purpose
 
 `bun run test` runs a suite that renders real deltav scenes and checks their pixels. Tests run in
 jest under node, but deltav cannot load in node (its modules touch `window`, import `.vs`/`.fs`
-shader files and a `.scss` file, and read `import.meta.env`). So each test drives a headless
+shader files and a `.css` file, and read `import.meta.env`). So each test drives a headless
 Chromium page that mounts a React fixture through `SurfaceJSX`, renders with deterministic
 software WebGL2, and reads the canvas back. The old node-only math tests are archived in
 `archive/unit-test/` and are neither compiled nor run.
@@ -28,7 +28,7 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `jest.config.js` — ts-jest ESM preset, `testEnvironment: node`, `testRegex` `test/.*\.test\.ts$`, `globalSetup`/`globalTeardown`, `maxWorkers: 2`, `testTimeout: 60000`.
 - `test/harness/global-setup.mjs` — starts the test-only Vite dev server on a free port; sets `DELTAV_TEST_URL` and writes it to the file named by `DELTAV_TEST_URL_FILE`.
 - `test/harness/global-teardown.mjs` — closes that server and removes the URL file.
-- `test/harness/vite.config.ts` — test-only Vite config: `root` `test/fixtures`, tsconfig `paths` aliases, shader sources as string modules, `.scss` as an empty module, `server.fs.allow` the repo root. No devops plugins.
+- `test/harness/vite.config.ts` — test-only Vite config: `root` `test/fixtures`, tsconfig `paths` aliases, shader sources as string modules, `.scss` as an empty module (matches nothing since the library stylesheet became `surface-jsx.css`, which Vite loads natively), `server.fs.allow` the repo root. No devops plugins.
 - `test/harness/browser.ts` — `launchBrowser`, `resolveChromium`, `openFixturePage`, `useFixturePage`, `DETERMINISTIC_GL_ARGS`, `VIEWPORT`.
 - `test/harness/host-api.ts` — types shared by node and page: `DeltavHostAPI` (`window.__deltav`), `RGBA255`, `PixelRect`, `PixelBlock`; leak types `RESOURCE_KINDS`, `ResourceCounts`, `ResourceSnapshot`, `LeakEntry`, `LeakDetails`, `DeltavLeaksAPI` (`window.__deltavLeaks`).
 - `test/harness/probe.ts` — `probe`, `readPixels`, `expectColor`, `expectRegion`, `expectOutside`, `rgba01To255`, `premultiply`, `worldToPixel2D`, `worldRectToPixel2D`.
@@ -108,8 +108,8 @@ Props must be JSON-serialisable (they cross `page.evaluate`).
   page's top-left, `pixelRatio={1}`, `options={{ alpha: true, preserveDrawingBuffer: true,
   antialias: false }}`, `handlesWheelEvents={false}`. `preserveDrawingBuffer` keeps the last frame
   readable between frames.
-- Fixtures set every size explicitly; nothing depends on page layout. The library's `.scss` is
-  not loaded, so `TestSurface` sizes the `SurfaceJSX` container itself.
+- Fixtures set every size explicitly; nothing depends on page layout. `surface-jsx.css` is
+  loaded, but `TestSurface`'s inline sizes on the `SurfaceJSX` container override it.
 
 ### Methodology checklist
 

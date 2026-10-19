@@ -1,4 +1,4 @@
-import "./surface-jsx.scss";
+import "./surface-jsx.css";
 
 import React from "react";
 

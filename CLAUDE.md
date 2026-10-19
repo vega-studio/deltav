@@ -37,6 +37,7 @@ Overview:
 - docs/overview/repository.md — repository layout and tooling
 - docs/overview/glossary.md — glossary
 - docs/overview/testing.md — test suite and correctness methodology
+- docs/overview/toolchain.md — toolchain
 
 Surface:
 - docs/surface/surface.md — surface

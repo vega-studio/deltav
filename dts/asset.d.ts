@@ -32,3 +32,23 @@ declare module "*.vs" {
   const value: string;
   export = value;
 }
+
+declare module "*.woff" {
+  const value: any;
+  export = value;
+}
+
+declare module "*.jpg" {
+  const value: any;
+  export = value;
+}
+
+declare module "*.jpeg" {
+  const value: any;
+  export = value;
+}
+
+declare module "*.gif" {
+  const value: any;
+  export = value;
+}

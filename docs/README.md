@@ -13,6 +13,7 @@ source file.
 - [Architecture](overview/architecture.md) — How the DeltaV pieces fit together: surface, layers, instances, shaders, buffers and the GL layer, and the public exports.
 - [Repository layout and tooling](overview/repository.md) — Folder layout, build, test, Storybook and type-declaration setup of the deltav repository.
 - [Glossary](overview/glossary.md) — Definitions of the DeltaV vocabulary (instance, layer, view, scene, IO expansion, easing, picking) and the shared types in types.ts.
+- [Toolchain](overview/toolchain.md) — How deltav's asset plugins, Storybook, library build, tests and scripts are wired: shared loaders in build/plugins with Bun and Vite adapters.
 - [Testing](overview/testing.md) — How the browser test suite runs (jest, Vite, headless Chromium on SwiftShader), the analytic pixel-probe methodology, fixtures and the defect policy.
 
 ### Surface

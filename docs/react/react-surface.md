@@ -15,7 +15,7 @@ related:
   - resources/color-buffers.md
   - interaction/event-management.md
 status: complete
-verified-at: e1093995
+verified-at: 4e02f8b7
 ---
 
 ## Purpose
@@ -203,7 +203,7 @@ render targets, `output`, post-processing).
 - `CustomTag` only emits DOM when `writeToDom` is true, JSON-stringifying props as lowercase
   attributes; `DepthBufferJSX` reports as `ColorBuffer` and `Simple3DTransformControllerJSX` as
   `BasicCamera2DController` in that debug DOM.
-- The container `div` gets class `SurfaceJSX` (`surface-jsx.scss`: flex, 100% width/height,
+- The container `div` gets class `SurfaceJSX` (`surface-jsx.css`: flex, 100% width/height,
   `overflow: hidden`); the canvas is sized from the container's `offsetWidth/offsetHeight`, so a
   zero-size container yields a zero-size canvas.
 

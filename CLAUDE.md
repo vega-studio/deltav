@@ -3,7 +3,7 @@
 DeltaV (`deltav` on npm) is a TypeScript WebGL2 framework for rendering large, dynamic data
 visualizations: data is expressed as instances, layers turn instances into GPU buffers and
 generated shaders, and only the instances that changed are re-uploaded each frame. The library
-source is in `ui/src`, Storybook demos in `ui/stories`, the jest + headless Chromium test suite
+source is in `ui/src`, Storybook demos in `ui/stories`, the `bun test` + headless Chromium test suite
 in `test/`, and generic helpers in the root `util/` folder.
 
 ## Commands

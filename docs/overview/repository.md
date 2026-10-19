@@ -19,7 +19,7 @@ related:
   - utilities/repo-util.md
   - utilities/library-util.md
 status: complete
-verified-at: 4e02f8b7
+verified-at: 8fa3313d
 ---
 
 ## Purpose
@@ -32,7 +32,7 @@ folders this repo does not have.
 ## Key files
 
 - `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; every script is `devops <cmd>` except `ts` (`tsc`) and `test` (`jest`); runtime deps are React 19 and its types; `shader.ext` lists `fs`/`vs`.
-- `tsconfig.json` — strict TS, `experimentalDecorators` + `emitDecoratorMetadata` (needed by `@observable`), `jsx: react`, `typeRoots` includes `./dts`.
+- `tsconfig.json` — strict TS, `experimentalDecorators` (needed by `@observable`) with `emitDecoratorMetadata` off (the Bun bundle fails with it on, see [Toolchain](toolchain.md)), `jsx: react`, `typeRoots` includes `./dts`.
 - `vite.config.ts` — Vite config Storybook loads: `deltavVitePlugins()` from `build/plugins/vite.ts` and the `VITE_RELEASE_VERSION` define; see [Toolchain](toolchain.md).
 - `jest.config.js` — ts-jest ESM preset, `testEnvironment: node`, matches `test/**/*.test.ts`, `globalSetup`/`globalTeardown` `test/harness/global-setup.mjs`/`global-teardown.mjs` (the fixture Vite server), `maxWorkers: 2`, `testTimeout: 60000`; see [Testing](testing.md).
 - `test/harness/vite.config.ts` — test-only Vite config for the browser test fixtures; independent of the devops plugins.
@@ -133,11 +133,12 @@ are worked examples of writing a layer outside the library.
 
 ### Build output and release
 
-`dist` is committed and refreshed by release commits ("Release x.y.z"): `dist/ui/index.js` (+ map)
-is the bundled library, `dist/types` the declarations (`dist/types/ui`, `dist/types/util`,
-`dist/types/unit-test`), `dist/stories` a copy of the stories, `dist/package.json` a minimal
-manifest. `.npmignore` drops sources (`ui`, `dts`, `unit-test`, configs) from the npm package and
-force-keeps `dist/ui` and `dist/types`. A release bumps `package.json` `version` and adds a
+`dist` is committed and refreshed by release commits ("Release x.y.z"). It is built by
+`bun build/build.ts` (see [Toolchain](toolchain.md#library-build)): `dist/ui/index.js` (+ map) is
+the bundled library, `dist/types` the declarations (`dist/types/ui`, `dist/types/util`; the
+committed tree still has a `dist/types/unit-test` from the last devops release), `dist/stories` a
+copy of the stories, `dist/package.json` and `dist/components/package.json` minimal manifests.
+`.npmignore` drops sources (`ui`, `dts`, `unit-test`, configs) from the npm package and force-keeps `dist/ui` and `dist/types`. A release bumps `package.json` `version` and adds a
 section to `RELEASE_NOTES.md` (`## x.y.z` with `[ADDED]`/`[FIXED]` entries).
 
 ## Extension points

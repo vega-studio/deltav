@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "resolveJsonModule": true,
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": false,
     "esModuleInterop": true,
     "allowUnreachableCode": false,
     "declaration": true,

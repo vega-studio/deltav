@@ -11,7 +11,7 @@ related:
   - overview/testing.md
   - react/react-surface.md
 status: complete
-verified-at: 4e02f8b7
+verified-at: 8fa3313d
 ---
 
 ## Purpose
@@ -32,6 +32,8 @@ to both Bun and Vite.
 - `.storybook/main.mts` — Storybook config: stories, static dirs, addons, framework, all paths resolved from the config file's own directory.
 - `.storybook/preview.tsx`, `.storybook/manager.mts`, `.storybook/theme.mts`, `.storybook/preview-head.html` — preview tags, manager theme, font-face declarations.
 - `bunfig.toml` — Bun settings (today only `[install.lockfile] save = false`).
+- `build/build.ts` — the library build: `Bun.build` bundle, declarations, stories copy and dist manifests.
+- `test/build/build.test.ts` — `bun:test` test of the library build's output.
 - `test/build/plugins.test.ts` — `bun:test` tests of the loaders and of a `Bun.build` with `deltavBunPlugin`.
 
 ## How it works
@@ -75,7 +77,43 @@ Storybook.
 
 ### Library build
 
-Still `devops package` until step-03 of DELTAV-62 lands.
+`bun build/build.ts [--outdir <dir>]` (default `dist`; a bare `--` is ignored) reproduces the
+devops release build and exits non-zero on any failure, printing Bun's build logs:
+
+1. Reads `package.json` (name, version, `dependencies`, `peerDependencies`).
+2. Removes and recreates `<outdir>/ui`, `types`, `stories` and `components`; nothing else in
+   `<outdir>` is touched.
+3. `Bun.build` of `ui/index.ts` into `<outdir>/ui` with entry name `index.js`, `format: "esm"`,
+   `target: "browser"`, `minify: true`, `sourcemap: "linked"`; external = every dependency and
+   peerDependency name and its subpaths (`react`, `react/jsx-runtime`, …); `define`
+   `import.meta.env.VITE_RELEASE_VERSION` = the package version and `process.env.NODE_ENV` =
+   `"production"`; plugin `deltavBunPlugin({ css: "inject" })`, so shaders, fonts, images and
+   `surface-jsx.css` end up inside `index.js`. Any output besides `index.js` and `index.js.map`
+   fails the build.
+4. Declarations: `node_modules/.bin/tsc --emitDeclarationOnly --declaration --outDir
+   <outdir>/types` with a temporary tsconfig that extends `tsconfig.json` and includes only `ui`,
+   `util` and `dts` (so type errors elsewhere, e.g. in `test/`, cannot block a build); every folder
+   of `types` except `ui` and `util` is then deleted. When `node_modules` is a symlink (a worktree
+   sharing another checkout's install) `--preserveSymlinks` is added, otherwise tsc fails with
+   TS2742.
+5. Copies `ui/stories` to `<outdir>/stories` and writes `<outdir>/package.json` and
+   `<outdir>/components/package.json` (2-space JSON): `name`, `"private": true`,
+   `"type": "module"`, `main` `./ui/index.js` (`../ui/index.js` in `components`), `types`
+   `./types/ui/index.d.ts` (`../types/…`), and empty `dependencies`, `repository`, `scripts`,
+   `devDependencies` — the shape devops wrote.
+6. Prints the files and sizes.
+
+`tsconfig.json` has `"emitDecoratorMetadata": false`: with it on, Bun emits runtime metadata
+references to type-only imports (`Vec3`, `Quaternion`, `Mat4x4` in
+`ui/src/3d/scene-graph/instance-3d.ts`) and the bundle fails with "No matching export". No code
+reads decorator metadata and esbuild/Vite never emitted it; `experimentalDecorators` stays on.
+
+Bun's minifier gives a smaller `index.js` than the Vite build (≈577 KB vs 954 KB); parity is the
+layout and the public exports. `test/build/build.test.ts` builds into a temporary folder and checks
+the layout, both manifests, that shaders and the stylesheet are inlined and `react` stays
+external, that the exports equal the value exports of `ui/index.ts` (read with the TypeScript
+compiler API) and that every export of the committed `dist/ui/index.js` is still there (except
+`Surface`, type-only since DELTAV-49). The committed `dist` is refreshed only by release commits.
 
 ### Tests
 

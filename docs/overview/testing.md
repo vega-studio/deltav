@@ -11,7 +11,7 @@ related:
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: e1093995
+verified-at: acbaaa71
 ---
 
 ## Purpose
@@ -47,6 +47,8 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `test/fixtures/leak-control/*.fixture.tsx` — `leak-control/leaky-raw`, `clean-raw` (both from `raw-gl.tsx`), `leaky-listener`, `deltav-minimal`.
 - `test/fixtures/teardown/*.fixture.tsx` — `teardown/view-layer`, `render-target`, `resources`, `early-unmount`, `resize-unmount`; shared `rect-scene.tsx` (`useRectProvider`, `useViewConfig`).
 - `test/teardown/surface-teardown.test.ts` — the `SurfaceJSX` teardown suite (see Leak detection).
+- `test/fixtures/interaction/*` — `interaction/rects`, `picking`, `resize`, `camera`, `events`; `handles.ts` types the in-page handles they register on `window` (`__dvInteractionRects`, …); `wheel-surface.tsx` is `TestSurface` with `handlesWheelEvents` on.
+- `test/interaction/*.test.ts` — the interaction and instance lifecycle suite (see Interaction suite); `helpers.ts` (palette, `eventually`, rect probes), `rects-handle.ts` (`callRects`).
 - `archive/unit-test/README.md` — why the old tests are kept and that they are not run.
 
 ## How it works
@@ -249,6 +251,39 @@ replaced while it is still building, before its `ready` resolves; (e) a window `
 from a parent effect cleanup, so the unmount lands inside the resize debounce. Two `test.failing`
 cases pin defects found on the way: `RectangleLayer` into a render target, and an
 `HTMLCanvasElement` atlas source.
+
+### Interaction suite
+
+`test/interaction/` tests what changes after the first frame, each case through `mountCycle`. A
+fixture that the test drives registers a handle on `window` on mount and deletes it on unmount;
+the test calls it through `page.evaluate`, and drives the mouse with `page.mouse` (the container
+sits at the page's top-left, so page coordinates are canvas pixels).
+
+- `instances` — add, move, recolour and remove `RectangleInstance`s, 1,000 added then removed
+  (every canvas pixel clear after), and the `buffers`/`textures`/`vertexArrays` counts of
+  `snapshotResources` equal across repeated add/remove rounds of the same count.
+- `easing` — `AutoEasingMethod.linear(duration, delay)` on `location`: the old position through
+  the delay, the new one after it, and mid-way the edge at the linear interpolation of the frame
+  read back (`easingWithRow` returns `frameMetrics.currentTime`, the easing state and a pixel row
+  in one task).
+- `rebuild` — toggling the layer's `picking` prop rebuilds it (`Layer.willUpdateProps`): pixels
+  stay right and the program, shader, buffer, VAO, texture and framebuffer counts return to the
+  same configuration's values; the leak instrument's `seq` proves new objects were made.
+- `resize` — size props plus a window `resize`: canvas size, an identity-camera rect at fixed
+  pixels, a rect in a camera fitted to the size at `worldRectToPixel2D(rect, { scale })`.
+- `picking` — `PickType.SINGLE` (the only picking mode) on a `CircleLayer`, with a picking texture,
+  a pick view and a `decodePicking` command as in `interactions.stories.tsx`: over/out/click/down/up
+  carry the instance under the mouse, a clear point picks nothing, the top-most of two overlapping
+  instances is picked.
+- `camera-controller` — `BasicCamera2DControllerJSX`: a drag of Δ px moves the rect Δ px; a wheel
+  scales by `1 − deltaY / 1000` (deltav's `normalizeWheel` negates `deltaY`) about the cursor, the
+  world point under it fixed within 1 px.
+- `event-handler` — `SimpleEventHandlerJSX` down/move/drag/up: `screen`, `target.position`
+  (screen minus the viewport origin) and `screenToWorld` match the analytic values.
+
+Two `test.failing` cases pin defects: `RectangleLayer` picking (its fragment shader fails to
+compile in the picking-only pass) and a `ScaleMode.ALWAYS` rectangle under unequal x/y camera
+scale.
 
 ## Extension points
 

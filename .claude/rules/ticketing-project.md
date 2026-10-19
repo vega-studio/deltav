@@ -16,7 +16,7 @@ Wherever a skill, a plan or a ticket says `bun run typecheck` or `bun test`, thi
 | Typecheck | `bun run ts` |
 | Tests | `bun run test` |
 
-`bun run ts` is `tsc --noEmit -p tsconfig.json` and `bun run test` is `jest --config jest.config.js`
+`bun run ts` is `tsc --noEmit -p tsconfig.json` and `bun run test` is `bun test`
 (see `package.json`); both exit with the tool's status. Named test files are run with
 `bun run test <file> …`.
 

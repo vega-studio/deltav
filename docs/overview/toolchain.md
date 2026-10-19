@@ -11,16 +11,16 @@ related:
   - overview/testing.md
   - react/react-surface.md
 status: complete
-verified-at: e12bc06d
+verified-at: 8f815f16
 ---
 
 ## Purpose
 
 The tooling that turns the repository's sources into something runnable: the loaders that make
-shader, font, image and stylesheet imports work, the Storybook setup that serves the demos, and
-(as plan DELTAV-62 lands) the Bun library build, the Bun test runner and the scripts. The asset
-handling once supplied by the `devops` package lives in `build/plugins`, written once and adapted
-to both Bun and Vite.
+shader, font, image and stylesheet imports work, the Storybook setup that serves the demos, the
+Bun library build, the Bun test runner, the `package.json` scripts and the release procedure.
+There is no `devops` dependency: the asset handling it once supplied lives in `build/plugins`,
+written once and adapted to both Bun and Vite, and every tool is an explicit devDependency.
 
 ## Key files
 
@@ -31,7 +31,8 @@ to both Bun and Vite.
 - `vite.config.ts` — Vite config Storybook loads: `deltavVitePlugins()`, `define` of `import.meta.env.VITE_RELEASE_VERSION` from `package.json`, `build.cssCodeSplit: false`.
 - `.storybook/main.mts` — Storybook config: stories, static dirs, addons, framework, all paths resolved from the config file's own directory.
 - `.storybook/preview.tsx`, `.storybook/manager.mts`, `.storybook/theme.mts`, `.storybook/preview-head.html` — preview tags, manager theme, font-face declarations.
-- `bunfig.toml` — Bun settings (today only `[install.lockfile] save = false`).
+- `bunfig.toml` — Bun settings: `[install.lockfile] save = false`, `[test]` and `[serve.static] plugins`.
+- `package.json` — the scripts and the exact-pinned devDependencies (see Scripts and release).
 - `build/build.ts` — the library build: `Bun.build` bundle, declarations, stories copy and dist manifests.
 - `test/build/build.test.ts` — `bun:test` test of the library build's output.
 - `test/build/plugins.test.ts` — `bun:test` tests of the loaders and of a `Bun.build` with `deltavBunPlugin`.
@@ -64,16 +65,15 @@ imported by `surface-jsx.tsx`). `dts/asset.d.ts` declares the asset imports for 
 
 ### Storybook
 
-Storybook 8.6 with `@storybook/react-vite`, run straight from the repo:
-`bunx storybook dev -p 6006 --config-dir .storybook --no-version-updates` (build:
-`bunx storybook build --config-dir .storybook -o storybook-static`). No environment variable is
+Storybook 8.6 with `@storybook/react-vite`, run straight from the repo: `bun run dev` (=
+`storybook dev -p 6006 --config-dir .storybook --no-version-updates`) and `bun run
+storybook:build` (= `storybook build --config-dir .storybook -o storybook-static`). No environment variable is
 needed: `.storybook/main.mts` resolves the stories (`**/*.mdx`, `**/*.stories.*`, `**/*.bugs.*`
 under `ui`) and static dirs (`ui/assets`, `ui/stories/assets`) from its own directory. Addons are
 `@storybook/addon-links`, `@storybook/addon-essentials` and `@storybook/addon-a11y`. Storybook's
 Vite builder picks up the root `vite.config.ts`, so stories get the plugins above and
 `import.meta.env.VITE_RELEASE_VERSION` (read by `SurfaceJSX`). There is no `babel` hook: the
-React plugin carries the decorator parser options, and `.babelrc.json` is no longer read by
-Storybook.
+React plugin carries the decorator parser options, and there is no `.babelrc.json`.
 
 ### Library build
 
@@ -128,7 +128,30 @@ See [Testing](testing.md).
 
 ### Scripts and release
 
-Scripts still call devops until step-04 of DELTAV-62 lands.
+Every script calls a tool from `node_modules/.bin` or a repo script directly; run them as
+`bun run <script>`. Nothing depends on `devops`.
+
+| Script | Command |
+|---|---|
+| `dev`, `storybook` | `storybook dev -p 6006 --config-dir .storybook --no-version-updates` |
+| `storybook:build` | `storybook build --config-dir .storybook -o storybook-static` |
+| `build` | `bun build/build.ts` (accepts `--outdir <dir>`) |
+| `test` | `bun test --timeout 60000` (extra arguments name test files) |
+| `ts` | `tsc --noEmit -p tsconfig.json` |
+| `lint` | `eslint ui util test build` with `eslint.config.mjs`; existing findings are not fixed, so it exits non-zero today |
+
+devDependencies are pinned to exact versions: TypeScript, Vite and `@vitejs/plugin-react`,
+Storybook 8.6 and its addons, `@types/bun`, the ESLint/Prettier set `eslint.config.mjs` imports,
+`playwright-core` (tests), `class-variance-authority` (`util/cva.ts`) and `debug`. `bun install`
+fetches no git dependency.
+
+Release is a manual procedure:
+
+1. Bump `version` in `package.json`.
+2. Add a `## x.y.z` section to `RELEASE_NOTES.md` (`[ADDED]`/`[FIXED]` entries).
+3. `bun run build` (refreshes `dist`).
+4. Commit everything, `dist` included, as `Release x.y.z`, and tag it `x.y.z`.
+5. Publish with `npm publish` (or `bun publish`).
 
 ## Extension points
 
@@ -144,9 +167,11 @@ Scripts still call devops until step-04 of DELTAV-62 lands.
 - The shader loader in Vite skips files under `node_modules`; the inline-asset loader does not.
 - `cssInjectModule` dedupes by the `data-deltav` id, so two bundles that inject the same stylesheet
   path add it once.
-- `test/build/plugins.test.ts` imports `bun:test`: run it with `bun test`, not jest.
-- `tsconfig.json` does not include `build` or `vite.config.ts`, so `bun run ts` does not
-  typecheck them; only `test/build/plugins.test.ts` reaches the plugins through `tsc`.
+- `tsconfig.json` includes `build`, so `bun run ts` typechecks the plugins and the build script;
+  `vite.config.ts` is not included.
+- `tsconfig.json` `lib` lists `dom.iterable` (e.g. `document.fonts.add` in
+  `ui/src/resources/text/load-fonts.ts` needs it); devops used to supply it indirectly through
+  `@types/jsdom`.
 
 ## Related
 

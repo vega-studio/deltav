@@ -7,20 +7,12 @@
     "declaration": true,
     "experimentalDecorators": true,
     "jsx": "react",
-    "lib": ["es2017", "esnext", "dom"],
+    "lib": ["es2017", "esnext", "dom", "dom.iterable"],
     "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "noImplicitReturns": false,
     "noUnusedLocals": true,
-    "paths": {
-      "ui/*": ["./ui/*"],
-      "app": ["./app"],
-      "util": ["./util"],
-      "utils": ["./utils"],
-      "test": ["./test"],
-      "config/*": ["./app/config/*"]
-    },
     "sourceMap": true,
     "noUnusedParameters": true,
     "removeComments": false,
@@ -31,16 +23,11 @@
     "skipLibCheck": true
   },
   "include": [
-    "./app",
     "./ui",
-    "./test",
-    "./dts",
-    "./bin",
     "./util",
-    "./utils",
-    "./shim",
-    "./node_modules/@types",
-    "./node_modules/@storybook"
+    "./test",
+    "./build",
+    "./dts"
   ],
-  "exclude": ["./node_modules", "./bin/lib/template/*"]
+  "exclude": ["./node_modules"]
 }

@@ -8,11 +8,12 @@ in `test/`, and generic helpers in the root `util/` folder.
 
 ## Commands
 
-- `bun install` — install dependencies (no lockfile is saved, see `bunfig.toml`; build tooling
-  comes from the `devops` git dependency).
+- `bun install` — install dependencies (no lockfile is saved, see `bunfig.toml`).
 - `bun run ts` — typecheck.
-- `bun run test` — run the jest test suite.
+- `bun run test` — run the bun test suite.
 - `bun run dev` — start Storybook with the demos on http://localhost:6006.
+- `bun run build` — bundle the library into `dist`.
+- `bun run lint` — run ESLint.
 
 Ticketing and planning rules for agents live in `.claude/rules/`.
 

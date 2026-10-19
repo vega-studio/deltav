@@ -32,14 +32,17 @@ Documentation is being rewritten.
 ## Run Demos and modify the source code
 
 Lots of demos available! Used to test and visualize the framework as development
-is executed on it! This project has convertted over to preferring bun when you
-can. Runs considerably faster for development.
+is executed on it! The project is developed with bun:
 
 ```sh
+bun install
 bun run dev
 ```
 
 Then visit http://localhost:6006
+
+Run the tests with `bun run test` and bundle the library into `dist` with
+`bun run build`.
 
 ## Contributing
 

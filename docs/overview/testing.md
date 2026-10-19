@@ -11,7 +11,7 @@ related:
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: e12bc06d
+verified-at: 8f815f16
 ---
 
 ## Purpose
@@ -30,7 +30,7 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `test/harness/fixture-server.ts` — `startFixtureServer()` (lazy, cached: `Bun.serve` on `127.0.0.1:0` with the HTML import of `test/fixtures/index.html`, `development: { hmr: false }`, sets `DELTAV_TEST_URL`), `stopFixtureServer()`. Chosen over Vite (DELTAV-62 D7): Bun's HTML bundler serves the fixtures correctly.
 - `test/harness/serve-plugin.ts` — the HTML bundler's plugin: `deltavBunPlugin()` (shaders as strings, fonts/images inline) plus `import.meta.env` in `ui/src` replaced by `{ DEV: true, MODE: "test" }`.
 - `test/harness/fixture-list.ts` — `syncFixtureList()` rewrites `test/fixtures/fixtures.ts` from `Bun.Glob("**/*.fixture.tsx")` when it differs.
-- `test/harness/bundle-frames.ts` — `annotateFrames()`: appends `[<source module>]` to page stack frames of the bundle chunk. `bun-test-compat.d.ts` declares `test.failing` for the old bun-types (delete once a current `@types/bun` is pinned).
+- `test/harness/bundle-frames.ts` — `annotateFrames()`: appends `[<source module>]` to page stack frames of the bundle chunk.
 - `test/harness/browser.ts` — `launchBrowser`, `resolveChromium`, `openFixturePage`, `useFixturePage`, `DETERMINISTIC_GL_ARGS`, `VIEWPORT`.
 - `test/harness/host-api.ts` — types shared by node and page: `DeltavHostAPI` (`window.__deltav`), `RGBA255`, `PixelRect`, `PixelBlock`; leak types `RESOURCE_KINDS`, `ResourceCounts`, `ResourceSnapshot`, `LeakEntry`, `LeakDetails`, `DeltavLeaksAPI` (`window.__deltavLeaks`).
 - `test/harness/probe.ts` — `probe`, `readPixels`, `expectColor`, `expectRegion`, `expectOutside`, `rgba01To255`, `premultiply`, `worldToPixel2D`, `worldRectToPixel2D`.

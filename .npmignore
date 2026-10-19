@@ -1,7 +1,8 @@
 # -----[ Application ]---------------------------------------------
 node_modules
-# The actual build files
+# Build scripts and plugins (the package ships only dist)
 build
+bunfig.toml
 .cache
 
 # -----[ Metadata ]------------------------------------------------

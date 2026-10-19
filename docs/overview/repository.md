@@ -1,9 +1,9 @@
 ---
 title: Repository layout and tooling
-summary: Folder layout, scripts, build, test, Storybook, type declarations, dist output and release flow of the deltav repository, and which config files are template leftovers.
+summary: Folder layout, scripts, build, test, Storybook, type declarations, dist output and release flow of the deltav repository. Scripts and the release procedure are in the toolchain doc.
 covers:
   - package.json
-  - build.conf.ts
+  - .npmignore
   - vite.config.ts
   - bunfig.toml
   - tsconfig.json
@@ -19,28 +19,28 @@ related:
   - utilities/repo-util.md
   - utilities/library-util.md
 status: complete
-verified-at: e12bc06d
+verified-at: 8f815f16
 ---
 
 ## Purpose
 
 Where things live in the repository and how they are built, type-checked, tested, demoed and
-released. The asset loaders and the Storybook config live in this repo (see [Toolchain](toolchain.md)); the remaining scripts are delegated to the `devops` package (a Vega Studio CLI installed from
-git) — except typecheck and tests, which call `tsc` and `bun test` directly — so the configs in this repo are thin; several are generic template files that reference
-folders this repo does not have.
+released. Every tool is an explicit devDependency and every script calls a tool or a repo script
+directly; the asset loaders, Storybook config, library build and scripts are described in
+[Toolchain](toolchain.md).
 
 ## Key files
 
-- `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; every script is `devops <cmd>` except `ts` (`tsc`) and `test` (`bun test`); runtime deps are React 19 and its types; `shader.ext` lists `fs`/`vs`.
-- `tsconfig.json` — strict TS, `experimentalDecorators` (needed by `@observable`) with `emitDecoratorMetadata` off (the Bun bundle fails with it on, see [Toolchain](toolchain.md)), `jsx: react`, `typeRoots` includes `./dts`.
+- `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; scripts `dev`, `storybook`, `storybook:build`, `build`, `test`, `ts`, `lint` (see [Toolchain](toolchain.md#scripts-and-release)); exact-pinned devDependencies; runtime deps are React 19 and its types.
+- `tsconfig.json` — includes `ui`, `util`, `test`, `build`, `dts`; `lib` adds `dom.iterable`; strict TS, `experimentalDecorators` (needed by `@observable`) with `emitDecoratorMetadata` off (the Bun bundle fails with it on, see [Toolchain](toolchain.md)), `jsx: react`, `typeRoots` includes `./dts`.
 - `vite.config.ts` — Vite config Storybook loads: `deltavVitePlugins()` from `build/plugins/vite.ts` and the `VITE_RELEASE_VERSION` define; see [Toolchain](toolchain.md).
 - `bunfig.toml` — `[install.lockfile] save = false`; `[test]` `root = "test"` and `preload` `test/harness/preload.ts`; `[serve.static] plugins` for the test fixture server; see [Testing](testing.md).
-- `build.conf.ts` — `BUILD_TARGETS = ["prod"]` for the devops build.
-- `.babelrc.json` — Babel config (preset-env Chrome 100, TS, React, legacy decorators); no longer read by Storybook, kept until step-04 of DELTAV-62.
-- `eslint.config.mjs` — flat ESLint config (TS, prettier, simple-import-sort); no script runs it any more (`bun run ts` is `tsc` only).
+- `eslint.config.mjs` — flat ESLint config (TS, prettier, simple-import-sort); run by `bun run lint`.
 - `.storybook/main.mts` — Storybook (react-vite) config: stories, addons, static dirs, resolved from its own directory; see [Toolchain](toolchain.md).
 - `.storybook/preview.tsx`, `.storybook/manager.mts`, `.storybook/theme.mts`, `.storybook/preview-head.html` — autodocs tag, theme, RedHatDisplay `@font-face` declarations.
 - `dts/asset.d.ts` — module declarations for `*.png`, `*.jpg`, `*.jpeg`, `*.gif`, `*.svg`, `*.ttf`, `*.woff`, `*.woff2` and `*.vs`/`*.fs` (shader sources import as `string`), matching the loaders in `build/plugins/loaders.ts`.
+- `.npmignore` — keeps sources, `build` and `bunfig.toml` out of the npm package; force-keeps `dist/ui` and `dist/types`.
+- `build/build.ts` — the library build into `dist`; see [Toolchain](toolchain.md#library-build).
 - `build/plugins` — the asset loaders (shaders, inline fonts/images, CSS injection) with Bun and Vite adapters; see [Toolchain](toolchain.md).
 - `RELEASE_NOTES.md` — changelog, newest version first.
 
@@ -71,22 +71,9 @@ part of the build; the stories also use `util/hooks`.
 
 ### Scripts
 
-Scripts run `devops` from `node_modules`, except `ts` and `test`, which run `tsc` from
-`node_modules/.bin` and `bun test`; invoke them as `bun run <script>`.
-
-| Script | What it does |
-|---|---|
-| `dev` | Development server for the demos; the README points to http://localhost:6006 |
-| `storybook` | Sets `PROJECT_ROOT`, then `storybook dev -p ${PORT:-6006}` with `.storybook` as config dir (`storybook build` variant outputs `storybook-static`) |
-| `ts` | `tsc --noEmit -p tsconfig.json`; exits with tsc's status, no lint |
-| `test` | `bun test --timeout 60000`; exits with bun's status. Extra arguments go to `bun test`, so `bun run test test/<area>/<file>.test.ts` runs one file |
-| `release`, `package` | devops release/packaging (produces `dist`) |
-| `clean`, `component`, `init`, `template`, `url`, `pr` | Generic devops project commands |
-
-`devops` is a git dependency (`git+ssh://github.com/vega-studio/node-devops-public.git`, with
-`fallbackDependencies`); without access to it, `bun install` cannot provide the devops scripts.
-`devops ts` and `devops test` are not used: without a subcommand they print help and exit 1, and
-`devops ts run` fails with TS5042 yet exits 0.
+The scripts table, the pinned devDependencies and the release procedure are in
+[Toolchain](toolchain.md#scripts-and-release). Invoke scripts as `bun run <script>`;
+`bun run test test/<area>/<file>.test.ts` runs one file.
 
 ### Shaders and assets at build time
 
@@ -138,7 +125,8 @@ the bundled library, `dist/types` the declarations (`dist/types/ui`, `dist/types
 committed tree still has a `dist/types/unit-test` from the last devops release), `dist/stories` a
 copy of the stories, `dist/package.json` and `dist/components/package.json` minimal manifests.
 `.npmignore` drops sources (`ui`, `dts`, `unit-test`, configs) from the npm package and force-keeps `dist/ui` and `dist/types`. A release bumps `package.json` `version` and adds a
-section to `RELEASE_NOTES.md` (`## x.y.z` with `[ADDED]`/`[FIXED]` entries).
+section to `RELEASE_NOTES.md` (`## x.y.z` with `[ADDED]`/`[FIXED]` entries); the full manual
+procedure is in [Toolchain](toolchain.md#scripts-and-release).
 
 ## Extension points
 
@@ -152,11 +140,7 @@ section to `RELEASE_NOTES.md` (`## x.y.z` with `[ADDED]`/`[FIXED]` entries).
 
 - Lockfiles are never committed: `bunfig.toml` sets `[install.lockfile] save = false`, `.npmrc`
   sets `package-lock=false`, `.gitignore` ignores `yarn.lock`, and the README says so.
-- Template leftovers: `tsconfig.json` paths and includes
-  mention `app`, `app/config`, `utils`, `bin`, `shim` — none exist here. `build.conf.ts`
-  comments about `app/config/env.*.ts` do not apply. `dts/express.d.ts` and `dts/make-cert.d.ts`
-  are server-template declarations unused by the library.
-- `bun run ts` does not lint; run `node_modules/.bin/eslint` separately when lint matters.
+- `bun run ts` does not lint; run `bun run lint` separately when lint matters.
 - Do not import `ui/src` from a test file: module load touches `window` and `document`
   (see [Architecture](architecture.md) gotchas) and tests run in Bun, not a browser; only the
   fixtures in `test/fixtures`, bundled by the fixture server, import it.

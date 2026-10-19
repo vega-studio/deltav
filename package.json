@@ -13,64 +13,44 @@
   "main": "./dist/ui/index.js",
   "types": "./dist/types/ui/index.d.ts",
   "license": "MIT",
+  "type": "module",
   "scripts": {
-    "dev": "devops dev",
-    "release": "devops release",
-    "clean": "devops clean",
-    "component": "devops component",
-    "init": "devops init",
-    "pr": "devops pr --repoUrl https://github.com/vega-studio/deltav --repoType git --masterBranch master",
-    "storybook": "devops storybook",
+    "dev": "storybook dev -p 6006 --config-dir .storybook --no-version-updates",
+    "storybook": "storybook dev -p 6006 --config-dir .storybook --no-version-updates",
+    "storybook:build": "storybook build --config-dir .storybook -o storybook-static",
+    "build": "bun build/build.ts",
     "test": "bun test --timeout 60000",
     "ts": "tsc --noEmit -p tsconfig.json",
-    "url": "devops url",
-    "template": "devops template",
-    "package": "devops package"
+    "lint": "eslint ui util test build"
   },
   "devDependencies": {
-    "@types/assert": "1.4.2",
+    "@eslint/eslintrc": "3.3.7",
+    "@eslint/js": "9.22.0",
+    "@storybook/addon-a11y": "8.6.19",
+    "@storybook/addon-essentials": "8.6.14",
+    "@storybook/addon-links": "8.6.19",
+    "@storybook/blocks": "8.6.19",
+    "@storybook/manager-api": "8.6.19",
+    "@storybook/react": "8.6.19",
+    "@storybook/react-vite": "8.6.19",
+    "@storybook/theming": "8.6.19",
+    "@types/bun": "1.4.3",
     "@types/debug": "4.1.4",
-    "@types/offscreencanvas": "2019.6.4",
-    "@types/random-seed": "0.3.5",
-    "@types/seedrandom": "3.0.8",
-    "assert": "2.0.0",
+    "@typescript-eslint/eslint-plugin": "8.26.0",
+    "@typescript-eslint/parser": "8.26.0",
+    "@vitejs/plugin-react": "4.3.4",
+    "class-variance-authority": "0.7.0",
     "debug": "3.1.0",
-    "devops": "git+ssh://github.com/vega-studio/node-devops-public.git#6.0.8",
+    "eslint": "9.22.0",
+    "eslint-config-prettier": "10.1.1",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-prettier": "5.2.3",
+    "eslint-plugin-simple-import-sort": "12.1.1",
     "playwright-core": "1.57.0",
-    "rand-seed": "1.0.2",
-    "vite": "^6.2.1"
-  },
-  "fallbackDependencies": {
-    "devops": [
-      "git+ssh://github.com/vega-studio/node-devops.git#6.0.8",
-      "git+ssh://github.com/vega-studio/node-devops-public.git#6.0.8"
-    ]
-  },
-  "eslintIgnore": [
-    "**/*.min.js"
-  ],
-  "shader": {
-    "ext": [
-      "fs",
-      "vs"
-    ]
-  },
-  "type": "module",
-  "hosts": {
-    "127.0.0.1": "local.deltav.com"
-  },
-  "url": {
-    "dev": "https://local.deltav.com",
-    "figma": "NA",
-    "repo": "https://github.com/vega-studio/deltav"
-  },
-  "skeleton": {
-    "answers": {
-      "repoUrl": "https://github.com/vega-studio/deltav",
-      "repoType": "git",
-      "masterBranch": "master",
-      "figmaUrl": "NA"
-    }
+    "prettier": "3.0.2",
+    "storybook": "8.6.19",
+    "typescript": "5.8.3",
+    "vite": "6.2.1"
   },
   "dependencies": {
     "@types/react": "19.1.4",

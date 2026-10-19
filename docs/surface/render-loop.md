@@ -14,7 +14,7 @@ related:
   - instances/easing-and-animation.md
   - react/post-processing.md
 status: complete
-verified-at: d80bb72a
+verified-at: 7f23c73a
 ---
 
 ## Purpose
@@ -29,7 +29,7 @@ loop and much of the library's deferred work.
 
 - `ui/src/surface/surface.ts` — `Surface.draw`, `Surface.commit`, `Surface.drawSceneView`.
 - `ui/src/util/frame.ts` — `onFrame`, `nextFrame`, `onAnimationLoop`, `stopAnimationLoop`,
-  `stopAllFrameCommands`.
+  `stopAllFrameCommands`, and the read-only diagnostic `frameCommandStats`.
 - `ui/src/constants.ts` — `uniformBufferInstanceBufferName` (`"instanceData"`),
   `activeAttributeName` (`"_active"`), `TO_RADIANS`, `TO_DEGREES`.
 - `ui/src/surface/layer.ts` — `Layer.draw`, the per-layer update called by `commit`.
@@ -131,6 +131,11 @@ empty, restarted by any new command). Each tick, in order:
 3. `nextFrame(cmd?)` commands — run one tick later than `onFrame`.
 
 `stopAllFrameCommands()` calls every loop command one last time and clears all queues.
+
+`frameCommandStats()` is a read-only diagnostic for leak tests: `{ animationLoops, nextFrame,
+queued, immediate }` — live `onAnimationLoop` commands, `nextFrame` commands in either of its two
+queues, waiting `onFrame` commands (interval ones included) and those of them without an interval.
+It changes nothing.
 
 ## Extension points
 

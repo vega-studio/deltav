@@ -11,7 +11,7 @@ related:
   - interaction/event-management.md
   - utilities/repo-util.md
 status: complete
-verified-at: 2386e418
+verified-at: 7f23c73a
 ---
 
 ## Purpose
@@ -27,7 +27,7 @@ Almost everything is public: `ui/src/util/index.ts` is re-exported by `ui/src/in
 | File | Purpose | Notable symbols |
 |---|---|---|
 | `ui/src/util/camera.ts` | Projection + view transform for a view | `Camera`, `CameraProjectionType`, `isOrthographic`, `isPerspective`, `ICameraOptions` |
-| `ui/src/util/frame.ts` | Global `requestAnimationFrame` command queues | `nextFrame`, `onFrame`, `onAnimationLoop`, `stopAnimationLoop`, `stopAllFrameCommands` |
+| `ui/src/util/frame.ts` | Global `requestAnimationFrame` command queues | `nextFrame`, `onFrame`, `onAnimationLoop`, `stopAnimationLoop`, `stopAllFrameCommands`, `frameCommandStats` |
 | `ui/src/util/reactive-diff.ts` | Keyed build/update/destroy diffing of initializer lists | `ReactiveDiff`, `IReactiveDiffOptions`, `ReactiveDiffObject` |
 | `ui/src/util/quad-tree.ts` | Self-expanding 2D spatial index of `Bounds` | `QuadTree`, `QuadTreeNode`, `QuadTreeQuadrants`, `IQuadTreeVisitFunction` |
 | `ui/src/util/resource-pool.ts` | Fixed pre-allocated object pool | `ResourcePool`, `IResourcePool` |
@@ -79,7 +79,8 @@ API call restarts it. Each tick runs, in order: `onAnimationLoop` commands (with
 commands (this frame, or once `interval` ms have passed), then `nextFrame` commands queued during
 the previous tick. All return a `Promise<number>`; the promise returned by `onAnimationLoop` is
 also its id for `stopAnimationLoop(id)`. With a `duration` the promise resolves with the planned
-end time after the final, guaranteed call; without one it resolves on the first call. The render
+end time after the final, guaranteed call; without one it resolves on the first call.
+`frameCommandStats()` returns the queue sizes without changing them, for leak tests. The render
 loop's use of these is in [Render loop](../surface/render-loop.md).
 
 ### ReactiveDiff

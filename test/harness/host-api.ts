@@ -56,3 +56,70 @@ declare global {
     __deltav?: DeltavHostAPI;
   }
 }
+
+/**
+ * Leak detector (test/harness/leaks-page.ts) — the kinds of resource it
+ * counts. GL object kinds count live objects created through the
+ * instrumented context methods and not yet deleted; `contexts` counts WebGL
+ * contexts seen and not released through `WEBGL_lose_context` or a
+ * `webglcontextlost` event; `canvases` counts `<canvas>` elements in the
+ * document; `listeners` counts window and document event listeners; the
+ * `frame*` kinds are `frameCommandStats()` of `ui/src/util/frame.ts`.
+ */
+export const RESOURCE_KINDS = [
+  "buffers",
+  "textures",
+  "framebuffers",
+  "renderbuffers",
+  "programs",
+  "shaders",
+  "vertexArrays",
+  "queries",
+  "samplers",
+  "transformFeedbacks",
+  "contexts",
+  "canvases",
+  "listeners",
+  "frameAnimationLoops",
+  "frameNextFrame",
+  "frameQueued",
+] as const;
+
+export type ResourceKind = (typeof RESOURCE_KINDS)[number];
+
+/** Live count of every resource kind at one moment. */
+export type ResourceCounts = Record<ResourceKind, number>;
+
+/**
+ * A snapshot: the counts plus `seq`, the creation cursor at that moment.
+ * Everything created after the snapshot has a larger `seq`, which is how a
+ * leak report finds the objects created since a baseline.
+ */
+export type ResourceSnapshot = ResourceCounts & { seq: number };
+
+/** One live tracked resource. */
+export interface LeakEntry {
+  /** Creation order, compared with `ResourceSnapshot.seq` */
+  seq: number;
+  /** What it is, e.g. `buffer (context #2)` or `window:resize` */
+  label: string;
+  /** Trimmed creation stack (`new Error().stack`) */
+  stack: string;
+}
+
+/** Live entries per kind. Canvases and frame commands carry no entries. */
+export type LeakDetails = Partial<Record<ResourceKind, LeakEntry[]>>;
+
+/** The API the leak instrument installs as `window.__deltavLeaks`. */
+export interface DeltavLeaksAPI {
+  /** Current counts and creation cursor. */
+  snapshot(): ResourceSnapshot;
+  /** Live entries per kind; with `since`, only those created after it. */
+  details(since?: number): LeakDetails;
+}
+
+declare global {
+  interface Window {
+    __deltavLeaks?: DeltavLeaksAPI;
+  }
+}

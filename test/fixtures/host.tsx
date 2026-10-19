@@ -1,3 +1,7 @@
+// The leak instrument. index.html loads it in its own script before this one,
+// because Vite hoists the fixture glob imports below above every import here.
+import "../harness/leaks-page.js";
+
 import React from "react";
 import { createRoot, type Root } from "react-dom/client";
 

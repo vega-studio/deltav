@@ -11,7 +11,7 @@ related:
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: 0d4c53b4
+verified-at: 7f23c73a
 ---
 
 ## Purpose
@@ -30,15 +30,21 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `test/harness/global-teardown.mjs` — closes that server and removes the URL file.
 - `test/harness/vite.config.ts` — test-only Vite config: `root` `test/fixtures`, tsconfig `paths` aliases, shader sources as string modules, `.scss` as an empty module, `server.fs.allow` the repo root. No devops plugins.
 - `test/harness/browser.ts` — `launchBrowser`, `resolveChromium`, `openFixturePage`, `useFixturePage`, `DETERMINISTIC_GL_ARGS`, `VIEWPORT`.
-- `test/harness/host-api.ts` — types shared by node and page: `DeltavHostAPI` (`window.__deltav`), `RGBA255`, `PixelRect`, `PixelBlock`.
+- `test/harness/host-api.ts` — types shared by node and page: `DeltavHostAPI` (`window.__deltav`), `RGBA255`, `PixelRect`, `PixelBlock`; leak types `RESOURCE_KINDS`, `ResourceCounts`, `ResourceSnapshot`, `LeakEntry`, `LeakDetails`, `DeltavLeaksAPI` (`window.__deltavLeaks`).
 - `test/harness/probe.ts` — `probe`, `readPixels`, `expectColor`, `expectRegion`, `expectOutside`, `rgba01To255`, `premultiply`, `worldToPixel2D`, `worldRectToPixel2D`.
 - `test/harness/probe.test.ts` — methodology controls (see below).
-- `test/fixtures/index.html` — host page: fixed `#root` at the top-left, no margins; loads `host.tsx`.
+- `test/harness/leaks-page.ts` — page-side leak instrument; installs `window.__deltavLeaks`.
+- `test/harness/leaks.ts` — `snapshotResources`, `expectNoLeaks`, `diffResources`, `formatLeakReport`, `LEAK_SETTLE_FRAMES`.
+- `test/harness/mount-cycle.ts` — `mountCycle`, the breakdown-and-rebuild cycle of every feature test.
+- `test/harness/leaks.test.ts` — leak detector controls.
+- `test/fixtures/index.html` — host page: fixed `#root` at the top-left, no margins; loads `leaks-entry.ts`, then `host.tsx`.
+- `test/fixtures/leaks-entry.ts` — imports `leaks-page.ts` in its own module script, before any fixture loads deltav.
 - `test/fixtures/host.tsx` — eagerly imports every `**/*.fixture.tsx` and installs `window.__deltav`.
 - `test/fixtures/fixture-registry.ts` — `registerFixture`, `getFixture`, `fixtureNames`, `HostContext` (`ready`/`fail`).
 - `test/fixtures/test-surface.tsx` — `TestSurface`: the deterministic `SurfaceJSX` wrapper every deltav fixture uses.
 - `test/fixtures/control/raw-webgl.fixture.tsx` — `control/raw-webgl`: scissor-cleared rect with plain WebGL2, no deltav.
 - `test/fixtures/control/rect.fixture.tsx` — `control/rect`: one `RectangleLayer` instance in a `View2D`.
+- `test/fixtures/leak-control/*.fixture.tsx` — `leak-control/leaky-raw`, `clean-raw` (both from `raw-gl.tsx`), `leaky-listener`, `deltav-minimal`.
 - `archive/unit-test/README.md` — why the old tests are kept and that they are not run.
 
 ## How it works
@@ -119,7 +125,8 @@ Follow this for every assertion:
    nothing.
 7. **See it fail once**: while writing a test, run it once against a deliberately wrong
    expectation and watch it fail, then restore the computed one.
-8. After each test, unmount and assert `page.errors` is empty.
+8. After each test, unmount and assert `page.errors` is empty — `mountCycle` does this and the
+   leak check (see Leak detection).
 
 ### Methodology controls
 
@@ -154,7 +161,79 @@ weakened to match the buggy output.
 
 ## Leak detection
 
-Not yet in the harness: step-03 adds the leak detector and `mountCycle`.
+### What is counted, and how
+
+`test/harness/leaks-page.ts` runs in the page before deltav. `index.html` loads it through
+`leaks-entry.ts` in a module script of its own, because Vite hoists `host.tsx`'s
+`import.meta.glob` fixture imports above every import written in that file. It counts
+(`RESOURCE_KINDS`):
+
+| Kind | How |
+|---|---|
+| `buffers`, `textures`, `framebuffers`, `renderbuffers`, `programs`, `shaders`, `vertexArrays`, `queries`, `samplers`, `transformFeedbacks` | `HTMLCanvasElement.prototype.getContext` (and `OffscreenCanvas`'s) is wrapped; each new `webgl2`/`webgl` context is instrumented once (WeakSet). Its `create*`/`delete*` methods are replaced by own-property wrappers on the **real** context — never a Proxy (deltav checks `instanceof WebGL2RenderingContext`; native methods reject a Proxy `this`). Live objects sit in a `Set`-like map per kind per context, so deleting `null` or twice never goes negative |
+| `contexts` | Contexts seen, minus those released by `WEBGL_lose_context.loseContext()` (`getExtension` is wrapped to see it) or a `webglcontextlost` event |
+| `canvases` | `<canvas>` elements in the document (a canvas marked `data-deltav-host` is not counted; the host's readback canvas is never attached) |
+| `listeners` | `addEventListener`/`removeEventListener` on `window` and `document`, keyed by target, type, listener and capture; `once` and `signal` removals are followed |
+| `frameAnimationLoops`, `frameNextFrame`, `frameQueued` | `frameCommandStats()` of `ui/src/util/frame.ts` |
+
+Losing a context does **not** clear its objects: every object must be deleted explicitly.
+
+Each tracked object keeps a label (`buffer (context #3)`, `window:resize`) and a trimmed creation
+stack. `window.__deltavLeaks.snapshot()` returns the counts plus `seq`, a creation cursor;
+`details(since)` returns live entries created after it.
+
+### Baseline rule
+
+The baseline is a snapshot taken after the page loaded and before the fixture mounts. Load-time
+resources are therefore in it: the probe context `ui/src/gl/webgl-stat.ts` opens at import,
+Playwright's injected window listeners, the `frame.ts` loop deltav starts on import. React adds a
+`document` `selectionchange` listener on the first `createRoot` and never removes it, so
+`leaks-page.ts` creates and drops a throwaway root at load to put it in every baseline.
+
+### Node side
+
+- `snapshotResources(page)` — the current `ResourceSnapshot`.
+- `expectNoLeaks(page, baseline, { allow?, frames? })` — re-snapshots for up to `frames` (default
+  10, `LEAK_SETTLE_FRAMES`) frames until no kind exceeds the baseline, since deltav destroys some
+  things asynchronously; then throws the report.
+- `mountCycle(page, fixture, props, check, { cycles = 2, allow? })` — baseline, then per cycle:
+  mount → `await check(page, cycle)` → unmount (also when `check` throws) → `expectNoLeaks`; finally
+  throws if `page.errors` is not empty. Every feature test uses it (D6).
+
+### Reading a leak report
+
+```
+Resources leaked since the baseline:
+  buffers: +12
+    - buffer (context #6)
+      | at GLProxy.compileAttribute (…/ui/src/gl/gl-proxy.ts:136:23)
+      | …
+    … 9 more
+  contexts: +1
+    - webgl2 context #6
+      | at GLProxy.getContext (…)
+```
+
+One block per leaked kind: the count over the baseline, then the label and creation stack of the
+first three objects created since the baseline. Canvases and frame commands have counts only.
+
+### Defect policy and `allow`
+
+`allow: { kind: n }` tolerates `n` extra objects of a kind. It exists only for a documented,
+reported defect (D7), and the call carries a `// DEFECT:` comment. A test whose whole cycle is
+known to leak is written as `test.failing` with a `// DEFECT:` line instead, and the step that
+fixes the defect turns it back into `test`.
+
+### Controls
+
+`test/harness/leaks.test.ts`: `leaky-raw` (a raw WebGL2 context, buffer and texture, never
+released) must fail with `buffers`, `textures` and `contexts` and nothing else; `clean-raw` (the
+same, deleted and context lost on unmount) must pass, also through `mountCycle`; `leaky-listener`
+(a window listener never removed) must fail naming `window:deltav-leak-control`; `allow` must
+tolerate exactly the kind it names. `deltav-minimal` (a `SurfaceJSX`, one `View2D`, one
+`RectangleLayer`) goes through `mountCycle` as `test.failing` until step-04 fixes the teardown.
+Disabling the `deleteBuffer` wrapper, the `createTexture` tracking, the window listener wrappers
+or the context-release tracking each turns at least one control red.
 
 ## Extension points
 

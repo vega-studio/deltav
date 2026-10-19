@@ -293,3 +293,30 @@ export function stopAllFrameCommands() {
   nextQueuedCommands = [];
   nextFrameCommands = [];
 }
+
+/**
+ * Read-only diagnostic for leak tests: how many commands each frame queue
+ * holds right now. `animationLoops` counts live onAnimationLoop commands,
+ * `nextFrame` the nextFrame commands queued for the next or the following
+ * frame, `queued` the onFrame commands still waiting (including interval
+ * commands requeued for a later frame) and `immediate` is the subset of those
+ * without an interval. Changes nothing.
+ */
+export function frameCommandStats(): {
+  animationLoops: number;
+  nextFrame: number;
+  queued: number;
+  immediate: number;
+} {
+  let immediate = 0;
+  for (let i = 0, iMax = immediateQueuedCommands.length; i < iMax; ++i) {
+    if (immediateQueuedCommands[i][1] <= 0) immediate++;
+  }
+
+  return {
+    animationLoops: animationLoopCommands.size,
+    nextFrame: nextQueuedCommands.length + nextFrameCommands.length,
+    queued: immediateQueuedCommands.length,
+    immediate,
+  };
+}

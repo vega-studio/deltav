@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, test } from "@jest/globals";
+import { afterEach, describe, expect, it, test } from "bun:test";
 
 import type { PickEvent } from "../fixtures/interaction/handles.js";
 import { type FixturePage, useFixturePage } from "../harness/browser.js";

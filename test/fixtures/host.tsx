@@ -1,5 +1,5 @@
-// The leak instrument. index.html loads it in its own script before this one,
-// because Vite hoists the fixture glob imports below above every import here.
+// The leak instrument, first: ES modules evaluate in import order, so it
+// wraps WebGL and the listener methods before the fixture imports load deltav.
 import "../harness/leaks-page.js";
 
 import React from "react";
@@ -10,15 +10,16 @@ import type {
   FixtureProps,
   PixelBlock,
 } from "../harness/host-api.js";
+// Every fixture file registers itself when imported (the list is generated,
+// see test/harness/fixture-list.ts).
+import "./fixtures.js";
+
 import {
   fixtureNames,
   getFixture,
   HostContext,
   type HostContextValue,
 } from "./fixture-registry.js";
-
-// Every fixture file registers itself when imported.
-import.meta.glob("./**/*.fixture.tsx", { eager: true });
 
 const rootElement = document.getElementById("root")!;
 

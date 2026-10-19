@@ -1,23 +1,23 @@
 ---
 title: Testing
-summary: How the browser test suite runs (jest, Vite, headless Chromium on SwiftShader), the analytic pixel-probe methodology, fixtures and the defect policy.
+summary: How the browser test suite runs (bun test, a Bun.serve fixture page, headless Chromium on SwiftShader), the analytic pixel-probe methodology, fixtures and the defect policy.
 covers:
   - test/harness
   - test/fixtures
-  - jest.config.js
+  - bunfig.toml
   - archive/unit-test
 related:
   - overview/repository.md
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: 4e02f8b7
+verified-at: e12bc06d
 ---
 
 ## Purpose
 
 `bun run test` runs a suite that renders real deltav scenes and checks their pixels. Tests run in
-jest under node, but deltav cannot load in node (its modules touch `window`, import `.vs`/`.fs`
+`bun test` (Bun's runtime), but deltav cannot load there (its modules touch `window`, import `.vs`/`.fs`
 shader files and a `.css` file, and read `import.meta.env`). So each test drives a headless
 Chromium page that mounts a React fixture through `SurfaceJSX`, renders with deterministic
 software WebGL2, and reads the canvas back. The old node-only math tests are archived in
@@ -25,10 +25,12 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 
 ## Key files
 
-- `jest.config.js` — ts-jest ESM preset, `testEnvironment: node`, `testRegex` `test/.*\.test\.ts$`, `globalSetup`/`globalTeardown`, `maxWorkers: 2`, `testTimeout: 60000`.
-- `test/harness/global-setup.mjs` — starts the test-only Vite dev server on a free port; sets `DELTAV_TEST_URL` and writes it to the file named by `DELTAV_TEST_URL_FILE`.
-- `test/harness/global-teardown.mjs` — closes that server and removes the URL file.
-- `test/harness/vite.config.ts` — test-only Vite config: `root` `test/fixtures`, tsconfig `paths` aliases, shader sources as string modules, `.scss` as an empty module (matches nothing since the library stylesheet became `surface-jsx.css`, which Vite loads natively), `server.fs.allow` the repo root. No devops plugins.
+- `bunfig.toml` — `[test]` `root = "test"` (so `archive/` never runs) and `preload`; `[serve.static] plugins` = `test/harness/serve-plugin.ts`. `package.json` `test` is `bun test --timeout 60000`.
+- `test/harness/preload.ts` — runs before every file: `syncFixtureList()`, and a top-level `afterAll` that stops the fixture server once all files ran.
+- `test/harness/fixture-server.ts` — `startFixtureServer()` (lazy, cached: `Bun.serve` on `127.0.0.1:0` with the HTML import of `test/fixtures/index.html`, `development: { hmr: false }`, sets `DELTAV_TEST_URL`), `stopFixtureServer()`. Chosen over Vite (DELTAV-62 D7): Bun's HTML bundler serves the fixtures correctly.
+- `test/harness/serve-plugin.ts` — the HTML bundler's plugin: `deltavBunPlugin()` (shaders as strings, fonts/images inline) plus `import.meta.env` in `ui/src` replaced by `{ DEV: true, MODE: "test" }`.
+- `test/harness/fixture-list.ts` — `syncFixtureList()` rewrites `test/fixtures/fixtures.ts` from `Bun.Glob("**/*.fixture.tsx")` when it differs.
+- `test/harness/bundle-frames.ts` — `annotateFrames()`: appends `[<source module>]` to page stack frames of the bundle chunk. `bun-test-compat.d.ts` declares `test.failing` for the old bun-types (delete once a current `@types/bun` is pinned).
 - `test/harness/browser.ts` — `launchBrowser`, `resolveChromium`, `openFixturePage`, `useFixturePage`, `DETERMINISTIC_GL_ARGS`, `VIEWPORT`.
 - `test/harness/host-api.ts` — types shared by node and page: `DeltavHostAPI` (`window.__deltav`), `RGBA255`, `PixelRect`, `PixelBlock`; leak types `RESOURCE_KINDS`, `ResourceCounts`, `ResourceSnapshot`, `LeakEntry`, `LeakDetails`, `DeltavLeaksAPI` (`window.__deltavLeaks`).
 - `test/harness/probe.ts` — `probe`, `readPixels`, `expectColor`, `expectRegion`, `expectOutside`, `rgba01To255`, `premultiply`, `worldToPixel2D`, `worldRectToPixel2D`.
@@ -37,9 +39,9 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `test/harness/leaks.ts` — `snapshotResources`, `expectNoLeaks`, `diffResources`, `formatLeakReport`, `LEAK_SETTLE_FRAMES`.
 - `test/harness/mount-cycle.ts` — `mountCycle`, the breakdown-and-rebuild cycle of every feature test.
 - `test/harness/leaks.test.ts` — leak detector controls.
-- `test/fixtures/index.html` — host page: fixed `#root` at the top-left, no margins; loads `leaks-entry.ts`, then `host.tsx`.
-- `test/fixtures/leaks-entry.ts` — imports `leaks-page.ts` in its own module script, before any fixture loads deltav.
-- `test/fixtures/host.tsx` — eagerly imports every `**/*.fixture.tsx` and installs `window.__deltav`.
+- `test/fixtures/index.html` — host page: fixed `#root` at the top-left, no margins; loads `host.tsx`.
+- `test/fixtures/host.tsx` — imports `leaks-page.ts` first, then `fixtures.ts`; installs `window.__deltav`.
+- `test/fixtures/fixtures.ts` — generated (committed, kept in sync by the preload): one import per `*.fixture.tsx`.
 - `test/fixtures/fixture-registry.ts` — `registerFixture`, `getFixture`, `fixtureNames`, `HostContext` (`ready`/`fail`).
 - `test/fixtures/test-surface.tsx` — `TestSurface`: the deterministic `SurfaceJSX` wrapper every deltav fixture uses.
 - `test/fixtures/control/raw-webgl.fixture.tsx` — `control/raw-webgl`: scissor-cleared rect with plain WebGL2, no deltav.
@@ -61,20 +63,16 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 
 ### Run sequence
 
-1. jest loads `jest.config.js`; `global-setup.mjs` calls Vite `createServer` with
-   `test/harness/vite.config.ts` and listens on `127.0.0.1`, port 0. The setup is plain `.mjs`
-   because ts-jest compiles a TypeScript global setup to CommonJS, where Vite's ESM API and the
-   config's `import.meta.url` are unavailable. Test files themselves are TypeScript compiled by
-   ts-jest.
+1. `bun test` reads `bunfig.toml`, runs `preload.ts` (fixture list sync), then every test file
+   under `test/` one after the other in one process; test files import from `bun:test`.
 2. Each test file calls `useFixturePage()`, which registers `beforeAll`/`afterAll`: one
    `launchBrowser()` and one `openFixturePage()` per file, shared by its tests.
 3. `openFixturePage` opens a context with viewport 800×600 and `deviceScaleFactor: 1`, loads
-   `DELTAV_TEST_URL`, waits for `window.__deltav`, and pushes every `console.error` and
-   `pageerror` into `page.errors`.
+   `testServerUrl()` (its first call starts the fixture server), waits for `window.__deltav`, and
+   pushes every `console.error` and `pageerror` into `page.errors`.
 4. A test calls the host API through `page.evaluate`, e.g.
    `page.evaluate((p) => window.__deltav!.mount("control/rect", p), props)`, then probes.
-5. Vite compiles `ui/src` and the fixtures on demand on the first page load; later files reuse
-   the cache.
+5. Bun bundles `ui/src` and the fixtures into one ~2 MB chunk on the first load; files reuse it.
 
 ### Chromium resolution
 
@@ -113,10 +111,8 @@ Props must be JSON-serialisable (they cross `page.evaluate`).
 
 ### Methodology checklist
 
-Follow this for every assertion:
-
-1. **Compute the expectation first** from the scene's geometry, camera and projection. For the
-   default `View2D` with an identity `Camera2D`, a world point is a canvas pixel
+1. **Compute every assertion's expectation first** from the scene's geometry, camera and
+   projection. For the default `View2D` with an identity `Camera2D`, a world point is a canvas pixel
    (`worldToPixel2D`, which also applies `offset`, `scale`, the view origin and the pixel ratio;
    see [2D view and camera](../2d/view-and-camera.md)). Colours come from the fixture's palette
    via `rgba01To255`.
@@ -173,9 +169,8 @@ weakened to match the buggy output.
 
 ### What is counted, and how
 
-`test/harness/leaks-page.ts` runs in the page before deltav. `index.html` loads it through
-`leaks-entry.ts` in a module script of its own, because Vite hoists `host.tsx`'s
-`import.meta.glob` fixture imports above every import written in that file. It counts
+`test/harness/leaks-page.ts` runs in the page before deltav: it is `host.tsx`'s first import and
+ES modules evaluate in import order. It counts
 (`RESOURCE_KINDS`):
 
 | Kind | How |
@@ -382,15 +377,19 @@ There are no frame-time thresholds: SwiftShader times only compare scenarios wit
 
 ## Gotchas
 
-- Never import `ui/src` from a node-side test file; only fixtures (bundled by Vite) import it.
-- `bun run test <file>` still runs `globalSetup`, so a single file needs the Vite server too.
+- Never import `ui/src` from a node-side test file; only fixtures (bundled by Bun.serve) import it.
+- bun 1.4 ignores `timeout` in `bunfig.toml`: the 60 s comes from the script's `--timeout 60000`, so
+  run `bun run test [<file> …]`, not a bare `bun test` (5 s). Stress files call `useStressTimeout()`.
+- HMR stays off (its module runtime breaks deltav's circular imports); page stacks point into the
+  chunk, so leak reports name each frame's module via `bundle-frames.ts`.
+- A folder run reports the sum of the per-file counts (checked per area in DELTAV-66).
 - `TestSurface` resolves `ready` only after `SurfaceJSX` built its pipeline and drew one frame;
   `mount` then waits two frames so the probed frame contains the scene.
 - `readPixels` returns straight (un-premultiplied) alpha. deltav creates its context with
   `premultipliedAlpha: false` by default; use opaque colours unless a test is about alpha.
 - `playwright-core` 1.57.0 expects `chromium_headless_shell-1200`; a different cached revision is
   picked up by the cache fallback.
-- `maxWorkers` is 2: each worker launches its own Chromium.
+- Files run one after the other in one process; each launches its own Chromium.
 - The archived tests' imports point at the old `unit-test/` location and do not resolve.
 
 ## Related

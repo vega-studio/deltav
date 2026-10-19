@@ -1,4 +1,4 @@
-import { describe, it, test } from "@jest/globals";
+import { describe, it, test } from "bun:test";
 
 import type { PixelRect } from "../harness/host-api.js";
 import { mountCycle } from "../harness/mount-cycle.js";

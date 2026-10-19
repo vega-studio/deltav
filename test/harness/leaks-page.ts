@@ -46,12 +46,17 @@ const GL_PAIRS: [ResourceKind, string, string, string][] = [
 
 let seq = 0;
 
-/** Stack of the caller, minus the Error line and this module's frames. */
+/**
+ * Stack of the caller, minus the Error line and this module's frames. In the
+ * bundled page the frames name the chunk, not this module; expectNoLeaks then
+ * drops this module's frames once it has mapped them (bundle-frames.ts), so
+ * enough frames are kept for that.
+ */
 function creationStack(): string {
   const lines = (new Error().stack || "").split("\n").slice(1);
   return lines
     .filter((line) => !line.includes("leaks-page"))
-    .slice(0, 8)
+    .slice(0, 16)
     .map((line) => line.trim())
     .join("\n");
 }

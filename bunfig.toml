@@ -1,2 +1,13 @@
 [install.lockfile]
 save = false
+
+[test]
+# Only test/ is searched, so archive/unit-test is never run.
+root = "test"
+# Replaces jest's globalSetup/globalTeardown (test/harness/preload.ts).
+preload = ["./test/harness/preload.ts"]
+
+[serve.static]
+# Bundler plugins of Bun.serve HTML imports: the test fixture server
+# (test/harness/fixture-server.ts) needs shaders as strings and assets inline.
+plugins = ["./test/harness/serve-plugin.ts"]

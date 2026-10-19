@@ -1,11 +1,11 @@
-import { afterEach, describe, it, jest } from "@jest/globals";
+import { afterEach, describe, it } from "bun:test";
 
 import { useFixturePage } from "../harness/browser.js";
 import { rgba01To255 } from "../harness/probe.js";
-import { runStress, STRESS_TIMEOUT } from "./scenario.js";
+import { runStress, useStressTimeout } from "./scenario.js";
 import { CLEAR, expectShapes, SIZE_2D } from "./stress-probes.js";
 
-jest.setTimeout(STRESS_TIMEOUT);
+useStressTimeout();
 
 /**
  * Orthographic View3D, camera on +z looking at the origin: the frustum is

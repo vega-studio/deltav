@@ -1,4 +1,4 @@
-import { afterEach } from "@jest/globals";
+import { afterEach } from "bun:test";
 
 import {
   type FixturePage,

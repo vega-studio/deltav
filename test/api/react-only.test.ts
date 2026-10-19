@@ -4,7 +4,7 @@
  * This is a node test that reads the sources as text: it never imports deltav,
  * which cannot load outside a browser.
  */
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it } from "bun:test";
 import fs from "fs";
 import path from "path";
 

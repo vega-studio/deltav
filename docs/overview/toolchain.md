@@ -11,7 +11,7 @@ related:
   - overview/testing.md
   - react/react-surface.md
 status: complete
-verified-at: 8fa3313d
+verified-at: e12bc06d
 ---
 
 ## Purpose
@@ -117,7 +117,14 @@ compiler API) and that every export of the committed `dist/ui/index.js` is still
 
 ### Tests
 
-Still jest until step-02 of DELTAV-62 lands.
+`bun run test` is `bun test --timeout 60000` (bun 1.4 ignores a `timeout` key in `bunfig.toml`).
+`bunfig.toml` `[test]` sets `root = "test"`, so `archive/unit-test` never runs, and `preload =
+["./test/harness/preload.ts"]`, which syncs the generated fixture list and stops the fixture
+server after the last file. Test files import from `bun:test`; `bun run test <file> …` runs the
+named files. The browser fixture page is served by `Bun.serve` with an HTML import of
+`test/fixtures/index.html`; `bunfig.toml` `[serve.static] plugins` loads
+`test/harness/serve-plugin.ts`, which wraps `deltavBunPlugin()`. No Vite is involved in tests.
+See [Testing](testing.md).
 
 ### Scripts and release
 

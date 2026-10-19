@@ -21,7 +21,7 @@
     "init": "devops init",
     "pr": "devops pr --repoUrl https://github.com/vega-studio/deltav --repoType git --masterBranch master",
     "storybook": "devops storybook",
-    "test": "jest --config jest.config.js",
+    "test": "bun test --timeout 60000",
     "ts": "tsc --noEmit -p tsconfig.json",
     "url": "devops url",
     "template": "devops template",

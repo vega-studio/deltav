@@ -1,4 +1,4 @@
-import { describe, it } from "@jest/globals";
+import { describe, it } from "bun:test";
 
 import type { FixturePage } from "../harness/browser.js";
 import { mountCycle } from "../harness/mount-cycle.js";

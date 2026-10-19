@@ -1,11 +1,11 @@
-import { afterEach, describe, it, jest } from "@jest/globals";
+import { afterEach, describe, it } from "bun:test";
 
 import { useFixturePage } from "../harness/browser.js";
 import { rgba01To255 } from "../harness/probe.js";
-import { runStress, STRESS_TIMEOUT } from "./scenario.js";
+import { runStress, useStressTimeout } from "./scenario.js";
 import { BLUE, CLEAR, expectShapes, SIZE_2D, YELLOW } from "./stress-probes.js";
 
-jest.setTimeout(STRESS_TIMEOUT);
+useStressTimeout();
 
 /**
  * The sentinel: a quadratic bezier from (580, 300) to (780, 300) with control

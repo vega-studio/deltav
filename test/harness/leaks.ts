@@ -1,5 +1,6 @@
 import type { Page } from "playwright-core";
 
+import { annotateFrames } from "./bundle-frames.js";
 import {
   type LeakDetails,
   RESOURCE_KINDS,
@@ -13,6 +14,8 @@ export const LEAK_SETTLE_FRAMES = 10;
 
 /** Creation stacks shown per leaked kind. */
 const STACKS_PER_KIND = 3;
+/** Frames shown per creation stack. */
+const FRAMES_PER_STACK = 8;
 
 export interface ExpectNoLeaksOptions {
   /**
@@ -73,6 +76,21 @@ export function formatLeakReport(
 }
 
 /**
+ * Names the source module of each frame of the creation stacks (the page is
+ * one bundle, see bundle-frames.ts) and drops the leak instrument's own frames.
+ */
+async function annotateStacks(details: LeakDetails): Promise<void> {
+  for (const entries of Object.values(details)) {
+    for (const e of (entries || []).slice(0, STACKS_PER_KIND)) {
+      e.stack = (await annotateFrames(e.stack))
+        .filter((frame) => !frame.includes("leaks-page"))
+        .slice(0, FRAMES_PER_STACK)
+        .join("\n");
+    }
+  }
+}
+
+/**
  * Asserts that nothing counted by the leak instrument outlived the baseline.
  * Waits up to `frames` animation frames (deltav destroys some resources
  * asynchronously), then throws a report naming each leaked kind, its count and
@@ -105,5 +123,6 @@ export async function expectNoLeaks(
     (since) => window.__deltavLeaks!.details(since),
     baseline.seq
   );
+  await annotateStacks(details);
   throw new Error(formatLeakReport(leaks, details));
 }

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "@jest/globals";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { useFixturePage } from "./browser.js";
 import type { PixelRect, RGBA255 } from "./host-api.js";

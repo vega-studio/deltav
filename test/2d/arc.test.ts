@@ -1,4 +1,4 @@
-import { describe, it, test } from "@jest/globals";
+import { describe, it, test } from "bun:test";
 
 import { mountCycle } from "../harness/mount-cycle.js";
 import { worldToPixel2D } from "../harness/probe.js";

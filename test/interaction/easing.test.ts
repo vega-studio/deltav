@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "@jest/globals";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import type { EasingState } from "../fixtures/interaction/handles.js";
 import { type FixturePage, useFixturePage } from "../harness/browser.js";

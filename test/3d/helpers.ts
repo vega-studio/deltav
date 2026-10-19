@@ -1,4 +1,4 @@
-import { expect } from "@jest/globals";
+import { expect } from "bun:test";
 
 import type { FixturePage } from "../harness/browser.js";
 import type { RGBA255 } from "../harness/host-api.js";

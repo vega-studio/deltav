@@ -1,7 +1,7 @@
-import { afterEach, describe, it, jest } from "@jest/globals";
+import { afterEach, describe, it } from "bun:test";
 
 import { useFixturePage } from "../harness/browser.js";
-import { runStress, STRESS_TIMEOUT } from "./scenario.js";
+import { runStress, useStressTimeout } from "./scenario.js";
 import {
   BLUE,
   CLEAR,
@@ -13,7 +13,7 @@ import {
   WHITE,
 } from "./stress-probes.js";
 
-jest.setTimeout(STRESS_TIMEOUT);
+useStressTimeout();
 
 /** Sentinels in the strip right of the load area, drawn on top by their own layer. */
 const SENTINELS = [

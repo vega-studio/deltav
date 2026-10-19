@@ -22,8 +22,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- The leak instrument runs first, before host.tsx and its fixture imports load deltav. -->
-    <script type="module" src="./leaks-entry.ts"></script>
     <script type="module" src="./host.tsx"></script>
   </body>
 </html>

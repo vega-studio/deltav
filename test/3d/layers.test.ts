@@ -1,4 +1,4 @@
-import { afterEach, describe, it, test } from "@jest/globals";
+import { afterEach, describe, it, test } from "bun:test";
 
 import { useFixturePage } from "../harness/browser.js";
 import { mountCycle } from "../harness/mount-cycle.js";

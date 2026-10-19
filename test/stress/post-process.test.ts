@@ -1,11 +1,11 @@
-import { afterEach, describe, it, jest, test } from "@jest/globals";
+import { afterEach, describe, it, test } from "bun:test";
 
 import { useFixturePage } from "../harness/browser.js";
 import { rgba01To255 } from "../harness/probe.js";
-import { runStress, STRESS_TIMEOUT } from "./scenario.js";
+import { runStress, useStressTimeout } from "./scenario.js";
 import { CLEAR, expectShapes, type RGBA01 } from "./stress-probes.js";
 
-jest.setTimeout(STRESS_TIMEOUT);
+useStressTimeout();
 
 const SIZE = 1024;
 /**

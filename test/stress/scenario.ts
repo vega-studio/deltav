@@ -1,4 +1,4 @@
-import { expect } from "@jest/globals";
+import { expect, jest } from "bun:test";
 
 import type { FixturePage } from "../harness/browser.js";
 import type { FixtureProps } from "../harness/host-api.js";
@@ -13,6 +13,17 @@ import type { StressPageState } from "./stress-api.js";
 
 /** Longest a stress test may run (the ticket's cap). */
 export const STRESS_TIMEOUT = 180000;
+
+/**
+ * Sets STRESS_TIMEOUT as the test timeout of the calling file; call it at the
+ * file's top level. `jest.setTimeout` is per file in bun 1.4, but bun-types
+ * 1.0.29 does not declare it, hence the cast.
+ */
+export function useStressTimeout(): void {
+  (jest as unknown as { setTimeout(ms: number): void }).setTimeout(
+    STRESS_TIMEOUT
+  );
+}
 
 export interface StressScenario {
   /** Record name: `test-results/stress/<name>.json` */

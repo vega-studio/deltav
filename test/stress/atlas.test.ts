@@ -1,10 +1,10 @@
-import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { useFixturePage } from "../harness/browser.js";
-import { runStress, STRESS_TIMEOUT } from "./scenario.js";
+import { runStress, useStressTimeout } from "./scenario.js";
 import { CLEAR, eventually, expectShapes, GREEN, RED, rectShape, SIZE_2D } from "./stress-probes.js";
 
-jest.setTimeout(STRESS_TIMEOUT);
+useStressTimeout();
 
 /** Instance 0: a solid image drawn 1:1, RED in the first set, GREEN after replacement. */
 const SENTINEL = {

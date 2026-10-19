@@ -1,9 +1,10 @@
-import { afterAll, beforeAll } from "@jest/globals";
+import { afterAll, beforeAll } from "bun:test";
 import fs from "fs";
 import os from "os";
 import path from "path";
 import { type Browser, chromium, type Page } from "playwright-core";
 
+import { startFixtureServer } from "./fixture-server.js";
 import type {} from "./host-api.js";
 
 /**
@@ -85,14 +86,9 @@ export async function launchBrowser(): Promise<Browser> {
   });
 }
 
-/** URL of the Vite server global-setup.ts started. */
-export function testServerUrl(): string {
-  if (process.env.DELTAV_TEST_URL) return process.env.DELTAV_TEST_URL;
-  const file = process.env.DELTAV_TEST_URL_FILE;
-  if (file && fs.existsSync(file)) return fs.readFileSync(file, "utf8").trim();
-  throw new Error(
-    "DELTAV_TEST_URL is not set: run the browser tests through `bun run test` so jest's globalSetup starts the fixture server."
-  );
+/** URL of the fixture server (test/harness/fixture-server.ts), started on first use. */
+export function testServerUrl(): Promise<string> {
+  return startFixtureServer();
 }
 
 /** A page on the fixture host, with the errors it has logged. */
@@ -119,7 +115,7 @@ export async function openFixturePage(browser: Browser): Promise<FixturePage> {
     page.errors.push(`pageerror: ${err.stack || err.message}`);
   });
 
-  await page.goto(testServerUrl());
+  await page.goto(await testServerUrl());
   await page.waitForFunction(() => Boolean(window.__deltav), void 0, {
     timeout: 30000,
   });

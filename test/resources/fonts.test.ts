@@ -1,4 +1,4 @@
-import { describe, expect, it, test } from "@jest/globals";
+import { describe, expect, it, test } from "bun:test";
 
 import { type FixturePage, openFixturePage } from "../harness/browser.js";
 import type { PixelRect } from "../harness/host-api.js";

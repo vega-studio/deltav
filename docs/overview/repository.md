@@ -5,7 +5,7 @@ covers:
   - package.json
   - build.conf.ts
   - vite.config.ts
-  - jest.config.js
+  - bunfig.toml
   - tsconfig.json
   - .storybook
   - ui/stories
@@ -19,23 +19,22 @@ related:
   - utilities/repo-util.md
   - utilities/library-util.md
 status: complete
-verified-at: 8fa3313d
+verified-at: e12bc06d
 ---
 
 ## Purpose
 
 Where things live in the repository and how they are built, type-checked, tested, demoed and
 released. The asset loaders and the Storybook config live in this repo (see [Toolchain](toolchain.md)); the remaining scripts are delegated to the `devops` package (a Vega Studio CLI installed from
-git) — except typecheck and tests, which call `tsc` and `jest` directly — so the configs in this repo are thin; several are generic template files that reference
+git) — except typecheck and tests, which call `tsc` and `bun test` directly — so the configs in this repo are thin; several are generic template files that reference
 folders this repo does not have.
 
 ## Key files
 
-- `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; every script is `devops <cmd>` except `ts` (`tsc`) and `test` (`jest`); runtime deps are React 19 and its types; `shader.ext` lists `fs`/`vs`.
+- `package.json` — package `deltav` (ESM, `"type": "module"`); `main` `./dist/ui/index.js`, `types` `./dist/types/ui/index.d.ts`; every script is `devops <cmd>` except `ts` (`tsc`) and `test` (`bun test`); runtime deps are React 19 and its types; `shader.ext` lists `fs`/`vs`.
 - `tsconfig.json` — strict TS, `experimentalDecorators` (needed by `@observable`) with `emitDecoratorMetadata` off (the Bun bundle fails with it on, see [Toolchain](toolchain.md)), `jsx: react`, `typeRoots` includes `./dts`.
 - `vite.config.ts` — Vite config Storybook loads: `deltavVitePlugins()` from `build/plugins/vite.ts` and the `VITE_RELEASE_VERSION` define; see [Toolchain](toolchain.md).
-- `jest.config.js` — ts-jest ESM preset, `testEnvironment: node`, matches `test/**/*.test.ts`, `globalSetup`/`globalTeardown` `test/harness/global-setup.mjs`/`global-teardown.mjs` (the fixture Vite server), `maxWorkers: 2`, `testTimeout: 60000`; see [Testing](testing.md).
-- `test/harness/vite.config.ts` — test-only Vite config for the browser test fixtures; independent of the devops plugins.
+- `bunfig.toml` — `[install.lockfile] save = false`; `[test]` `root = "test"` and `preload` `test/harness/preload.ts`; `[serve.static] plugins` for the test fixture server; see [Testing](testing.md).
 - `build.conf.ts` — `BUILD_TARGETS = ["prod"]` for the devops build.
 - `.babelrc.json` — Babel config (preset-env Chrome 100, TS, React, legacy decorators); no longer read by Storybook, kept until step-04 of DELTAV-62.
 - `eslint.config.mjs` — flat ESLint config (TS, prettier, simple-import-sort); no script runs it any more (`bun run ts` is `tsc` only).
@@ -55,8 +54,8 @@ folders this repo does not have.
 | `ui/index.ts` | Package entry: re-exports `ui/components/index.ts` (NOOP placeholder from the template) and `ui/src/index.ts` |
 | `ui/stories` | Storybook demos (`components/`), story data (`data/`), static fonts (`assets/fonts`) |
 | `ui/assets` | Storybook static dir (only a README) |
-| `test` | Browser test suite: `test/harness` (jest-side harness, Vite config, probes, leak detector and `mountCycle`), `test/fixtures` (React fixture pages) and one folder per test area (`test/teardown`, `test/stress`, …); see [Testing](testing.md) |
-| `archive/unit-test` | The old node-only jest tests, kept for reference; not compiled, not run |
+| `test` | Browser test suite: `test/harness` (runner-side harness, preload, fixture server, probes, leak detector and `mountCycle`), `test/fixtures` (React fixture pages) and one folder per test area (`test/teardown`, `test/stress`, …); see [Testing](testing.md) |
+| `archive/unit-test` | The old node-only jest tests, kept for reference; not compiled, not run (outside `[test] root`) |
 | `util` | Repo-level generic helpers, not part of the library API — see [Repository utilities](../utilities/repo-util.md) |
 | `dts` | Ambient type declarations |
 | `assets` | README splash image only; not used by code |
@@ -72,15 +71,15 @@ part of the build; the stories also use `util/hooks`.
 
 ### Scripts
 
-Scripts run `devops` from `node_modules`, except `ts` and `test`, which run `tsc` and `jest` from
-`node_modules/.bin`; invoke them as `bun run <script>`.
+Scripts run `devops` from `node_modules`, except `ts` and `test`, which run `tsc` from
+`node_modules/.bin` and `bun test`; invoke them as `bun run <script>`.
 
 | Script | What it does |
 |---|---|
 | `dev` | Development server for the demos; the README points to http://localhost:6006 |
 | `storybook` | Sets `PROJECT_ROOT`, then `storybook dev -p ${PORT:-6006}` with `.storybook` as config dir (`storybook build` variant outputs `storybook-static`) |
 | `ts` | `tsc --noEmit -p tsconfig.json`; exits with tsc's status, no lint |
-| `test` | `jest --config jest.config.js`; exits with jest's status. Extra arguments go to jest, so `bun run test test/<area>/<file>.test.ts` runs one file |
+| `test` | `bun test --timeout 60000`; exits with bun's status. Extra arguments go to `bun test`, so `bun run test test/<area>/<file>.test.ts` runs one file |
 | `release`, `package` | devops release/packaging (produces `dist`) |
 | `clean`, `component`, `init`, `template`, `url`, `pr` | Generic devops project commands |
 
@@ -98,17 +97,17 @@ the stylesheet as plain `.css`. The loaders live in `build/plugins` — see
 
 ### Tests
 
-`test/` is a browser suite: jest (node) starts a test-only Vite server over `test/fixtures`
-(`globalSetup`), and each test file drives headless Chromium (`playwright-core`, SwiftShader
+`test/` is a browser suite run by `bun test`: on first use it starts a `Bun.serve` fixture server
+over `test/fixtures/index.html`, and each test file drives headless Chromium (`playwright-core`, SwiftShader
 WebGL2) that mounts React fixtures through `SurfaceJSX` and checks rendered pixels against
 analytically computed expectations. Everything about it — run sequence, determinism, methodology,
-fixtures — is in [Testing](testing.md). `playwright-core` (pinned) and `vite` are direct
-`devDependencies` for it.
+fixtures — is in [Testing](testing.md). `playwright-core` (pinned) is a direct `devDependency`
+for it.
 
 The previous node-only tests (`vector`, `matrix`, `quaternion`, `transform`, `projection-3d`,
 `absolute-bounds`, `gl/attribute`) and their `requestAnimationFrame` polyfill
 `archive/unit-test/jest-setup.ts` are archived in `archive/unit-test`: not in `tsconfig.json`
-`include`, not matched by `testRegex`.
+`include`, outside `bunfig.toml` `[test] root`.
 
 ### Storybook
 
@@ -153,14 +152,14 @@ section to `RELEASE_NOTES.md` (`## x.y.z` with `[ADDED]`/`[FIXED]` entries).
 
 - Lockfiles are never committed: `bunfig.toml` sets `[install.lockfile] save = false`, `.npmrc`
   sets `package-lock=false`, `.gitignore` ignores `yarn.lock`, and the README says so.
-- Template leftovers: `tsconfig.json` paths/includes and `jest.config.js` `moduleNameMapper`
+- Template leftovers: `tsconfig.json` paths and includes
   mention `app`, `app/config`, `utils`, `bin`, `shim` — none exist here. `build.conf.ts`
   comments about `app/config/env.*.ts` do not apply. `dts/express.d.ts` and `dts/make-cert.d.ts`
   are server-template declarations unused by the library.
 - `bun run ts` does not lint; run `node_modules/.bin/eslint` separately when lint matters.
-- Do not import `ui/src` from a jest test file: module load touches `window` and `document`
-  (see [Architecture](architecture.md) gotchas) and the test environment is `node`; only the
-  Vite-bundled fixtures in `test/fixtures` import it.
+- Do not import `ui/src` from a test file: module load touches `window` and `document`
+  (see [Architecture](architecture.md) gotchas) and tests run in Bun, not a browser; only the
+  fixtures in `test/fixtures`, bundled by the fixture server, import it.
 - The root `util` folder is pulled into the library build through the React surface imports;
   moving or renaming `util/hooks/use-life-cycle.ts` breaks `ui/src/base-surfaces`.
 - `dist` is tracked: do not commit local build output outside a release.

@@ -1,11 +1,11 @@
-import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { useFixturePage } from "../harness/browser.js";
 import { expectColor, readPixels, rgba01To255 } from "../harness/probe.js";
-import { runStress, STRESS_TIMEOUT } from "./scenario.js";
+import { runStress, useStressTimeout } from "./scenario.js";
 import { BLUE, CLEAR, eventually, SIZE_2D, WHITE } from "./stress-probes.js";
 
-jest.setTimeout(STRESS_TIMEOUT);
+useStressTimeout();
 
 /**
  * The sentinel label: "MMMM" at 32 px, top-left anchored at (580, 280), in

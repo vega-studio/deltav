@@ -1,4 +1,4 @@
-import { describe, it } from "@jest/globals";
+import { describe, it } from "bun:test";
 
 import { mountCycle } from "../harness/mount-cycle.js";
 import {

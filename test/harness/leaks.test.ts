@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, test } from "@jest/globals";
+import { afterEach, describe, expect, it, test } from "bun:test";
 
 import { useFixturePage } from "./browser.js";
 import { RESOURCE_KINDS } from "./host-api.js";

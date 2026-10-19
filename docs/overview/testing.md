@@ -11,7 +11,7 @@ related:
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: 25a05503
+verified-at: 38857046
 ---
 
 ## Purpose
@@ -51,6 +51,8 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `test/interaction/*.test.ts` — the interaction and instance lifecycle suite (see Interaction suite); `helpers.ts` (palette, `eventually`, rect probes), `rects-handle.ts` (`callRects`).
 - `test/fixtures/resources/*` — `resources/texture-filter`, `atlas-images`, `fonts`, `circle-target`, `float-texture`, `mrt`, `line-blur`, `bloom`, `trail`, `noise`, `chain`; `common.tsx` (`rectsShader`, `rgbaTextureSettings`, in-page quadrant/solid canvases).
 - `test/resources/*.test.ts` — the resources, render targets and post-processing suite (see Resources suite); `helpers.ts` (palette, `useResourcesPage`, `eventually`, `probeRect`).
+- `test/fixtures/3d/*` — `3d/scene` (a `View3D` with one `CubeLayer`, `TriangleLayer` or flat-colour subclass; camera, scene-graph parents and instances as props), `3d/layer-2d-in-3d`; `scene-props.ts` (prop types), `camera.ts` (`useCamera`), `flat-layers.ts` (`FlatCubeLayer`, `FlatTriangleLayer`).
+- `test/3d/*.test.ts` — the 3D suite (see 3D suite); `expect-math.ts` is its independent projection oracle, checked by the node-only `expect-math.test.ts`; `helpers.ts` (palette, `expectShape`, `expectTriangle`, `eventually`).
 - `archive/unit-test/README.md` — why the old tests are kept and that they are not run.
 
 ## How it works
@@ -310,6 +312,36 @@ effect reads are known exactly; image data is drawn on in-page canvases, never b
 Defects pinned as `test.failing`: both gaussian blur shaders (DELTAV-78), `SimplexNoiseJSX` with a
 fixed `zOffset` (DELTAV-79), and the second of two fonts on a fresh page (DELTAV-80; that case
 opens its own page because a page that rendered a font hides it).
+
+### 3D suite
+
+`test/3d/` tests `View3D`, projection, depth, culling, the scene graph and the 3D layers on a
+200×200 canvas, each case through `mountCycle`. Expected pixels come from `expect-math.ts`, a
+hand-written perspective (horizontal fov) and orthographic projection with a viewport transform
+and a textbook look-at basis; it never imports `ui/src/math` or `Projection3D`. A cube is probed
+inside its projected front face and the clear colour outside the bounding box of its 8 projected
+corners; a triangle at its centroid, near each vertex and 3 px beyond each edge and vertex.
+Cameras are aimed with `Camera.lookAt`.
+
+- `projection` — a cube under perspective and orthographic cameras, the camera moved, the fov
+  changed (offsets from the centre scale by tan ratio).
+- `depth` — two overlapping cubes at different depths: the nearer colour in the overlap, in both
+  instance orders.
+- `layers` — built-in `CubeLayer`/`TriangleLayer`, the cube's half-extent `size`, the triangle's
+  vertices; culling: none by default (both sides drawn), and a `CullSide` names the winding it
+  culls (`CW` culls the clockwise, camera-facing triangle).
+- `scene-graph` — parent translation and scale, a grandparent, moving the parent, re-parenting,
+  detaching, removing the instance.
+- `clipping` — shapes in front of near, beyond far and behind a perspective camera; orthographic
+  near/far.
+- `layer-2d-in-3d` — `createLayer2Din3D` rectangles on the XY and XZ planes.
+
+The built-in 3D layers draw nothing (DELTAV-85), so every other case draws with
+`flat-layers.ts`: subclasses that keep the layers' geometry and material, read the transform
+through `o.matrix` and paint the instance colour. Defects pinned as `test.failing`: the built-in
+layers (DELTAV-85), a layer's first instance parented before it is drawn (DELTAV-86),
+orthographic near/far (DELTAV-87) and `Axis2D.XY` (DELTAV-88). Scene-graph cases otherwise
+mount the child unparented and parent it once drawn.
 
 ## Extension points
 

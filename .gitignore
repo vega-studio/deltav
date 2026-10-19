@@ -49,3 +49,6 @@ logs
 capacitor.config.json
 old-demos.zip
 old-demos/
+
+# browser test output
+/test-results

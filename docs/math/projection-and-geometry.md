@@ -105,8 +105,8 @@ counter-clockwise from bottom-left) to world space. Both accept `out` to avoid a
 
 `getAbsolutePositionBounds(item, reference, scaleRatio)` resolves a CSS-like `AbsolutePosition`
 (`left/right/top/bottom/width/height`, numbers or `"N%"` strings) against a reference `Bounds`. The
-`Surface` uses it to place each view's `viewport` inside the canvas. Rules, pinned by
-`unit-test/absolute-bounds.test.ts`: an explicit `width`/`height` wins over `right`/`bottom`; with
+`Surface` uses it to place each view's `viewport` inside the canvas. Rules, pinned by the archived (no longer run)
+`archive/unit-test/absolute-bounds.test.ts`: an explicit `width`/`height` wins over `right`/`bottom`; with
 no size, size = reference − left − right; percentages are taken of the reference size, plain numbers
 are multiplied by `scaleRatio` (the `Surface` passes its `pixelRatio`) and any unit suffix other than `%` is ignored.
 

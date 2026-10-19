@@ -21,7 +21,7 @@ const NON_TOPIC = new Set(["docs/README.md", "docs/CONVENTIONS.md"]);
 const REQUIRED = ["title", "summary", "covers", "related", "status", "verified-at"];
 const MAX_LINES = 400;
 const MAX_SUMMARY = 200;
-const PATH_TOKEN = /^(ui|util|unit-test|dts|docs|\.storybook)\/[A-Za-z0-9_./-]+$/;
+const PATH_TOKEN = /^(ui|util|test|archive|dts|docs|\.storybook)\/[A-Za-z0-9_./-]+$/;
 
 type Frontmatter = Record<string, string | string[]>;
 interface Doc {

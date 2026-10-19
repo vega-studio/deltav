@@ -150,7 +150,7 @@ not a `SceneGraphLayer`.
   recomputed only when read.
 - `instance-2d.ts` declares its own `IInstance3DOptions` (typed for `Transform2D`), and neither
   `Instance2D` nor `WorldNode` is exported from `ui/src/3d/scene-graph/index.ts`.
-- `unit-test/transform.test.ts` pins identity matrices (including after `lookAtLocal` and for the
+- The archived (no longer run) `archive/unit-test/transform.test.ts` pinned identity matrices (including after `lookAtLocal` and for the
   view matrix) and y-axis rotation.
 
 ## Related

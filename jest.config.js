@@ -2,11 +2,13 @@ import path from "path";
 
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 export default {
-  // testEnvironment: "jsdom",
   preset: "ts-jest/presets/js-with-ts-esm",
   testEnvironment: "node",
-  setupFiles: [path.resolve("unit-test/jest-setup.ts")],
-  testRegex: path.resolve("(unit-test|ui|test|app|utils)/.*.test.ts$"),
+  // Browser suite: globalSetup starts the test-only Vite server over
+  // test/fixtures; each test file drives its own headless Chromium.
+  globalSetup: path.resolve("test/harness/global-setup.mjs"),
+  globalTeardown: path.resolve("test/harness/global-teardown.mjs"),
+  testRegex: path.resolve("test/.*\\.test\\.ts$"),
   extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: {
     "^config/(.*)\\.js$": path.resolve("./app/config/$1.ts"),
@@ -18,9 +20,11 @@ export default {
       {
         useESM: true,
         isolatedModules: true,
-        tsConfig: path.resolve("tsconfig.json"),
+        tsconfig: path.resolve("tsconfig.json"),
       },
     ],
   },
-  testTimeout: 20000,
+  // Each worker owns one browser.
+  maxWorkers: 2,
+  testTimeout: 60000,
 };

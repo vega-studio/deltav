@@ -34,7 +34,6 @@
     "./app",
     "./ui",
     "./test",
-    "./unit-test",
     "./dts",
     "./bin",
     "./util",

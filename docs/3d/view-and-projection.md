@@ -83,7 +83,7 @@ Layers in a `View3D` use the base `projection` shader module (`${import: project
 - `screenRay(point)` — orthographic: `ray(screenToWorld(p), camera.transform.forward)`;
   perspective: `rayFromPoints(camera.transform.position, screenToWorld(p))`.
 
-`unit-test/projection-3d.test.ts` pins these for origin, angled and positioned cameras.
+The archived (no longer run) `archive/unit-test/projection-3d.test.ts` pinned these for origin, angled and positioned cameras.
 
 ### 2D layers in a 3D world
 

@@ -56,7 +56,7 @@ Dirty model:
 - `repeatInstances(instanceCount, instanceVertexCount, startInstance = 1)` copies instance 0 (the
   template, the first `instanceVertexCount * size` floats) into following instance slots using
   doubling `copyWithin` batches; it throws when `startInstance < 1`, silently stops at the end of
-  the buffer, and does not flag an update. Behaviour is pinned by `unit-test/gl/attribute.test.ts`.
+  the buffer, and does not flag an update. Behaviour was pinned by the archived `archive/unit-test/gl/attribute.test.ts` (no longer run).
 
 ### IndexBuffer
 

@@ -66,7 +66,7 @@ Extra `##` sections are fine when the topic needs them; put them between `## How
 - Cite code by symbol name (`Surface.render`, `InstanceProvider`) and files by backticked
   repo-relative path (`ui/src/surface/surface.ts`). Never cite line numbers: they go stale on the
   next edit. The checker verifies that every backticked path starting with `ui/`, `util/`,
-  `unit-test/`, `dts/`, `docs/` or `.storybook/` exists.
+  `test/`, `archive/`, `dts/`, `docs/` or `.storybook/` exists.
 - Link other docs with relative Markdown links (`[Layer](../surface/layer.md)`); the checker
   verifies every relative link resolves.
 - Short code examples are welcome when they show the canonical usage; keep them minimal.

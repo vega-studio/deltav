@@ -74,14 +74,14 @@ register is only valid until the next library call.
 
 - Storage is **column-major**, as WebGL uniforms expect: the mathematical element at row `r`,
   column `c` of a 4x4 lives at index `c * 4 + r`. `translation4x4(x, y, z)` puts `x, y, z` at
-  indices 12, 13, 14 (`unit-test/matrix.test.ts`, "Is Column Major").
+  indices 12, 13, 14 (`archive/unit-test/matrix.test.ts`, "Is Column Major").
 - The constants `M4ab = a * 4 + b` (e.g. `M430 = 12`) index that buffer; read `a` as the column of
   the mathematical matrix and `b` as its row (the source comments call `a` the "row" because they
   describe the buffer as printed, i.e. transposed). `M3ab = a * 3 + b`, `M2ab = a * 2 + b`.
 - Vectors are column vectors multiplied on the right: `transform4(m, v)` = `m · v`.
 - `multiply4x4(left, right)` = `left · right`, so the **right** operand is applied to a vector
   first: `transform4(multiply4x4(t, s), v)` scales then translates
-  (`unit-test/matrix.test.ts`, "Transforms: Order of operations"). `concat4x4(out, A, B, C)` =
+  (`archive/unit-test/matrix.test.ts`, "Transforms: Order of operations"). `concat4x4(out, A, B, C)` =
   `A · B · C`.
 - `SRT4x4(scale, rot3x3, translation, out)` builds `T · R · S` (scale first — a model matrix);
   `TRS4x4` builds `S · R · T` (translate first — used with inverted inputs to build view matrices
@@ -94,15 +94,15 @@ register is only valid until the next library call.
 - Right-handed, camera looks down **-Z**: `forward3()` is `[0, 0, -1]`, `forward4()` is
   `[0, 0, -1, 0]`; `forward2()` is `[1, 0]`.
 - `cross3` is the standard right-handed cross product (`x × y = z`, pinned in
-  `unit-test/vector.test.ts`).
+  `archive/unit-test/vector.test.ts`).
 - `rotation4x4(x, y, z)` follows the right-hand rule and applies X, then Y, then Z
   (`Rz · Ry · Rx`); single-axis cases have dedicated branches. Other orders: multiply single-axis
-  matrices yourself (`unit-test/matrix.test.ts`, "Rotation (Right hand rule)").
+  matrices yourself (`archive/unit-test/matrix.test.ts`, "Rotation (Right hand rule)").
 - `perspectiveFrustum4x4`, `perspective4x4` (horizontal FOV) and `perspectiveFOVY4x4` (vertical FOV)
   are OpenGL-style (`-1` in `M423`, depth to `[-1, 1]`). `orthographic4x4` uses `-1 / (far - near)`
   for depth, not the OpenGL `-2 / (far - near)`.
 - `projectToScreen(proj, v, width, height)` divides by `w` and maps NDC to `[0, width] × [0, height]`
-  with **y growing upward** (top of the view is `y = height`, `unit-test/projection-3d.test.ts`);
+  with **y growing upward** (top of the view is `y = height`, `archive/unit-test/projection-3d.test.ts`);
   `z` stays in NDC.
 
 ### Quaternion conversions
@@ -116,8 +116,8 @@ register is only valid until the next library call.
 - To Euler: `toOrderedEulerFromQuat(q, order)`, `toEulerFromQuat`, `toEulerXYZfromOrderedEuler`;
   `angleQuat` / `axisQuat` extract axis-angle.
 - `lookAtQuat([0, 0, -1], [0, 1, 0])` is the identity; looking at `+X` equals a 90° Y rotation in
-  view form (`unit-test/quaternion.test.ts`, "Lookat Quaternion"). `lookAtMatrix` builds the same
-  basis as a 4x4. `unit-test/transform.test.ts` pins that `Transform.lookAtLocal([0, 0, -1], up)`
+  view form (`archive/unit-test/quaternion.test.ts`, "Lookat Quaternion"). `lookAtMatrix` builds the same
+  basis as a 4x4. The archived `archive/unit-test/transform.test.ts` pinned that `Transform.lookAtLocal([0, 0, -1], up)`
   leaves an identity matrix.
 
 ## Extension points

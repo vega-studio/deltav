@@ -11,7 +11,7 @@ related:
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: acbaaa71
+verified-at: 25a05503
 ---
 
 ## Purpose
@@ -49,6 +49,8 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `test/teardown/surface-teardown.test.ts` — the `SurfaceJSX` teardown suite (see Leak detection).
 - `test/fixtures/interaction/*` — `interaction/rects`, `picking`, `resize`, `camera`, `events`; `handles.ts` types the in-page handles they register on `window` (`__dvInteractionRects`, …); `wheel-surface.tsx` is `TestSurface` with `handlesWheelEvents` on.
 - `test/interaction/*.test.ts` — the interaction and instance lifecycle suite (see Interaction suite); `helpers.ts` (palette, `eventually`, rect probes), `rects-handle.ts` (`callRects`).
+- `test/fixtures/resources/*` — `resources/texture-filter`, `atlas-images`, `fonts`, `circle-target`, `float-texture`, `mrt`, `line-blur`, `bloom`, `trail`, `noise`, `chain`; `common.tsx` (`rectsShader`, `rgbaTextureSettings`, in-page quadrant/solid canvases).
+- `test/resources/*.test.ts` — the resources, render targets and post-processing suite (see Resources suite); `helpers.ts` (palette, `useResourcesPage`, `eventually`, `probeRect`).
 - `archive/unit-test/README.md` — why the old tests are kept and that they are not run.
 
 ## How it works
@@ -284,6 +286,30 @@ sits at the page's top-left, so page coordinates are canvas pixels).
 Two `test.failing` cases pin defects: `RectangleLayer` picking (its fragment shader fails to
 compile in the picking-only pass) and a `ScaleMode.ALWAYS` rectangle under unequal x/y camera
 scale.
+
+### Resources suite
+
+`test/resources/` covers resource tags, render targets and every post-process effect, each case
+through `mountCycle`. Most fixtures produce their content with a `PostProcessJSX` pass running
+`rectsShader` (solid rects tested against `gl_FragCoord` in top-left pixels), so the pixels an
+effect reads are known exactly; image data is drawn on in-page canvases, never binary assets.
+
+- `textures` — a 2×2 `TextureJSX` stretched by `DrawJSX`: nearest gives exactly one quadrant colour
+  each side of a boundary, linear the bilinear mix at u = (x + 0.5) / width; `AtlasJSX` +
+  `ImageLayer` images at 1:1 (data URLs), quadrants, several images, and one swapped while mounted.
+- `fonts` — a `FontJSX` label inside the box `LabelInstance.onReady` reports (published on
+  `window.__resourceFontBoxes`), its width checked against the page's own `measureText`.
+- `render-targets` — circles into a `ColorBufferJSX` with an offset camera, blitted and drawn; a
+  `DepthBufferJSX` resolving an overlap to the nearer circle (View2D depth: larger is nearer,
+  `DEPTH_COMPONENT16` needs depths hundreds of units apart, near/far are -100/1e7) with a control
+  without it; a `FloatTextureJSX` keeping values outside 0–1; one pass writing COLOR and GLOW.
+- `post-processing` — box up/down-sample kernels and energy across a 1 px line, gaussian blur,
+  bloom glow beyond a bright rect and none on a far dark one, trail decay along a moving circle,
+  simplex noise equal across mounts, and a four-pass chain with its [1, 4, 6, 4, 1] / 16 edge.
+
+Defects pinned as `test.failing`: both gaussian blur shaders (DELTAV-78), `SimplexNoiseJSX` with a
+fixed `zOffset` (DELTAV-79), and the second of two fonts on a fresh page (DELTAV-80; that case
+opens its own page because a page that rendered a font hides it).
 
 ## Extension points
 

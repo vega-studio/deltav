@@ -114,8 +114,7 @@ describe("leak detector controls", () => {
     ).rejects.toThrow(/buffers: \+1/);
   });
 
-  // DEFECT: SurfaceJSX unmount leaks GL objects and its context — fixed by step-04
-  test.failing("deltav-minimal survives mountCycle without leaks", async () => {
+  test("deltav-minimal survives mountCycle without leaks", async () => {
     const world = { x: 20, y: 30, width: 80, height: 50 };
     await mountCycle(
       handle.page,

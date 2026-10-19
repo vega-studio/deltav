@@ -145,6 +145,21 @@ export interface ISurfaceContext {
    * Indicates a layer should be removed from the pipeline.
    */
   disposeLayer?(layerInit: ReturnType<typeof createLayer<any, any>>): void;
+
+  /**
+   * Indicates a view should be removed from the pipeline.
+   */
+  disposeView?(viewInit: ViewInitializer<IViewProps>): void;
+
+  /**
+   * Indicates a scene should be removed from the pipeline.
+   */
+  disposeScene?(scene: ISceneOptions): void;
+
+  /**
+   * Indicates a resource should be removed from the pipeline.
+   */
+  disposeResource?(resource: BaseResourceOptions): void;
 }
 
 /** Context the surface provides to all of it's children */
@@ -296,6 +311,20 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
     });
   };
 
+  // Tracks whether this component is still mounted. The async mount below
+  // checks it after every await so a surface unmounted while it was still
+  // building is torn down instead of started. Unmounting also cancels a
+  // pending resize debounce.
+  const unmounted = React.useRef(false);
+  React.useEffect(() => {
+    unmounted.current = false;
+
+    return () => {
+      unmounted.current = true;
+      window.clearTimeout(resizeDebounceId.current);
+    };
+  }, []);
+
   // Lifecycle handling
   useLifecycle({
     async didMount() {
@@ -315,6 +344,9 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
         layersPromise,
         viewsPromise,
       ]);
+
+      // Unmounted while the children resolved: nothing was created yet.
+      if (unmounted.current || !canvasRef.current) return;
 
       // Remove any null values
       const validScenes = resolvedScenes.filter(isDefined);
@@ -345,7 +377,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
 
       // With all resources established at this point, we now construct the
       // surface to display.
-      const newSurface = await new Surface({
+      const newSurface = new Surface({
         context: canvasRef.current,
         handlesWheelEvents:
           props.handlesWheelEvents !== undefined
@@ -366,7 +398,33 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
           // Implementation specified render options
           props.options
         ),
-      }).ready;
+      });
+
+      // Releases everything this mount set up. The surface reference is only
+      // dropped after the surface finished destroying (its scene and resource
+      // diffs destroy asynchronously).
+      const teardown = async () => {
+        window.removeEventListener("resize", resize);
+        window.clearTimeout(resizeDebounceId.current);
+        // Quit the animation loop
+        if (drawLoopId.current) stopAnimationLoop(drawLoopId.current);
+        drawLoopId.current = null;
+        // Destroy the surface
+        await newSurface.destroy();
+        // Remove the surface reference so any calls to it can not happen
+        // anymore
+        if (surface.current === newSurface) surface.current = null;
+      };
+
+      try {
+        await newSurface.ready;
+      } catch (e) {
+        // The surface failed to initialize and destroyed itself already.
+        await teardown();
+        throw e;
+      }
+
+      if (unmounted.current) return teardown;
 
       // Starts the render loop to keep updating.
       drawLoopId.current = onAnimationLoop(
@@ -387,6 +445,8 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
       // Let a single render happen to ensure that everything is ready
       await onFrame();
 
+      if (unmounted.current) return teardown;
+
       surface.current = newSurface;
       // Size the surface to the initial container layout
       fitContainer(true);
@@ -396,16 +456,7 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
       window.addEventListener("resize", resize);
 
       // Unmount
-      return () => {
-        window.removeEventListener("resize", resize);
-        // Quit the animation loop
-        stopAnimationLoop(drawLoopId.current!);
-        // Destroy the surface
-        surface.current?.destroy();
-        // Remove the surface reference so any calls to it can not happen
-        // anymore
-        surface.current = null;
-      };
+      return teardown;
     },
   });
 
@@ -438,6 +489,39 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
     handleUpdatePipeline();
   };
 
+  // Handles removing the specified view from the pipeline elements, then
+  // triggers a pipeline update.
+  const handleDisposeView = (viewInit: ViewInitializer<IViewProps>) => {
+    if (!surface.current) return;
+
+    currentScenes.current.forEach((scene) => {
+      const index = scene.views.indexOf(viewInit);
+      if (index !== -1) scene.views.splice(index, 1);
+    });
+
+    handleUpdatePipeline();
+  };
+
+  // Handles removing the specified scene from the pipeline elements, then
+  // triggers a pipeline update.
+  const handleDisposeScene = (sceneInit: ISceneOptions) => {
+    if (!surface.current) return;
+    const index = currentScenes.current.indexOf(sceneInit);
+    if (index === -1) return;
+    currentScenes.current.splice(index, 1);
+    handleUpdatePipeline();
+  };
+
+  // Handles removing the specified resource from the pipeline elements, then
+  // triggers a pipeline update.
+  const handleDisposeResource = (resource: BaseResourceOptions) => {
+    if (!surface.current) return;
+    const index = currentResources.current.indexOf(resource);
+    if (index === -1) return;
+    currentResources.current.splice(index, 1);
+    handleUpdatePipeline();
+  };
+
   // We render our canvas, but also render our children. This allows the
   // children to inject custom DOM mostly for interesting ways to review and
   // debug the contents of the surface.
@@ -461,6 +545,9 @@ export const SurfaceJSX: React.FC<ISurfaceJSX> = (props) => {
 
             updatePipeline: handleUpdatePipeline,
             disposeLayer: handleDisposeLayer,
+            disposeView: handleDisposeView,
+            disposeScene: handleDisposeScene,
+            disposeResource: handleDisposeResource,
           }}
         >
           <CustomTag tagName="Surface" {...props}>

@@ -14,7 +14,7 @@ related:
   - resources/color-buffers.md
   - react/post-processing.md
 status: complete
-verified-at: d80bb72a
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -78,7 +78,9 @@ Scenes, views and layers are declared as `SurfaceJSX` children:
 `LayerScene.update(options)` sets `order`, diffs views, **then** layers, **then** calls
 `createRenderTarget()` on every view — render targets depend on which output types the built
 layers can produce for that view. Accessors: `layers`, `views`, `renderViews`. `removeLayer`,
-`clearCaches`, `destroy`.
+`clearCaches`, and `destroy()`, which is async: it awaits `layerDiffs.destroy()` and
+`viewDiffs.destroy()` together (every layer's buffer manager and every view's render targets),
+then drops `container`. `Surface.sceneDiffs` awaits it for each scene.
 
 ### View props (`IViewProps`)
 

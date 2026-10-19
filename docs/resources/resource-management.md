@@ -13,7 +13,7 @@ related:
   - shaders/io-expansion.md
   - react/react-surface.md
 status: complete
-verified-at: d80bb72a
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -69,8 +69,14 @@ Resource tags (`TextureJSX`, `ColorBufferJSX`, `FontJSX`, …) inside `SurfaceJS
 
 `initResource` records `resourceKeyToType[key] = type`; `getResourceType(key)` is how IO expansions
 decide whether an attribute's `resource.key()` belongs to them. `Surface.resize` calls
-`ResourceRouter.resize()` → every `manager.resize()`. `Surface.destroy` calls
-`ResourceRouter.destroy()`, which destroys every manager and clears both maps.
+`ResourceRouter.resize()` → every `manager.resize()`. `Surface.destroy` first awaits
+`resourceDiffs.destroy()` (`destroyResource` for every live resource, after the scenes are gone),
+then calls `ResourceRouter.destroy()`, which destroys every manager and clears both maps. A
+manager's `destroyResource` must free the resource's GL objects and forget it (the built-in
+managers delete their map entries, including `AtlasManager.destroyAtlas` and
+`FontManager.destroyFontMap`), and its `destroy` must tolerate resources already destroyed.
+Unmounting a resource tag removes it from the next pipeline (`disposeResource`, see
+[React surface](../react/react-surface.md)).
 
 ### Request flow
 

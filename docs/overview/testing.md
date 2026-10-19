@@ -11,7 +11,7 @@ related:
   - 2d/view-and-camera.md
   - react/react-surface.md
 status: complete
-verified-at: 7f23c73a
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -45,6 +45,8 @@ software WebGL2, and reads the canvas back. The old node-only math tests are arc
 - `test/fixtures/control/raw-webgl.fixture.tsx` — `control/raw-webgl`: scissor-cleared rect with plain WebGL2, no deltav.
 - `test/fixtures/control/rect.fixture.tsx` — `control/rect`: one `RectangleLayer` instance in a `View2D`.
 - `test/fixtures/leak-control/*.fixture.tsx` — `leak-control/leaky-raw`, `clean-raw` (both from `raw-gl.tsx`), `leaky-listener`, `deltav-minimal`.
+- `test/fixtures/teardown/*.fixture.tsx` — `teardown/view-layer`, `render-target`, `resources`, `early-unmount`, `resize-unmount`; shared `rect-scene.tsx` (`useRectProvider`, `useViewConfig`).
+- `test/teardown/surface-teardown.test.ts` — the `SurfaceJSX` teardown suite (see Leak detection).
 - `archive/unit-test/README.md` — why the old tests are kept and that they are not run.
 
 ## How it works
@@ -231,9 +233,22 @@ released) must fail with `buffers`, `textures` and `contexts` and nothing else; 
 same, deleted and context lost on unmount) must pass, also through `mountCycle`; `leaky-listener`
 (a window listener never removed) must fail naming `window:deltav-leak-control`; `allow` must
 tolerate exactly the kind it names. `deltav-minimal` (a `SurfaceJSX`, one `View2D`, one
-`RectangleLayer`) goes through `mountCycle` as `test.failing` until step-04 fixes the teardown.
+`RectangleLayer`) must pass `mountCycle` strictly.
 Disabling the `deleteBuffer` wrapper, the `createTexture` tracking, the window listener wrappers
 or the context-release tracking each turns at least one control red.
+
+### Teardown suite
+
+`test/teardown/surface-teardown.test.ts` runs each `teardown/*` fixture through `mountCycle` with
+`cycles: 3`, probing the drawn shape and the clear colour around it every cycle: (a) one `View2D`
+and one `RectangleLayer`; (b) a `CircleLayer` circle drawn into a `ColorBufferJSX` colour and a
+`DepthBufferJSX` depth renderbuffer, blitted to a `TextureJSX` and drawn to the screen with
+`DrawJSX`; (c) a `TextureJSX`, an `AtlasJSX` image (a data URL, polled for up to 60 frames since
+atlas loads are async) in an `ImageLayer`, and a `FontJSX` used by a `LabelLayer`; (d) a surface
+replaced while it is still building, before its `ready` resolves; (e) a window `resize` dispatched
+from a parent effect cleanup, so the unmount lands inside the resize debounce. Two `test.failing`
+cases pin defects found on the way: `RectangleLayer` into a render target, and an
+`HTMLCanvasElement` atlas source.
 
 ## Extension points
 

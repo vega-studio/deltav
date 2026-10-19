@@ -14,7 +14,7 @@ related:
   - resources/textures-and-atlases.md
   - resources/color-buffers.md
 status: complete
-verified-at: 4098986b
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -112,8 +112,20 @@ Runtime helpers: `getBuffers()` (color buffers as a list), `getGLBuffers()` (com
 `disabledTargets` (output types to route to `gl.NONE`), `validFramebuffer` (set by
 `setAsValid()` after a complete framebuffer check), `isInvalid` (set on failure; never retried).
 `setSize(w, h)` disposes the FBO and resets every texture's `data` to `{ width, height,
-buffer: null }`. `dispose()` deletes the FBO(s) and renderbuffers, and the textures only when
-`retainTextureTargets` is false.
+buffer: null }`.
+
+Disposal (`dispose()` → `GLProxy.disposeRenderTarget`) deletes the FBO and the blit FBO, then each
+attachment by owner:
+
+| Attachment | Deleted by the target when |
+|---|---|
+| Texture (color, depth, stencil, blit) | `retainTextureTargets` is false |
+| Renderbuffer the target created itself (depth given as a `DepthBufferFormat`, stencil) | always |
+| Renderbuffer backing a `ColorBuffer` (color, or depth given as a `ColorBuffer`) | `retainTextureTargets` is false, through `disposeColorBuffer`, which also clears `ColorBuffer.gl` so it recompiles; otherwise the `ColorBuffer`'s owner (its resource) deletes it |
+
+The color attachments are read from `gl.colorBufferId` (a list for MRT, one wrapper otherwise;
+the renderbuffer or texture is in the wrapper's `data`); the depth attachment from
+`gl.depthBufferId`, which holds the object directly.
 
 ### ColorBuffer
 
@@ -161,9 +173,9 @@ code outside `ui/src/gl` constructs one. Not to be confused with `UniformBufferM
 - `ColorBuffer` setters set `needsSettingsUpdate`, but nothing reads it: changing `size`,
   `internalFormat` or `multiSample` after compile has no effect. `ColorBuffer.size` is used only
   for target dimension checks; storage uses the render target's width/height.
-- `disposeRenderTarget` deletes renderbuffers but leaves `ColorBuffer.gl.bufferId` set, and
-  `compileRenderTarget` reuses `ColorBuffer.gl.bufferId` when present. Do not reuse a
-  `ColorBuffer` across a target `setSize`/`dispose`; create a new one.
+- `compileRenderTarget` reuses `ColorBuffer.gl.bufferId` when present. A target that retains its
+  targets (every view's does) leaves a `ColorBuffer`'s renderbuffer alive on `dispose`, so a
+  recreated target attaches the same one; destroy the `ColorBuffer` (or its resource) to free it.
 - `ColorBufferFormat.RGBA8` (the default) is WebGL2-only; on WebGL1 `colorBufferFormat` falls
   back to `RGBA4`.
 - `UniformBuffer` ordering validation: the loop clears every size from the allowed set after the

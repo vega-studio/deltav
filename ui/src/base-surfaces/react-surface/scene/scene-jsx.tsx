@@ -4,6 +4,7 @@ import { useLifecycle } from "../../../../../util/hooks/use-life-cycle.js";
 import { Instance } from "../../../instance-provider/instance.js";
 import {
   ILayerProps,
+  ISceneOptions,
   IViewProps,
   LayerInitializer,
   ViewInitializer,
@@ -85,11 +86,18 @@ export const SceneJSX = (props: ISceneJSX) => {
         viewsPromise,
       ]);
 
-      props.resolver?.resolve({
+      const scene: ISceneOptions = {
         key: props.name,
         layers: layerInitializers.filter(isDefined),
         views: viewInitializers.filter(isDefined),
-      });
+      };
+
+      props.resolver?.resolve(scene);
+
+      return () => {
+        // Indicate the scene is ready for disposal when the component unmounts.
+        context?.disposeScene?.(scene);
+      };
     },
   });
 

@@ -11,7 +11,7 @@ related:
   - interaction/event-management.md
   - utilities/repo-util.md
 status: complete
-verified-at: 7f23c73a
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -93,6 +93,9 @@ walks the list in order, awaiting each callback:
 - new key → `buildItem(init)`; a falsy result means "not created";
 - keys absent from the list → `destroyItem(init, item)`; the item is forgotten only when it
   resolves truthy.
+
+`destroy()` calls `destroyItem` for every live item, forgets them all at once (the diff is empty
+afterwards) and resolves when every `destroyItem` has resolved.
 
 `items` returns the live items in initializer order. During a callback, `inline(children)`
 inserts more initializers right after the current one (used for child layers/views); inside

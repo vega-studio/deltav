@@ -15,7 +15,7 @@ related:
   - resources/color-buffers.md
   - interaction/event-management.md
 status: complete
-verified-at: d80bb72a
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -69,7 +69,10 @@ Each tag component resolves its `resolver` in `useLifecycle.didMount` with the o
 
 `SurfaceJSX` holds one resolver map per kind (`eventResolvers`, `resourceResolvers`,
 `viewResolvers`, `layerResolvers`, `sceneResolvers`) and exposes them through `SurfaceContext`,
-together with `writeToDom`, `updatePipeline()` and `disposeLayer(layerInit)`.
+together with `writeToDom`, `updatePipeline()` and the unmount handlers `disposeLayer(layerInit)`,
+`disposeView(viewInit)`, `disposeScene(scene)` and `disposeResource(resource)`. Each removes the
+initializer it was given from the tracked scenes or resources and re-pipelines; each does nothing
+once the surface is gone.
 
 ### Mount sequence (`SurfaceJSX`)
 
@@ -88,8 +91,22 @@ together with `writeToDom`, `updatePipeline()` and `disposeLayer(layerInit)`.
    `surface.frameMetrics.currentFrame >= renderFrameCount`.
 6. `await Surface.pipeline({ resources, scenes })`, `await onFrame()`, size the canvas to the
    container (`Surface.resize(offsetWidth, offsetHeight)`), then `ready?.resolve(surface)`.
-7. A `window` resize listener re-fits (debounced through `setTimeout`). Unmount removes the
-   listener, stops the loop and calls `Surface.destroy()`.
+7. A `window` resize listener re-fits (debounced through `setTimeout`).
+
+After every `await` in steps 3–6 `didMount` checks an `unmounted` ref (set by an effect cleanup
+that also clears the pending resize timeout). Unmounted before the surface exists → it returns
+without creating anything; unmounted later → it skips the remaining steps and returns its
+teardown, which `useLifecycle` runs as soon as `didMount` settles.
+
+### Unmount sequence
+
+The teardown `didMount` returns runs on unmount (after `didMount` finished, see
+`useLifecycle`): remove the resize listener, clear the resize timeout, stop the animation loop,
+`await Surface.destroy()` (scenes, resources, renderer and GL context; see
+[Surface](../surface/surface.md)), then drop the surface reference. If the surface's `ready`
+rejects (no WebGL context) the teardown runs and `didMount` rethrows. Each tag also returns a
+cleanup from its `didMount` that calls its `dispose*` handler; during a full unmount those are
+no-ops or re-pipelines that the destroying surface ignores.
 
 ### The tags
 
@@ -109,15 +126,18 @@ together with `writeToDom`, `updatePipeline()` and `disposeLayer(layerInit)`.
   resourceName | boolean, blit?: { color?, depth? } }` or an array of them. Each resource name is
   awaited from `resourceResolvers` and must be a render texture or color buffer (depth blit: render
   texture only). The first entry becomes the view's `output`, the rest become `chain` entries.
-  Then `createView(type, { key: name, ...config, output, chain })`.
+  Then `createView(type, { key: name, ...config, output, chain })`. Unmount calls `disposeView`
+  (splices it out of every tracked scene's `views`).
 - **`SceneJSX`** — `name` (required), children `ViewJSX`/`LayerJSX` only. Its children's names are
-  prefixed `"<sceneName>."`; it resolves `{ key: name, layers, views }`.
+  prefixed `"<sceneName>."`; it resolves `{ key: name, layers, views }`. Unmount calls
+  `disposeScene` (removes it from the tracked scenes).
 - **Resources** — `TextureJSX` (`createTexture`), `AtlasJSX` (`createAtlas`), `FontJSX`
   (`createFont`), `ColorBufferJSX` and `DepthBufferJSX` (both `createColorBuffer`, with `config`
   as `colorBufferSettings`; they differ only in the allowed `internalFormat` type),
   `FloatTextureJSX` (`createTexture` with float `internalFormat` per `channels`, nearest filtering,
   clamp wrapping; falls back to half float when `WebGLStat.FLOAT_TEXTURE_READ/WRITE.full` is
-  false). The resource `key` is the tag's `name`.
+  false). The resource `key` is the tag's `name`. Unmount calls `disposeResource` (removes it from
+  the tracked resources, so the next pipeline destroys it).
 - **Event managers** — `SimpleEventHandlerJSX` (`new SimpleEventHandler(handlers)`),
   `QueuedEventHandlerJSX` (`new QueuedEventHandler(handlers, preserveEvents)`),
   `BasicCamera2DControllerJSX` (`new BasicCamera2DController(config)`; `disabled` and
@@ -157,10 +177,12 @@ render targets, `output`, post-processing).
 ## Gotchas
 
 - **The pipeline structure is fixed at mount.** `SurfaceJSX.didMount` runs once; tags added later
-  get resolvers but are never added to the tracked scenes. Only `LayerJSX` unmounts
-  (`disposeLayer`) and `LayerJSX` config changes (`updatePipeline`) propagate. `ViewJSX`, `SceneJSX`,
-  resources and event managers read their props only on mount (except the two live
-  `BasicCamera2DControllerJSX` flags). To change structure, remount `SurfaceJSX` (change its `key`).
+  get resolvers but are never added to the tracked scenes. Only unmounts of layers, views, scenes
+  and resources (`dispose*`) and `LayerJSX` config changes (`updatePipeline`) propagate. `ViewJSX`,
+  `SceneJSX`, resources and event managers read their props only on mount (except the two live
+  `BasicCamera2DControllerJSX` flags), and a remounted tag with the same name reuses its already
+  resolved resolver, so it is not re-added. To change structure, remount `SurfaceJSX` (change its
+  `key`).
 - `LayerJSX`'s update effect depends on `Object.values(config)`: inline objects/arrays in `config`
   (e.g. `animate: {...}`) are new every render and re-pipeline on every parent render; the
   dependency array length also changes if keys are added or removed.

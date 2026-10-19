@@ -365,12 +365,12 @@ export class LayerScene extends IdentifyByKey {
   }
 
   /**
-   * Release any resources this may be hanging onto
+   * Release any resources this may be hanging onto. Resolves once every layer
+   * and view of the scene has finished destroying.
    */
-  destroy() {
+  async destroy() {
+    await Promise.all([this.layerDiffs.destroy(), this.viewDiffs.destroy()]);
     delete this.container;
-    this.layerDiffs.destroy();
-    this.viewDiffs.destroy();
   }
 
   /**

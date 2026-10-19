@@ -14,7 +14,7 @@ related:
   - interaction/event-management.md
   - react/react-surface.md
 status: complete
-verified-at: d80bb72a
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -85,7 +85,8 @@ ISceneOptions[] }`. `SurfaceJSX` builds that object from its child tags and call
 surface is ready:
 
 - It bumps `pipelineLoadContext` and awaits `onFrame()`; if another `pipeline` call arrived in
-  the meantime, this one returns without doing anything (last call per frame wins).
+  the meantime, or `destroy()` was called, this one returns without doing anything (last call per
+  frame wins). The diff that then runs is tracked so `destroy()` can wait for it.
 - `resourceDiffs.diff(resources)` — a `ReactiveDiff` keyed by resource `key`; build/update/destroy
   delegate to `ResourceRouter.initResource` / `updateResource` / `destroyResource`.
 - `sceneDiffs.diff(scenes)` — builds a `LayerScene(this, options)` per new key, calls
@@ -131,9 +132,20 @@ next `draw` only; `draw` clears the enabled set at its end. `LayerMouseEvents` c
 
 ### Disposal
 
-`Surface.destroy()` destroys the resource router, the input manager, every scene (via
-`sceneDiffs.destroy()`, which destroys views and layers) and disposes the renderer, then drops the
-context. Calls to `draw`/`commit` after that return immediately (`!this.gl`).
+`Surface.destroy(): Promise<void>` tears everything down in order and resolves when it is done:
+
+1. Bumps `pipelineLoadContext` (a `pipeline` call waiting for its frame is cancelled) and awaits
+   the pipeline diff in flight, if any, so nothing it builds survives.
+2. `await sceneDiffs.destroy()` — every `LayerScene.destroy()`, which awaits its layer and view
+   diffs (layers free their buffer managers' geometry and material, views their render targets).
+3. `await resourceDiffs.destroy()` — `ResourceRouter.destroyResource` for every resource.
+4. `ResourceRouter.destroy()`, `UserInputEventManager.destroy()`, then `WebGLRenderer.dispose()`,
+   which deletes what the GL proxy still tracks and loses the context (see
+   [Renderer](../gl/renderer.md)); finally the context is dropped.
+
+A second call returns the same promise. After `destroy()` starts, `pipeline()` is a no-op, and
+`draw`/`commit` return immediately once the context is dropped (`!this.gl`). `SurfaceJSX` awaits
+the promise on unmount (see [React surface](../react/react-surface.md)).
 
 ## Extension points
 
@@ -172,7 +184,9 @@ context. Calls to `draw`/`commit` after that return immediately (`!this.gl`).
 - `rendererOptions` defaults spell `premultiplyAlpha`, while the option read is
   `premultipliedAlpha`; leaving it unset passes `undefined` to the renderer.
 - On a missing context `init` calls `destroy()` before `resourceManager` and `userInputManager`
-  exist.
+  exist; `destroy` skips what was never created.
+- `destroy()` is async: code that reuses anything the surface held (its canvas, a shared
+  resource) must await it. Calling it without awaiting still frees everything, later.
 
 ## Related
 

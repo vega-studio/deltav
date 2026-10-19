@@ -8,7 +8,7 @@ related:
   - resources/textures-and-atlases.md
   - 2d/labels.md
 status: complete
-verified-at: 8c3a0ef6
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -56,6 +56,9 @@ createFont({
 3. Glyphs for the deduplicated `characterFilter` are rendered and packed.
 4. If `fontSource.preload` is set, an `updateFontMap` with that string's characters and kerning
    pairs is started (not awaited).
+
+`FontResourceManager.destroyResource` → `FontManager.destroyFontMap(key)` destroys the map (its
+texture) and deletes it from `fontMaps`; `FontManager.destroy` destroys and forgets every map.
 
 ### Requests
 

@@ -8,6 +8,7 @@ import {
 } from "../../../resources/color-buffer/color-buffer-resource.js";
 import { CustomTag } from "../custom-tag.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
+import { SurfaceContext } from "../surface-jsx.js";
 import { IResourceJSX } from "./as-resource.js";
 
 export interface IDepthBufferPropsJSX extends Partial<IResourceJSX> {
@@ -35,16 +36,21 @@ type IDepthBufferJSX = IDepthBufferPropsJSX &
  * specialized for depth buffers.
  */
 export const DepthBufferJSX = (props: IDepthBufferJSX) => {
+  const surfaceContext = React.useContext(SurfaceContext);
+
   useLifecycle({
     didMount() {
-      props.resolver?.resolve(
-        createColorBuffer({
-          key: props.name,
-          height: props.height,
-          width: props.width,
-          colorBufferSettings: props.config,
-        })
-      );
+      const resource = createColorBuffer({
+        key: props.name,
+        height: props.height,
+        width: props.width,
+        colorBufferSettings: props.config,
+      });
+
+      props.resolver?.resolve(resource);
+
+      // Stop the surface from building this resource once unmounted.
+      return () => surfaceContext?.disposeResource?.(resource);
     },
   });
 

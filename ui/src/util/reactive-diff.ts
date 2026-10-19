@@ -90,17 +90,23 @@ export class ReactiveDiff<
 
   /**
    * This triggers all resources currently managed by this diff manager to
-   * process their destroy procedure
+   * process their destroy procedure. The returned promise resolves once every
+   * item's async destroyItem has finished, after which this diff manages no
+   * items.
    */
   async destroy() {
     const promises: Promise<boolean | null>[] = [];
 
-    for (let i = 0, iMax = this.currentInitializers.length; i < iMax; ++i) {
-      const init = this.currentInitializers[i];
-      const item = this.keyToItem.get(init.key);
-      if (!item) continue;
+    this.keyToItem.forEach((item, key) => {
+      const init = this.keyToInitializer.get(key);
+      if (!item || !init) return;
       promises.push(this.options.destroyItem(init, item));
-    }
+    });
+
+    this.keyToItem.clear();
+    this.keyToInitializer.clear();
+    this.willDispose.clear();
+    this._items = [];
 
     await Promise.all(promises);
   }

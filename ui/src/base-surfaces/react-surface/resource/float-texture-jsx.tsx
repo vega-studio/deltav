@@ -9,6 +9,7 @@ import {
 } from "../../../resources/index.js";
 import { CustomTag } from "../custom-tag.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
+import { SurfaceContext } from "../surface-jsx.js";
 import { IResourceJSX } from "./as-resource.js";
 
 export interface IFloatTexturePropsJSX extends Partial<IResourceJSX> {
@@ -68,6 +69,8 @@ const channelsToHalfSize = {
  * behave with your intended hardware, use TextureJSX directly.
  */
 export const FloatTextureJSX = (props: IFloatTextureJSX) => {
+  const surfaceContext = React.useContext(SurfaceContext);
+
   useLifecycle({
     didMount() {
       const { channels = 4 } = props;
@@ -105,30 +108,33 @@ export const FloatTextureJSX = (props: IFloatTextureJSX) => {
         );
       }
 
-      props.resolver?.resolve(
-        createTexture({
-          key: props.name,
-          height: props.height,
-          width: props.width,
-          textureSettings: {
-            ...props.textureSettings,
-            internalFormat: channelSize,
-            type,
-            format: GLSettings.Texture.TexelDataType.RGBA,
-            minFilter: GLSettings.Texture.TextureMinFilter.Nearest,
-            magFilter: GLSettings.Texture.TextureMagFilter.Nearest,
-            wrapHorizontal: GLSettings.Texture.Wrapping.CLAMP_TO_EDGE,
-            wrapVertical: GLSettings.Texture.Wrapping.CLAMP_TO_EDGE,
-            data: props.data
-              ? {
-                  width: props.width,
-                  height: props.height,
-                  buffer: props.data,
-                }
-              : undefined,
-          },
-        })
-      );
+      const resource = createTexture({
+        key: props.name,
+        height: props.height,
+        width: props.width,
+        textureSettings: {
+          ...props.textureSettings,
+          internalFormat: channelSize,
+          type,
+          format: GLSettings.Texture.TexelDataType.RGBA,
+          minFilter: GLSettings.Texture.TextureMinFilter.Nearest,
+          magFilter: GLSettings.Texture.TextureMagFilter.Nearest,
+          wrapHorizontal: GLSettings.Texture.Wrapping.CLAMP_TO_EDGE,
+          wrapVertical: GLSettings.Texture.Wrapping.CLAMP_TO_EDGE,
+          data: props.data
+            ? {
+                width: props.width,
+                height: props.height,
+                buffer: props.data,
+              }
+            : undefined,
+        },
+      });
+
+      props.resolver?.resolve(resource);
+
+      // Stop the surface from building this resource once unmounted.
+      return () => surfaceContext?.disposeResource?.(resource);
     },
   });
 

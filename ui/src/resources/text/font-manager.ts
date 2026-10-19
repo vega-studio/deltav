@@ -330,6 +330,7 @@ export class FontManager {
   destroy() {
     // Clears up resources
     this.fontMaps.forEach((font) => font.destroy());
+    this.fontMaps.clear();
   }
 
   /**
@@ -339,6 +340,7 @@ export class FontManager {
     const fontMap = this.fontMaps.get(key);
     if (!fontMap) return;
     fontMap.destroy();
+    this.fontMaps.delete(key);
   }
 
   /**

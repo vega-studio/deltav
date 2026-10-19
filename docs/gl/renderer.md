@@ -10,7 +10,7 @@ related:
   - gl/gpu-resources.md
   - surface/render-loop.md
 status: complete
-verified-at: 4098986b
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -144,7 +144,11 @@ It also sets `window.WebGLStat` for console inspection.
 
 ## Gotchas
 
-- `WebGLRenderer.dispose()` is an empty TODO: it frees nothing. Dispose resources individually.
+- `WebGLRenderer.dispose()` calls `GLProxy.dispose()` (deletes the programs and shaders the proxy
+  still tracks, clears its lookups), then `getExtension("WEBGL_lose_context")?.loseContext()` and
+  drops the context; a second call does nothing. Losing the context does not delete buffers,
+  textures, VAOs, framebuffers or renderbuffers: their owners must dispose them first, as
+  `Surface.destroy` does.
 - `WebGLStat` describes a probe context, not necessarily the renderer's context. The renderer asks
   for `WEBGL_VERSION` first so they normally agree.
 - In `floatTextureSupport` the half-float probe writes `FLOAT_TEXTURE_READ.full` /

@@ -149,14 +149,22 @@ export class WebGLRenderer {
   }
 
   /**
-   * Free all resources this renderer utilized. Make sure textures and
-   * frame/render/geometry buffers are all deleted. We may even use aggressive
-   * buffer removal that force resizes the buffers so their resources are
-   * immediately reduced instead of waiting for the JS engine to free up
-   * resources.
+   * Free all resources this renderer utilized: the GL objects its proxy still
+   * tracks are deleted and the GL context is released through
+   * WEBGL_lose_context, so the browser can reclaim it immediately instead of
+   * waiting for garbage collection. Objects created through the proxy
+   * (geometries, materials, textures, render targets) must be disposed by
+   * their owners before this; losing the context does not delete them.
+   *
+   * After this the renderer has no context; calling it again does nothing.
    */
   dispose() {
-    // TODO
+    const gl = this._gl;
+    if (!gl) return;
+
+    this.glProxy?.dispose();
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+    delete this._gl;
   }
 
   /**

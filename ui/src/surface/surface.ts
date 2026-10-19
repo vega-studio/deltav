@@ -296,6 +296,10 @@ export class Surface {
    * execute a single pipeline update at the next frame.
    */
   private pipelineLoadContext = 0;
+  /** The pipeline diff currently executing, if any */
+  private pipelineInFlight?: Promise<void>;
+  /** Set once destroy() is called; resolves when destruction finished */
+  private destroying?: Promise<void>;
 
   /** Diff manager to handle diffing resource objects for the pipeline */
   resourceDiffs: ReactiveDiff<IdentifiableById, BaseResourceOptions> =
@@ -338,7 +342,7 @@ export class Surface {
     },
 
     destroyItem: async (_initializer: ISceneOptions, item: LayerScene) => {
-      item.destroy();
+      await item.destroy();
       return true;
     },
 
@@ -557,14 +561,33 @@ export class Surface {
   }
 
   /**
-   * Free all resources consumed by this surface that gets applied to the GPU.
+   * Free all resources consumed by this surface that gets applied to the GPU:
+   * every scene (its layers and views), every resource, the input handling and
+   * finally the renderer and its GL context.
+   *
+   * The returned promise resolves once all of that work, including the
+   * asynchronous destruction of the scene and resource diffs and any pipeline
+   * update still in flight, has finished. Calling it again returns the same
+   * promise. A destroyed surface ignores later pipeline() calls.
    */
-  destroy() {
-    this.resourceManager.destroy();
-    this.userInputManager.destroy();
-    this.sceneDiffs.destroy();
-    this.renderer.dispose();
-    delete this.context;
+  destroy(): Promise<void> {
+    if (this.destroying) return this.destroying;
+
+    this.destroying = (async () => {
+      // Cancel any pipeline update waiting for its frame, and let one that is
+      // already diffing finish before its products are torn down.
+      ++this.pipelineLoadContext;
+      await this.pipelineInFlight?.catch(() => void 0);
+
+      await this.sceneDiffs.destroy();
+      await this.resourceDiffs.destroy();
+      this.resourceManager?.destroy();
+      this.userInputManager?.destroy();
+      this.renderer?.dispose();
+      delete this.context;
+    })();
+
+    return this.destroying;
   }
 
   /**
@@ -1179,20 +1202,31 @@ export class Surface {
    * tobe comepltely not rendered at all in many cases.
    */
   async pipeline(pipeline: IPipeline) {
+    if (this.destroying) return;
     const ctx = ++this.pipelineLoadContext;
     await onFrame();
-    if (this.pipelineLoadContext !== ctx) return;
+    if (this.pipelineLoadContext !== ctx || this.destroying) return;
 
-    if (pipeline.resources) {
-      await this.resourceDiffs.diff(pipeline.resources);
+    const run = (async () => {
+      if (pipeline.resources) {
+        await this.resourceDiffs.diff(pipeline.resources);
+      }
+
+      if (pipeline.scenes) {
+        await this.sceneDiffs.diff(pipeline.scenes);
+      }
+
+      // Ensures our view's dimensions are up to date
+      this.updateViewDimensions();
+    })();
+
+    this.pipelineInFlight = run;
+
+    try {
+      await run;
+    } finally {
+      if (this.pipelineInFlight === run) this.pipelineInFlight = undefined;
     }
-
-    if (pipeline.scenes) {
-      await this.sceneDiffs.diff(pipeline.scenes);
-    }
-
-    // Ensures our view's dimensions are up to date
-    this.updateViewDimensions();
   }
 
   /**

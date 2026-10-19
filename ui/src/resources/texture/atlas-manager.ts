@@ -91,6 +91,7 @@ export class AtlasManager {
    */
   destroy() {
     this.allAtlas.forEach((value) => value.destroy());
+    this.allAtlas.clear();
   }
 
   /**
@@ -104,6 +105,7 @@ export class AtlasManager {
 
     if (atlas) {
       atlas.destroy();
+      this.allAtlas.delete(atlasName);
     }
   }
 

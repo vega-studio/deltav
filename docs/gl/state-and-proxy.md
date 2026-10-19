@@ -13,7 +13,7 @@ related:
   - gl/gpu-resources.md
   - gl/scene-model-material.md
 status: complete
-verified-at: 4098986b
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -56,14 +56,18 @@ own `destroy()` can call back `proxy.disposeX`). `disposeX` deletes the GL objec
 
 ### Shader program cache
 
-`compileMaterial` caches compiled shaders by **source text** (`vertexShaders`, `fragmentShaders`
-maps) and programs per (vertex shader, fragment shader) pair with a `useCount`. A material has one
-vertex shader and a `MaterialFragmentShader` map (render target → `{source, outputTypes}`); one
-program is linked per fragment shader and recorded in `material.gl.programId[]` with its
-`outputTypes`. After linking it collects active uniform names (stripping `[0]`), **deletes material
-uniforms the programs do not use**, and returns false if counts still differ.
-`disposeMaterial` decrements `useCount`, deleting the program at zero, the vertex shader when it has
-no programs left, and a fragment shader when no vertex shader references it.
+`compileMaterial` looks compiled shaders up by **source text** (`vertexShaders`, `fragmentShaders`
+maps), but nothing ever writes those maps, so every material compiles its own shaders. Programs
+are tracked in `programs`: vertex shader → (fragment shader → `{ useCount, program }`). A material
+has one vertex shader and a `MaterialFragmentShader` map (render target → `{source,
+outputTypes}`); one program is linked per fragment shader and recorded in
+`material.gl.programId[]` with its `outputTypes`. After linking it collects active uniform names
+(stripping `[0]`), **deletes material uniforms the programs do not use**, and returns false if
+counts still differ.
+`disposeMaterial` decrements `useCount`, deleting the program at zero, the vertex shader (and its
+`programs` entry) when it has no programs left, and a fragment shader when no vertex shader
+references it. `GLProxy.dispose()` — called by `WebGLRenderer.dispose` — deletes every program and
+shader still in `programs` and clears all three maps.
 
 ### `GLState.useMaterial(material)`
 

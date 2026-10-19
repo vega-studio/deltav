@@ -10,7 +10,7 @@ related:
   - 2d/layers.md
   - shaders/io-expansion.md
 status: complete
-verified-at: 8c3a0ef6
+verified-at: e1093995
 ---
 
 ## Purpose
@@ -46,6 +46,9 @@ makes a blank canvas of `width × height` as the initial `Texture` data, default
 to `generateMipMaps: true, premultiplyAlpha: true` (overridable via `textureSettings`) and a root
 `PackNode(0, 0, width, height)`. Sizes must be `TextureSize` powers of two; negative (screen) sizes
 throw.
+
+`AtlasResourceManager.destroyResource` → `AtlasManager.destroyAtlas(key)` destroys the atlas (its
+texture) and deletes it from `allAtlas`; `AtlasManager.destroy` destroys and forgets every atlas.
 
 ### Requesting an image
 
@@ -145,6 +148,10 @@ depth targets ([Color buffers](color-buffers.md) covers that path).
   new key (or remove + re-add).
 - No gutter pixels between packed images (only the half-texel UV inset) and mipmaps are on by
   default, so minified sampling can bleed neighbouring images; set `textureSettings` if that matters.
+- `HTMLCanvasElement`, `ImageData`, `ImageBitmap` and `OffscreenCanvas` sources are returned by
+  `loadImage` without setting the `SubTexture`'s pixel size, so they fail with "Could not load
+  resource"; pass an `HTMLImageElement` or a URL / data URL string (`canvas.toDataURL()`). The
+  teardown suite pins this as a `test.failing` defect.
 - A video must be loaded (`videoWidth > 0`) before it is requested; the manager does not wait for it.
   `VideoTextureMonitor.destroy` pauses the video.
 - String sources are fetched with `crossOrigin = "anonymous"`; servers must send CORS headers or the

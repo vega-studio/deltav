@@ -13,6 +13,7 @@ import {
   IViewConstructable,
   IViewProps,
   ViewDepthBuffer,
+  ViewInitializer,
   ViewOutputBuffers,
 } from "../../../surface/index.js";
 import { isDefined } from "../../../util/index.js";
@@ -317,6 +318,13 @@ export const ViewJSX = <TProps extends IViewProps = IViewProps>(
         Partial<Pick<TProps, "key" | "viewport">>);
 
       props.resolver?.resolve(view);
+
+      return () => {
+        // Indicate the view is ready for disposal when the component unmounts.
+        surfaceContext.disposeView?.(
+          view as unknown as ViewInitializer<IViewProps>
+        );
+      };
     },
   });
 

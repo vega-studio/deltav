@@ -1555,6 +1555,7 @@ export class GLProxy {
           // programs. It is ready for removal as well
           if (fsLookup.size <= 0) {
             this.gl.deleteShader(vsId);
+            this.programs.delete(vsId);
           }
         }
 
@@ -1577,6 +1578,28 @@ export class GLProxy {
   }
 
   /**
+   * Deletes every program and shader this proxy still tracks (materials that
+   * were never disposed) and clears its lookups. Called by the renderer right
+   * before it releases the context.
+   */
+  dispose() {
+    const shaders = new Set<WebGLShader>();
+
+    this.programs.forEach((fsLookup, vs) => {
+      shaders.add(vs);
+      fsLookup.forEach((useMetrics, fs) => {
+        this.gl.deleteProgram(useMetrics.program);
+        shaders.add(fs);
+      });
+    });
+
+    shaders.forEach((shader) => this.gl.deleteShader(shader));
+    this.programs.clear();
+    this.vertexShaders.clear();
+    this.fragmentShaders.clear();
+  }
+
+  /**
    * Destroy a render buffer (RBO)
    */
   disposeRenderBuffer(buffer: WebGLRenderbuffer) {
@@ -1588,33 +1611,52 @@ export class GLProxy {
    */
   disposeRenderTarget(target: RenderTarget) {
     if (target.gl) {
-      // List of color buffers for MRT
-      if (Array.isArray(target.gl.colorBufferId)) {
-        target.gl.colorBufferId.forEach((buffer) => {
-          if (buffer.data instanceof Texture && !target.retainTextureTargets) {
-            this.disposeTexture(buffer.data);
-          } else if (buffer.data instanceof WebGLRenderbuffer) {
-            this.disposeRenderBuffer(buffer.data);
-          }
-        });
-      } else if (
-        target.gl.colorBufferId &&
-        target.gl.colorBufferId.data instanceof Texture &&
-        !target.retainTextureTargets
-      ) {
-        this.disposeTexture(target.gl.colorBufferId.data);
-      } else if (target.gl.colorBufferId instanceof WebGLRenderbuffer) {
-        this.disposeRenderBuffer(target.gl.colorBufferId.data);
+      // A renderbuffer attached to the target either backs a ColorBuffer (a
+      // resource that owns it and deletes it when it is destroyed) or was
+      // created by the target itself (a depth buffer given as a format). The
+      // target deletes its own renderbuffers; a ColorBuffer's is released
+      // through the ColorBuffer only when the target does not retain its
+      // targets, so the ColorBuffer recompiles instead of reusing a deleted
+      // renderbuffer.
+      const colorBuffers: ColorBuffer[] = [];
+      const color = target.buffers.color;
+      (Array.isArray(color) ? color : color ? [color] : []).forEach((c) => {
+        if (c.buffer instanceof ColorBuffer) colorBuffers.push(c.buffer);
+      });
+      if (target.buffers.depth instanceof ColorBuffer) {
+        colorBuffers.push(target.buffers.depth);
       }
 
-      // Dispose of depth buffer
-      if (
-        target.gl.depthBufferId instanceof Texture &&
-        !target.retainTextureTargets
-      ) {
-        this.disposeTexture(target.gl.depthBufferId);
+      const disposeAttachedRenderBuffer = (rbo: WebGLRenderbuffer) => {
+        const owner = colorBuffers.find((b) => b.gl?.bufferId === rbo);
+
+        if (!owner) this.disposeRenderBuffer(rbo);
+        else if (!target.retainTextureTargets) this.disposeColorBuffer(owner);
+      };
+
+      // List of color buffers for MRT, or the single color buffer: both are
+      // wrappers whose `data` holds the texture or renderbuffer.
+      const colorIds = Array.isArray(target.gl.colorBufferId)
+        ? target.gl.colorBufferId
+        : target.gl.colorBufferId
+        ? [target.gl.colorBufferId]
+        : [];
+
+      colorIds.forEach((buffer) => {
+        if (buffer.data instanceof Texture) {
+          if (!target.retainTextureTargets) this.disposeTexture(buffer.data);
+        } else if (buffer.data instanceof WebGLRenderbuffer) {
+          disposeAttachedRenderBuffer(buffer.data);
+        }
+      });
+
+      // Dispose of depth buffer (held directly, not in a wrapper)
+      if (target.gl.depthBufferId instanceof Texture) {
+        if (!target.retainTextureTargets) {
+          this.disposeTexture(target.gl.depthBufferId);
+        }
       } else if (target.gl.depthBufferId instanceof WebGLRenderbuffer) {
-        this.disposeRenderBuffer(target.gl.depthBufferId);
+        disposeAttachedRenderBuffer(target.gl.depthBufferId);
       }
 
       // Dispose of stencil buffer

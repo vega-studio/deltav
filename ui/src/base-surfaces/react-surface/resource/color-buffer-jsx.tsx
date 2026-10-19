@@ -8,6 +8,7 @@ import {
 } from "../../../resources/color-buffer/color-buffer-resource.js";
 import { CustomTag } from "../custom-tag.js";
 import { SurfaceJSXType } from "../group-surface-children.js";
+import { SurfaceContext } from "../surface-jsx.js";
 import { IResourceJSX } from "./as-resource.js";
 
 export interface IColorBufferPropsJSX extends Partial<IResourceJSX> {
@@ -34,16 +35,21 @@ type IColorBufferJSX = IColorBufferPropsJSX &
  * Generates a texture Resource that can be used by the name provided.
  */
 export const ColorBufferJSX = (props: IColorBufferJSX) => {
+  const surfaceContext = React.useContext(SurfaceContext);
+
   useLifecycle({
     didMount() {
-      props.resolver?.resolve(
-        createColorBuffer({
-          key: props.name,
-          height: props.height,
-          width: props.width,
-          colorBufferSettings: props.config,
-        })
-      );
+      const resource = createColorBuffer({
+        key: props.name,
+        height: props.height,
+        width: props.width,
+        colorBufferSettings: props.config,
+      });
+
+      props.resolver?.resolve(resource);
+
+      // Stop the surface from building this resource once unmounted.
+      return () => surfaceContext?.disposeResource?.(resource);
     },
   });
 

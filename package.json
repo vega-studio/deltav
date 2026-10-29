@@ -15,8 +15,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "storybook dev -p 6006 --config-dir .storybook --no-version-updates",
-    "storybook": "storybook dev -p 6006 --config-dir .storybook --no-version-updates",
+    "dev": "storybook dev -p 6006 --config-dir .storybook --no-version-updates --no-open",
+    "storybook": "storybook dev -p 6006 --config-dir .storybook --no-version-updates --no-open",
     "storybook:build": "storybook build --config-dir .storybook -o storybook-static",
     "build": "bun build/build.ts",
     "test": "bun test --timeout 60000",

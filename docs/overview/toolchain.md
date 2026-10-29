@@ -11,7 +11,7 @@ related:
   - overview/testing.md
   - react/react-surface.md
 status: complete
-verified-at: 8f815f16
+verified-at: d8c8d067
 ---
 
 ## Purpose
@@ -65,8 +65,8 @@ imported by `surface-jsx.tsx`). `dts/asset.d.ts` declares the asset imports for 
 
 ### Storybook
 
-Storybook 8.6 with `@storybook/react-vite`, run straight from the repo: `bun run dev` (=
-`storybook dev -p 6006 --config-dir .storybook --no-version-updates`) and `bun run
+Storybook 8.6 with `@storybook/react-vite`, run straight from the repo: `bun run dev` (opens no browser tab; visit http://localhost:6006) (=
+`storybook dev -p 6006 --config-dir .storybook --no-version-updates --no-open`) and `bun run
 storybook:build` (= `storybook build --config-dir .storybook -o storybook-static`). No environment variable is
 needed: `.storybook/main.mts` resolves the stories (`**/*.mdx`, `**/*.stories.*`, `**/*.bugs.*`
 under `ui`) and static dirs (`ui/assets`, `ui/stories/assets`) from its own directory. Addons are
@@ -133,7 +133,7 @@ Every script calls a tool from `node_modules/.bin` or a repo script directly; ru
 
 | Script | Command |
 |---|---|
-| `dev`, `storybook` | `storybook dev -p 6006 --config-dir .storybook --no-version-updates` |
+| `dev`, `storybook` | `storybook dev -p 6006 --config-dir .storybook --no-version-updates --no-open` |
 | `storybook:build` | `storybook build --config-dir .storybook -o storybook-static` |
 | `build` | `bun build/build.ts` (accepts `--outdir <dir>`) |
 | `test` | `bun test --timeout 60000` (extra arguments name test files) |
